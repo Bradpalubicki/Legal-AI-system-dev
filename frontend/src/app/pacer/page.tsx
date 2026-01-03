@@ -15,6 +15,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { API_CONFIG } from '../../config/api';
 import { toast } from 'sonner';
 import { UpgradePrompt } from '@/components/UpgradePrompt';
+import { DocumentHeaderCompact } from '@/components/DocumentHeader';
 import {
   Search,
   FileText,
@@ -2720,24 +2721,33 @@ export default function PACERPage() {
                       key={idx}
                       className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
                     >
+                      {/* Document Header with PACER-standard info */}
+                      <DocumentHeaderCompact
+                        caseNumber={doc.original_doc?.case_number || doc.case_number}
+                        court={doc.original_doc?.court || doc.court}
+                        documentType={doc.original_doc?.short_description || doc.original_doc?.description || 'Court Document'}
+                        documentNumber={doc.original_doc?.entry_number || doc.original_doc?.document_number}
+                        filingDate={doc.original_doc?.entry_date_filed}
+                        source={doc.source || 'CourtListener'}
+                        sourceUrl={doc.original_doc?.filepath_local ? `https://www.courtlistener.com${doc.original_doc.filepath_local}` : undefined}
+                        className="mb-3"
+                      />
+
+                      {/* Status Badges */}
+                      <div className="flex items-center gap-2 mb-3 flex-wrap">
+                        <Badge className="bg-green-500 text-white">Downloaded</Badge>
+                        {isDocumentAnalyzed(doc.document_id) ? (
+                          <Badge className="bg-purple-500 text-white">Analyzed</Badge>
+                        ) : analyzingDocs.has(`recap_${doc.document_id}`) ? (
+                          <Badge className="bg-blue-500 text-white animate-pulse">Analyzing...</Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-gray-500 border-gray-300">Not Analyzed</Badge>
+                        )}
+                      </div>
+
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2 flex-wrap">
-                            <FileText className="h-5 w-5 text-green-600 flex-shrink-0" />
-                            <h3 className="font-semibold text-gray-900">
-                              {doc.display_name || doc.original_doc?.short_description || doc.original_doc?.description || 'Court Document'}
-                            </h3>
-                            <Badge className="bg-green-500 text-white">Downloaded</Badge>
-                            {isDocumentAnalyzed(doc.document_id) ? (
-                              <Badge className="bg-purple-500 text-white">Analyzed</Badge>
-                            ) : analyzingDocs.has(`recap_${doc.document_id}`) ? (
-                              <Badge className="bg-blue-500 text-white animate-pulse">Analyzing...</Badge>
-                            ) : (
-                              <Badge variant="outline" className="text-gray-500 border-gray-300">Not Analyzed</Badge>
-                            )}
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-3 text-sm ml-8">
+                          <div className="grid grid-cols-2 gap-3 text-sm">
                             <div>
                               <span className="text-gray-500 dark:text-slate-400">File Size:</span>
                               <span className="ml-2 font-medium">{(doc.file_size / 1024).toFixed(1)} KB</span>
@@ -2753,17 +2763,8 @@ export default function PACERPage() {
                               </span>
                             </div>
                             <div>
-                              <span className="text-gray-500 dark:text-slate-400">Source:</span>
-                              <span className="ml-2 font-medium">{doc.source} (FREE)</span>
-                            </div>
-                          </div>
-
-                          <div className="mt-3 ml-8 p-3 bg-blue-50 rounded border border-blue-200">
-                            <div className="text-sm">
-                              <span className="text-gray-600 dark:text-slate-300">Storage Path:</span>
-                              <code className="ml-2 text-xs bg-white px-2 py-1 rounded border border-gray-300 font-mono">
-                                {doc.file_path}
-                              </code>
+                              <span className="text-gray-500 dark:text-slate-400">Filename:</span>
+                              <span className="ml-2 font-medium text-xs font-mono">{doc.standardized_filename || 'document.pdf'}</span>
                             </div>
                           </div>
 
