@@ -304,6 +304,149 @@ def deduplicate_dates(dates: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return result
 
 
+def generate_plain_english_summary(analysis: Dict[str, Any]) -> str:
+    """
+    Generate a plain English summary of the document analysis.
+    This creates a user-friendly explanation without legal jargon.
+
+    The summary follows the structure:
+    - What's Happening (The Big Picture)
+    - What This Means For You
+    - What You Need To Do
+    - Key Points
+    """
+    document_type = analysis.get("document_type", "legal document")
+    summary = analysis.get("summary", "")
+    parties = analysis.get("parties", [])
+    deadlines = analysis.get("deadlines", [])
+    key_arguments = analysis.get("key_arguments", [])
+
+    # Document type translations for plain English
+    DOC_TYPE_EXPLANATIONS = {
+        "complaint": "a formal lawsuit being filed against someone",
+        "answer": "a formal response to a lawsuit",
+        "motion to dismiss": "a request to throw out all or part of a case",
+        "motion for summary judgment": "a request to win without a trial because the facts are clear",
+        "order": "an official decision or instruction from the court",
+        "petition": "a formal request filed with the court",
+        "voluntary petition": "a filing to start a bankruptcy case",
+        "notice": "an official notification about something happening in your case",
+        "default judgment": "an automatic decision against someone who didn't respond",
+        "summons": "a notice that you're being sued and must respond",
+        "subpoena": "a legal order to appear in court or provide documents",
+        "brief": "a written argument explaining one side's legal position",
+        "declaration": "a written statement made under oath",
+        "deposition": "a recorded interview under oath as part of gathering evidence",
+    }
+
+    # Get plain English doc type
+    doc_type_lower = document_type.lower()
+    doc_type_plain = DOC_TYPE_EXPLANATIONS.get(doc_type_lower, f"a {document_type}")
+
+    for key, value in DOC_TYPE_EXPLANATIONS.items():
+        if key in doc_type_lower:
+            doc_type_plain = value
+            break
+
+    # Build the plain English summary
+    sections = []
+
+    # 1. What's Happening (The Big Picture)
+    big_picture = f"**What's Happening (The Big Picture)**\n\n"
+    big_picture += f"This document is {doc_type_plain}. "
+
+    if parties:
+        # Format parties for plain English
+        party_names = []
+        for p in parties[:3]:  # Limit to first 3
+            if isinstance(p, str):
+                name = p.split('(')[0].strip() if '(' in p else p
+                party_names.append(name)
+            elif isinstance(p, dict):
+                party_names.append(p.get("name", str(p)))
+        if party_names:
+            big_picture += f"It involves {', '.join(party_names[:2])}"
+            if len(party_names) > 2:
+                big_picture += f" and others"
+            big_picture += ". "
+
+    if summary:
+        # Use first 2 sentences of summary, cleaned up
+        sentences = [s.strip() for s in summary.split('.') if s.strip()][:2]
+        if sentences:
+            big_picture += ' '.join(sentences) + ". "
+
+    sections.append(big_picture.strip())
+
+    # 2. What This Means For You
+    meaning = "\n\n**What This Means For You**\n\n"
+    if "complaint" in doc_type_lower or "summons" in doc_type_lower:
+        meaning += "You are being notified of a legal action. This is a serious matter that requires your attention. "
+        meaning += "Ignoring this could result in a default judgment (an automatic decision) against you."
+    elif "motion" in doc_type_lower:
+        meaning += "Someone is asking the court to make a decision about something in your case. "
+        meaning += "You may need to respond or the court will decide based only on what the other side says."
+    elif "order" in doc_type_lower or "judgment" in doc_type_lower:
+        meaning += "The court has made a decision. This may require you to take specific actions. "
+        meaning += "Court orders must be followed."
+    elif "petition" in doc_type_lower and "bankruptcy" in doc_type_lower:
+        meaning += "A bankruptcy case has been filed. This affects how debts can be collected and may change payment obligations."
+    elif "notice" in doc_type_lower:
+        meaning += "You're being officially informed about something happening in the case. "
+        meaning += "Read carefully to understand what's changing or what's required."
+    else:
+        meaning += "This document is part of the legal proceedings. Review it carefully to understand how it affects you."
+
+    sections.append(meaning.strip())
+
+    # 3. What You Need To Do
+    actions = "\n\n**What You Need To Do**\n\n"
+    if deadlines:
+        actions += "**Important Deadlines:**\n"
+        for i, deadline in enumerate(deadlines[:3], 1):  # Limit to 3 deadlines
+            if isinstance(deadline, dict):
+                date = deadline.get("date", deadline.get("deadline", "Unknown date"))
+                event = deadline.get("event", deadline.get("description", "Action required"))
+                actions += f"{i}. **{date}**: {event}\n"
+        actions += "\n"
+    else:
+        actions += "No specific deadlines were identified in this document, but you should:\n"
+
+    actions += """
+1. Read the entire document carefully
+2. Note any dates, deadlines, or required actions
+3. Consider consulting with an attorney if you're unsure what to do
+4. Keep this document in a safe place for your records
+"""
+    sections.append(actions.strip())
+
+    # 4. Key Points To Understand
+    key_points = "\n\n**Key Points To Understand**\n\n"
+    if key_arguments and isinstance(key_arguments, list):
+        for arg in key_arguments[:3]:  # Limit to 3 points
+            if isinstance(arg, str):
+                key_points += f"• {arg}\n"
+            elif isinstance(arg, dict):
+                argument = arg.get("argument", arg.get("description", ""))
+                if argument:
+                    key_points += f"• {argument}\n"
+    else:
+        key_points += f"• This is {doc_type_plain}\n"
+        if parties:
+            key_points += "• Multiple parties are involved in this matter\n"
+        if deadlines:
+            key_points += "• There are important deadlines to be aware of\n"
+        key_points += "• You should keep copies of all related documents\n"
+
+    sections.append(key_points.strip())
+
+    # 5. Reminder
+    reminder = "\n\n---\n\n*Remember: This summary is for informational purposes only and does not constitute legal advice. For specific legal questions about your situation, please consult with a licensed attorney.*"
+    sections.append(reminder)
+
+    return ''.join(sections)
+
+
 class AnalyzeTextRequest(BaseModel):
     text: str
     filename: str = "unknown.txt"
@@ -1015,14 +1158,9 @@ def _validate_analysis_response(analysis: Dict[str, Any]) -> Dict[str, Any]:
 
     # === ADD COMPREHENSIVE STRUCTURED FIELDS ===
 
-    # 1. Plain English Summary
-    if not analysis.get("plain_english_summary"):
-        summary = analysis.get("summary", "")
-        if summary:
-            sentences = summary.split('.')[:3]
-            analysis["plain_english_summary"] = '. '.join(s.strip() for s in sentences if s.strip()) + '.'
-        else:
-            analysis["plain_english_summary"] = f"This is a {analysis.get('document_type', 'legal document')}. Please review carefully."
+    # 1. Plain English Summary - Enhanced with structured explanation
+    if not analysis.get("plain_english_summary") or len(analysis.get("plain_english_summary", "")) < 100:
+        analysis["plain_english_summary"] = generate_plain_english_summary(analysis)
 
     # 2. Parties Analysis
     if not analysis.get("parties_analysis"):
