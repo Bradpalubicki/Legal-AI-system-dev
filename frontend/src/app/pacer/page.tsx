@@ -46,6 +46,45 @@ import {
   Tag
 } from 'lucide-react';
 
+/**
+ * Safely ensure a value is an array.
+ * Fixes character-by-character rendering bug when key_arguments comes as string.
+ */
+const ensureArray = <T,>(value: T | T[] | string | undefined | null): T[] => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed;
+      return [parsed as T];
+    } catch {
+      if (value.length > 10) return [value as unknown as T];
+      return [];
+    }
+  }
+  return [];
+};
+
+/**
+ * Safely normalize key arguments from analysis data.
+ */
+const normalizeKeyArguments = (keyArguments: any): Array<{ argument: string; supporting_evidence?: string }> => {
+  const arr = ensureArray(keyArguments);
+  return arr.map((arg: any) => {
+    if (typeof arg === 'string') {
+      return { argument: arg, supporting_evidence: '' };
+    }
+    if (typeof arg === 'object' && arg !== null) {
+      return {
+        argument: arg.argument || arg.description || String(arg),
+        supporting_evidence: arg.supporting_evidence || arg.supporting_facts || ''
+      };
+    }
+    return { argument: String(arg), supporting_evidence: '' };
+  });
+};
+
 interface PACERCredentialsStatus {
   has_credentials: boolean;
   is_verified: boolean;
@@ -132,6 +171,11 @@ export default function PACERPage() {
   // Document download to app storage
   const [downloadingDocs, setDownloadingDocs] = useState<Set<number>>(new Set());
   const [downloadedDocs, setDownloadedDocs] = useState<any[]>([]);
+
+  // Track which documents have been analyzed (by document_id)
+  const [analyzedDocIds, setAnalyzedDocIds] = useState<Set<string>>(new Set());
+  // Track documents currently being analyzed
+  const [analyzingDocs, setAnalyzingDocs] = useState<Set<string>>(new Set());
 
   // Track which results have loaded all documents
   const [loadedAllDocs, setLoadedAllDocs] = useState<Set<number>>(new Set());
@@ -371,6 +415,33 @@ export default function PACERPage() {
       localStorage.setItem(userDocsKey, JSON.stringify(downloadedDocs));
     }
   }, [downloadedDocs, user?.id]);
+
+  // Initialize analyzed doc IDs from document context
+  useEffect(() => {
+    if (documents && documents.length > 0) {
+      const analyzedIds = new Set<string>();
+      documents.forEach((doc: any) => {
+        // Track RECAP documents by their document_id
+        if (doc.id?.startsWith('recap_')) {
+          analyzedIds.add(doc.id);
+        }
+      });
+      setAnalyzedDocIds(analyzedIds);
+    }
+  }, [documents]);
+
+  // Helper: Check if a document has already been downloaded to app
+  const isDocumentDownloaded = (docId: number): boolean => {
+    return downloadedDocs.some(
+      (downloaded) => downloaded.document_id === docId || downloaded.original_doc?.id === docId
+    );
+  };
+
+  // Helper: Check if a document has already been analyzed
+  const isDocumentAnalyzed = (docId: number | string): boolean => {
+    const recapId = `recap_${docId}`;
+    return analyzedDocIds.has(recapId) || documents?.some((doc: any) => doc.id === recapId);
+  };
 
   const fetchCreditsBalance = async () => {
     try {
@@ -958,6 +1029,15 @@ export default function PACERPage() {
       return;
     }
 
+    // Prevent re-downloading if already downloaded
+    if (isDocumentDownloaded(documentId)) {
+      toast.info('Document Already Downloaded', {
+        description: 'This document is already in your app. Go to the "Downloaded" tab to view it.',
+        duration: 4000,
+      });
+      return;
+    }
+
     try {
       // Add to downloading set
       setDownloadingDocs(prev => new Set(prev).add(documentId));
@@ -1270,6 +1350,20 @@ export default function PACERPage() {
 
   // Handle analyzing downloaded document
   const handleAnalyzeDocument = async (doc: any) => {
+    const docKey = `recap_${doc.document_id}`;
+
+    // Prevent re-analysis if already analyzed
+    if (isDocumentAnalyzed(doc.document_id)) {
+      toast.info('Document Already Analyzed', {
+        description: 'This document has already been analyzed. View it in the "Analysis" tab.',
+        duration: 4000,
+      });
+      return;
+    }
+
+    // Add to analyzing set
+    setAnalyzingDocs(prev => new Set(prev).add(docKey));
+
     try {
       setSuccess('Processing document for analysis...');
 
@@ -1312,6 +1406,9 @@ export default function PACERPage() {
       // Add to document context
       addDocument(documentData);
 
+      // Track as analyzed
+      setAnalyzedDocIds(prev => new Set(prev).add(docKey));
+
       // Show success message - document is now in context and ready to view
       setSuccess('Document analyzed successfully! View it in the "Analysis" tab.');
       toast.success('Document Analysis Complete', {
@@ -1322,6 +1419,13 @@ export default function PACERPage() {
     } catch (error: any) {
       console.error('Error analyzing document:', error);
       setError(`Failed to analyze document: ${error.message || 'Unknown error'}`);
+    } finally {
+      // Remove from analyzing set
+      setAnalyzingDocs(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(docKey);
+        return newSet;
+      });
     }
   };
 
@@ -2247,6 +2351,13 @@ export default function PACERPage() {
                                                   ~${((doc.page_count || 10) * 0.10).toFixed(2)} on PACER
                                                 </Badge>
                                               )}
+                                              {/* Status badges for downloaded/analyzed */}
+                                              {isDocumentDownloaded(doc.id) && (
+                                                <Badge className="bg-teal-500 text-white text-xs">In App</Badge>
+                                              )}
+                                              {isDocumentAnalyzed(doc.id) && (
+                                                <Badge className="bg-purple-500 text-white text-xs">Analyzed</Badge>
+                                              )}
                                             </div>
                                             {doc.entry_date_filed && (
                                               <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
@@ -2257,24 +2368,37 @@ export default function PACERPage() {
                                           </div>
                                           {doc.is_available && doc.filepath_local ? (
                                             <div className="flex gap-2 flex-shrink-0">
-                                              <Button
-                                                size="sm"
-                                                onClick={() => handleDownloadToApp(doc)}
-                                                disabled={downloadingDocs.has(doc.id)}
-                                                className="bg-green-600 hover:bg-green-700 text-white"
-                                              >
-                                                {downloadingDocs.has(doc.id) ? (
-                                                  <>
-                                                    <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
-                                                    Downloading...
-                                                  </>
-                                                ) : (
-                                                  <>
-                                                    <Download className="h-3 w-3 mr-1" />
-                                                    Download to App
-                                                  </>
-                                                )}
-                                              </Button>
+                                              {isDocumentDownloaded(doc.id) ? (
+                                                // Already downloaded - show success state
+                                                <Button
+                                                  size="sm"
+                                                  disabled
+                                                  className="bg-gray-100 text-green-700 border border-green-300 cursor-default"
+                                                >
+                                                  <CheckCircle className="h-3 w-3 mr-1" />
+                                                  Downloaded
+                                                </Button>
+                                              ) : (
+                                                // Not yet downloaded - show download button
+                                                <Button
+                                                  size="sm"
+                                                  onClick={() => handleDownloadToApp(doc)}
+                                                  disabled={downloadingDocs.has(doc.id)}
+                                                  className="bg-green-600 hover:bg-green-700 text-white"
+                                                >
+                                                  {downloadingDocs.has(doc.id) ? (
+                                                    <>
+                                                      <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                                                      Downloading...
+                                                    </>
+                                                  ) : (
+                                                    <>
+                                                      <Download className="h-3 w-3 mr-1" />
+                                                      Download to App
+                                                    </>
+                                                  )}
+                                                </Button>
+                                              )}
                                               <a
                                                 href={`https://www.courtlistener.com${doc.filepath_local.startsWith('/') ? doc.filepath_local : '/' + doc.filepath_local}`}
                                                 target="_blank"
@@ -2590,12 +2714,19 @@ export default function PACERPage() {
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
+                          <div className="flex items-center gap-3 mb-2 flex-wrap">
                             <FileText className="h-5 w-5 text-green-600 flex-shrink-0" />
                             <h3 className="font-semibold text-gray-900">
                               {doc.original_doc?.short_description || doc.original_doc?.description || 'Court Document'}
                             </h3>
                             <Badge className="bg-green-500 text-white">Downloaded</Badge>
+                            {isDocumentAnalyzed(doc.document_id) ? (
+                              <Badge className="bg-purple-500 text-white">Analyzed</Badge>
+                            ) : analyzingDocs.has(`recap_${doc.document_id}`) ? (
+                              <Badge className="bg-blue-500 text-white animate-pulse">Analyzing...</Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-gray-500 border-gray-300">Not Analyzed</Badge>
+                            )}
                           </div>
 
                           <div className="grid grid-cols-2 gap-3 text-sm ml-8">
@@ -2629,15 +2760,53 @@ export default function PACERPage() {
                           </div>
 
                           <div className="mt-3 ml-8 flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300"
-                              onClick={() => handleAnalyzeDocument(doc)}
-                            >
-                              <FileText className="h-3 w-3 mr-1" />
-                              Analyze Document
-                            </Button>
+                            {isDocumentAnalyzed(doc.document_id) ? (
+                              // Already analyzed - show success state
+                              <Button
+                                size="sm"
+                                disabled
+                                className="bg-purple-50 text-purple-700 border border-purple-300 cursor-default"
+                              >
+                                <CheckCircle className="h-3 w-3 mr-1" />
+                                Already Analyzed
+                              </Button>
+                            ) : analyzingDocs.has(`recap_${doc.document_id}`) ? (
+                              // Currently analyzing
+                              <Button
+                                size="sm"
+                                disabled
+                                className="bg-blue-50 text-blue-700 border border-blue-300"
+                              >
+                                <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                                Analyzing...
+                              </Button>
+                            ) : (
+                              // Not yet analyzed - show analyze button
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300"
+                                onClick={() => handleAnalyzeDocument(doc)}
+                              >
+                                <FileText className="h-3 w-3 mr-1" />
+                                Analyze Document
+                              </Button>
+                            )}
+                            {isDocumentAnalyzed(doc.document_id) && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-purple-600 hover:text-purple-700"
+                                onClick={() => {
+                                  // Switch to analysis tab
+                                  const analysisTab = document.querySelector('[data-value="analysis"]') as HTMLElement;
+                                  if (analysisTab) analysisTab.click();
+                                }}
+                              >
+                                <Scale className="h-3 w-3 mr-1" />
+                                View Analysis
+                              </Button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -3033,7 +3202,8 @@ export default function PACERPage() {
                     )}
 
                     {/* Key Legal Arguments */}
-                    {(currentDocument as any).keyArguments && (currentDocument as any).keyArguments.length > 0 && (
+                    {/* Key Legal Arguments - with safe array handling */}
+                    {Array.isArray((currentDocument as any).keyArguments) && (currentDocument as any).keyArguments.length > 0 && (
                       <div>
                         <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-2 flex items-center gap-2">
                           <Scale className="w-5 h-5 text-slate-600 dark:text-teal-400" />
@@ -3047,8 +3217,10 @@ export default function PACERPage() {
                                   {index + 1}
                                 </span>
                                 <div className="flex-1">
-                                  <p className="text-slate-800 dark:text-slate-200 font-medium">{arg.argument || arg}</p>
-                                  {arg.supporting_evidence && (
+                                  <p className="text-slate-800 dark:text-slate-200 font-medium">
+                                    {typeof arg === 'object' ? (arg.argument || arg.description || JSON.stringify(arg)) : String(arg)}
+                                  </p>
+                                  {arg?.supporting_evidence && (
                                     <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
                                       <span className="font-semibold">Evidence:</span> {arg.supporting_evidence}
                                     </p>

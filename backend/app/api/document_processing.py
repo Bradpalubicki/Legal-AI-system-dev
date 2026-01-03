@@ -63,6 +63,247 @@ def cleanup_old_results(max_age_seconds: int = 3600):
             del _analysis_results[jid]
 
 
+# Generic phrases that should be replaced with specific text
+GENERIC_PHRASES = [
+    "this date is significant",
+    "significant to the proceedings",
+    "this is important",
+    "this matters for the case",
+    "important deadline",
+    "critical deadline",
+    "serious legal consequences",
+    "serious consequences",
+    "adverse consequences",
+    "could have consequences",
+    "missing this deadline could result in adverse consequences",
+    "failure to meet this deadline could have serious legal consequences",
+    "this is a critical deadline that requires action",
+]
+
+# Specific risk text based on deadline type keywords
+DEADLINE_RISK_MAP = {
+    "response": (
+        "Failure to file a response by this date may result in waiving the right to oppose. "
+        "The court could rule on the matter without your input, potentially resulting in an adverse ruling."
+    ),
+    "answer": (
+        "If no answer is filed by this date, the court may enter a default judgment against you. "
+        "This means the opposing party could win automatically without a trial."
+    ),
+    "reply": (
+        "Missing this deadline waives the right to file a reply brief. "
+        "Your initial arguments will stand without the opportunity to address opposing arguments."
+    ),
+    "hearing": (
+        "Failure to appear at this hearing may result in: (1) the court ruling in your absence, "
+        "(2) sanctions for non-appearance, or (3) dismissal of your claims or defenses."
+    ),
+    "discovery": (
+        "Discovery not completed by this deadline may be excluded from the case. "
+        "This could prevent you from presenting key evidence at trial."
+    ),
+    "appeal": (
+        "This is an appeal deadline - it is JURISDICTIONAL. Missing it permanently waives "
+        "all appeal rights. The lower court decision becomes final and unappealable."
+    ),
+    "claim": (
+        "Claims not filed by the bar date will be disallowed entirely. "
+        "You will lose all rights to recover on this claim in the bankruptcy."
+    ),
+    "objection": (
+        "Failure to file an objection by this deadline constitutes waiver. "
+        "The matter will proceed as if you have no objection."
+    ),
+    "motion": (
+        "If this motion deadline is missed, you may lose the ability to seek this relief. "
+        "Some motions have strict timing requirements that cannot be extended."
+    ),
+    "disclosure": (
+        "Failure to make required disclosures by this date may result in exclusion of witnesses "
+        "or evidence, sanctions, or adverse inference instructions to the jury."
+    ),
+    "trial": (
+        "Trial dates are generally firm. Failure to be prepared or appear may result in "
+        "dismissal, default judgment, or sanctions."
+    ),
+    "briefing": (
+        "Missing a briefing deadline may result in the court deciding the issue without "
+        "your input or striking your previously filed documents."
+    ),
+    "settlement": (
+        "Settlement deadlines are typically set by court order. Missing this date may affect "
+        "your settlement options and the court's willingness to grant extensions."
+    ),
+}
+
+
+def get_specific_risk_text(deadline_type: str, description: str, existing_risk: str) -> str:
+    """
+    Replace generic risk text with specific risk based on deadline type.
+
+    Args:
+        deadline_type: Type of deadline (e.g., "response", "motion", "hearing")
+        description: Description of the deadline
+        existing_risk: Existing risk text to check if generic
+
+    Returns:
+        Specific risk text
+    """
+    # Check if existing risk is generic
+    if existing_risk:
+        existing_lower = existing_risk.lower()
+        is_generic = any(phrase in existing_lower for phrase in GENERIC_PHRASES)
+        if not is_generic:
+            return existing_risk  # Keep the existing specific risk
+
+    # Combine deadline_type and description for keyword matching
+    search_text = f"{deadline_type} {description}".lower()
+
+    # Find matching risk text
+    for keyword, risk_text in DEADLINE_RISK_MAP.items():
+        if keyword in search_text:
+            return risk_text
+
+    # Default fallback - still more specific than generic
+    return (
+        "This deadline requires timely action. Failure to comply may result in "
+        "procedural consequences that could affect your case. Review the specific "
+        "requirements and consult with your attorney."
+    )
+
+
+def get_specific_significance(date_type: str, description: str, existing_sig: str) -> str:
+    """
+    Replace generic significance text with specific text.
+
+    Args:
+        date_type: Type of date (e.g., "deadline", "hearing", "filing")
+        description: Description of the date
+        existing_sig: Existing significance to check if generic
+
+    Returns:
+        Specific significance text
+    """
+    # Check if existing significance is generic
+    if existing_sig:
+        existing_lower = existing_sig.lower()
+        is_generic = any(phrase in existing_lower for phrase in GENERIC_PHRASES)
+        if not is_generic:
+            return existing_sig  # Keep the existing specific significance
+
+    # Generate significance based on type and description
+    search_text = f"{date_type} {description}".lower()
+
+    if "hearing" in search_text:
+        return f"Court hearing date - {description}. You must be prepared to appear or have representation."
+    elif "deadline" in search_text or "due" in search_text:
+        return f"Filing deadline - {description}. Documents must be submitted to the court by this date."
+    elif "trial" in search_text:
+        return f"Trial date - {description}. This is when your case will be heard before the court."
+    elif "conference" in search_text:
+        return f"Conference date - {description}. A meeting with the court to discuss case progress."
+    elif "response" in search_text or "answer" in search_text:
+        return f"Response deadline - {description}. A written response must be filed by this date."
+    elif "motion" in search_text:
+        return f"Motion deadline - {description}. The deadline to file or respond to this motion."
+    else:
+        return f"{description}" if description else "See document for details about this date."
+
+
+def deduplicate_dates(dates: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Deduplicate dates by date value, merging information from duplicates.
+
+    If same date appears multiple times with different events,
+    combine them into a single entry with the most complete information.
+    """
+    if not dates or not isinstance(dates, list):
+        return []
+
+    date_map = {}
+
+    for date_obj in dates:
+        if not isinstance(date_obj, dict):
+            continue
+
+        # Get the date key (try multiple possible field names)
+        date_key = date_obj.get("date") or date_obj.get("deadline") or date_obj.get("event_date")
+        if not date_key:
+            continue
+
+        # Normalize date key for comparison
+        date_key_normalized = str(date_key).strip().lower()
+
+        if date_key_normalized in date_map:
+            # Merge with existing entry
+            existing = date_map[date_key_normalized]
+
+            # Combine descriptions/events if different
+            existing_event = existing.get("event", "") or existing.get("description", "")
+            new_event = date_obj.get("event", "") or date_obj.get("description", "")
+            if new_event and new_event not in existing_event:
+                combined_event = f"{existing_event}; {new_event}".strip("; ")
+                existing["event"] = combined_event
+                existing["description"] = combined_event
+
+            # Combine significance if different
+            existing_sig = existing.get("significance", "") or existing.get("why_important", "")
+            new_sig = date_obj.get("significance", "") or date_obj.get("why_important", "")
+            if new_sig and new_sig not in existing_sig:
+                existing["significance"] = f"{existing_sig} Additionally: {new_sig}".strip()
+                existing["why_important"] = existing["significance"]
+
+            # Keep highest urgency
+            urgency_order = {"low": 1, "medium": 2, "normal": 2, "high": 3, "critical": 4, "urgent": 4}
+            existing_urg = urgency_order.get(str(existing.get("urgency", "medium")).lower(), 2)
+            new_urg = urgency_order.get(str(date_obj.get("urgency", "medium")).lower(), 2)
+            if new_urg > existing_urg:
+                existing["urgency"] = date_obj.get("urgency")
+
+            # Mark as deadline if either entry is a deadline
+            if date_obj.get("is_deadline"):
+                existing["is_deadline"] = True
+
+            # Keep the most specific consequence
+            if date_obj.get("consequence_if_missed") and not existing.get("consequence_if_missed"):
+                existing["consequence_if_missed"] = date_obj.get("consequence_if_missed")
+
+            # Merge action_required
+            if date_obj.get("action_required") and not existing.get("action_required"):
+                existing["action_required"] = date_obj.get("action_required")
+
+        else:
+            # New entry
+            date_map[date_key_normalized] = date_obj.copy()
+            # Ensure we keep the original date key format
+            date_map[date_key_normalized]["date"] = date_key
+
+    # Convert back to list and sort by date
+    result = list(date_map.values())
+
+    # Try to sort by date if possible
+    def parse_date_for_sort(d):
+        date_str = d.get("date", "")
+        try:
+            # Try common formats
+            from datetime import datetime as dt
+            for fmt in ["%Y-%m-%d", "%m/%d/%Y", "%B %d, %Y", "%d %B %Y", "%m-%d-%Y"]:
+                try:
+                    return dt.strptime(str(date_str), fmt)
+                except ValueError:
+                    continue
+            return dt.max  # Unknown dates go to end
+        except:
+            return dt.max
+
+    try:
+        result.sort(key=parse_date_for_sort)
+    except:
+        pass  # Keep original order if sorting fails
+
+    return result
+
+
 class AnalyzeTextRequest(BaseModel):
     text: str
     filename: str = "unknown.txt"
@@ -657,6 +898,9 @@ def _validate_analysis_response(analysis: Dict[str, Any]) -> Dict[str, Any]:
         else:
             analysis["deadlines"] = []
 
+    # DEDUPLICATE deadlines - same date should only appear once
+    analysis["deadlines"] = deduplicate_dates(analysis["deadlines"])
+
     # Ensure key_dates is always an array
     if not analysis.get("key_dates"):
         analysis["key_dates"] = []
@@ -668,6 +912,9 @@ def _validate_analysis_response(analysis: Dict[str, Any]) -> Dict[str, Any]:
             analysis["key_dates"] = [key_dates]
         else:
             analysis["key_dates"] = []
+
+    # DEDUPLICATE key_dates - same date should only appear once
+    analysis["key_dates"] = deduplicate_dates(analysis["key_dates"])
 
     # Ensure key_terms is always an array of strings
     if not analysis.get("key_terms") or len(analysis.get("key_terms", [])) == 0:
@@ -993,6 +1240,36 @@ def _validate_analysis_response(analysis: Dict[str, Any]) -> Dict[str, Any]:
             key_figures.append({"label": "Case Number", "value": case_number})
         analysis["key_figures"] = key_figures
 
+    # 11. Key Arguments - CRITICAL: Ensure always an array to prevent frontend character-by-character bug
+    key_arguments = analysis.get("key_arguments")
+    if key_arguments is None:
+        analysis["key_arguments"] = []
+    elif isinstance(key_arguments, str):
+        # String was returned instead of array - wrap it in an array
+        logger.warning(f"key_arguments was a string, not array. Converting.")
+        if key_arguments.strip():
+            analysis["key_arguments"] = [{"argument": key_arguments.strip()}]
+        else:
+            analysis["key_arguments"] = []
+    elif not isinstance(key_arguments, list):
+        logger.warning(f"key_arguments was unexpected type: {type(key_arguments)}. Converting.")
+        analysis["key_arguments"] = []
+    else:
+        # Validate each item in the array
+        validated_args = []
+        for arg in key_arguments:
+            if isinstance(arg, str) and arg.strip():
+                validated_args.append({"argument": arg.strip()})
+            elif isinstance(arg, dict):
+                if arg.get("argument") or arg.get("description"):
+                    validated_args.append({
+                        "argument": arg.get("argument") or arg.get("description", ""),
+                        "supporting_facts": arg.get("supporting_facts", arg.get("supporting_evidence", "")),
+                        "legal_basis": arg.get("legal_basis", "")
+                    })
+            # Skip invalid items
+        analysis["key_arguments"] = validated_args
+
     logger.debug(f"Validated analysis - fields: {list(analysis.keys())}")
     return analysis
 
@@ -1180,37 +1457,63 @@ def _convert_verified_analysis_to_standard(verified_analysis, document_text: str
 
     result["comprehensive_summary"] = "\n\n".join(summary_parts) if summary_parts else result.get("summary", "")
 
-    # Map all_dates with why_important explanations
+    # Map all_dates with why_important explanations - using SPECIFIC text, not generic
     result["all_dates"] = []
     for date_item in result.get("key_dates", []):
+        description = date_item.get("description", "")
+        date_type = date_item.get("type", "date")
+
+        # Get specific significance text (not generic)
+        significance = get_specific_significance(
+            date_type,
+            description,
+            date_item.get("source_text", "")
+        )
+
         all_date = {
             "date": date_item.get("date", "Unknown"),
-            "event": date_item.get("description", ""),
-            "description": date_item.get("description", ""),
-            "significance": date_item.get("source_text", "") or f"Related to {result.get('document_type', 'this matter')}",
-            "why_important": date_item.get("source_text", "") or f"This date is significant to the proceedings",
+            "event": description,
+            "description": description,
+            "significance": significance,
+            "why_important": significance,
             "action_required": date_item.get("action_required", ""),
             "consequence_if_missed": "",
             "urgency": date_item.get("urgency", "normal")
         }
-        # If it's marked as a deadline, add consequence
+        # If it's marked as a deadline, add specific consequence
         if date_item.get("is_deadline"):
-            all_date["consequence_if_missed"] = "Missing this deadline could result in adverse consequences"
+            all_date["consequence_if_missed"] = get_specific_risk_text(
+                date_type, description, ""
+            )
             all_date["urgency"] = "HIGH"
         result["all_dates"].append(all_date)
 
-    # Also include deadlines in all_dates
+    # Also include deadlines in all_dates with SPECIFIC risk text
     for deadline in result.get("deadlines", []):
+        description = deadline.get("description", "Deadline")
+        deadline_type = deadline.get("type", "deadline")
+
+        # Get specific significance and risk text
+        significance = get_specific_significance("deadline", description, "")
+        risk_text = get_specific_risk_text(
+            deadline_type,
+            description,
+            deadline.get("consequence_if_missed", "")
+        )
+
         result["all_dates"].append({
             "date": deadline.get("date", "Unknown"),
-            "event": deadline.get("description", "Deadline"),
-            "description": deadline.get("description", "Deadline"),
-            "significance": f"Critical deadline - {deadline.get('description', '')}",
-            "why_important": f"This is a critical deadline that requires action",
-            "action_required": deadline.get("description", "Action required by this date"),
-            "consequence_if_missed": "Failure to meet this deadline could have serious legal consequences",
+            "event": description,
+            "description": description,
+            "significance": significance,
+            "why_important": significance,
+            "action_required": description,
+            "consequence_if_missed": risk_text,
             "urgency": deadline.get("urgency", "HIGH")
         })
+
+    # DEDUPLICATE all_dates - same date should only appear once with merged information
+    result["all_dates"] = deduplicate_dates(result["all_dates"])
 
     # FIX 2: Populate all_parties with same data as parties (for frontend compatibility)
     # Frontend checks all_parties first, so we need to provide it

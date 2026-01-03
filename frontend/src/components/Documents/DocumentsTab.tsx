@@ -13,6 +13,54 @@ import { AnalysisProgressTracker } from './AnalysisProgressTracker';
 
 import { API_CONFIG } from '../../config/api';
 
+/**
+ * Safely ensure a value is an array.
+ * Handles cases where API might return a string, undefined, or other non-array types.
+ * This fixes the character-by-character rendering bug when key_arguments is a string.
+ */
+const ensureArray = <T,>(value: T | T[] | string | undefined | null): T[] => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string') {
+    // If it's a string, try to parse as JSON array first
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed;
+      // If parsed but not array, wrap it
+      return [parsed as T];
+    } catch {
+      // If not valid JSON, treat as a single-item array
+      // but only if it looks like a complete sentence/argument
+      if (value.length > 10) {
+        return [value as unknown as T];
+      }
+      return [];
+    }
+  }
+  return [];
+};
+
+/**
+ * Safely normalize key arguments from analysis data.
+ * Ensures we always have an array of argument objects or strings.
+ */
+const normalizeKeyArguments = (keyArguments: any): Array<{ argument: string; supporting_facts?: string; legal_basis?: string }> => {
+  const arr = ensureArray(keyArguments);
+  return arr.map((arg: any) => {
+    if (typeof arg === 'string') {
+      return { argument: arg, supporting_facts: '', legal_basis: '' };
+    }
+    if (typeof arg === 'object' && arg !== null) {
+      return {
+        argument: arg.argument || arg.description || String(arg),
+        supporting_facts: arg.supporting_facts || arg.supporting_evidence || '',
+        legal_basis: arg.legal_basis || ''
+      };
+    }
+    return { argument: String(arg), supporting_facts: '', legal_basis: '' };
+  });
+};
+
 // Helper to get auth headers
 const getAuthHeaders = (): HeadersInit => {
   if (typeof window !== 'undefined') {
@@ -292,7 +340,7 @@ export function DocumentsTab() {
           court: analysisData.court || '',
           filingDate: analysisData.filing_date || '',
           deadlines: analysisData.all_deadlines || analysisData.deadlines || [],
-          keyArguments: analysisData.key_arguments || [],
+          keyArguments: normalizeKeyArguments(analysisData.key_arguments),
           reliefRequested: analysisData.relief_requested || [],
           citedAuthority: analysisData.cited_authority || [],
           hearingInfo: analysisData.hearing_info || null,
@@ -500,7 +548,7 @@ WHEREFORE, Plaintiff seeks judgment for $8,542.00 plus interest, costs, and atto
         court: analysisData.court || 'Circuit Court',
         filingDate: analysisData.filing_date || '',
         deadlines: analysisData.all_deadlines || analysisData.deadlines || [],
-        keyArguments: analysisData.key_arguments || [],
+        keyArguments: normalizeKeyArguments(analysisData.key_arguments),
         reliefRequested: analysisData.relief_requested || [],
         citedAuthority: analysisData.cited_authority || [],
         hearingInfo: analysisData.hearing_info || null,
@@ -1089,7 +1137,8 @@ WHEREFORE, Plaintiff seeks judgment for $8,542.00 plus interest, costs, and atto
             )}
 
             {/* Key Arguments */}
-            {(currentDocument as any).keyArguments && (currentDocument as any).keyArguments.length > 0 && (
+            {/* Key Legal Arguments - with safe array handling */}
+            {Array.isArray((currentDocument as any).keyArguments) && (currentDocument as any).keyArguments.length > 0 && (
               <div>
                 <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-2 flex items-center gap-2">
                   <Scale className="w-5 h-5 text-navy-600 dark:text-teal-400" />
@@ -1103,13 +1152,15 @@ WHEREFORE, Plaintiff seeks judgment for $8,542.00 plus interest, costs, and atto
                           {index + 1}
                         </span>
                         <div className="flex-1">
-                          <p className="text-slate-800 dark:text-slate-200 font-medium">{arg.argument || arg}</p>
-                          {arg.supporting_facts && (
+                          <p className="text-slate-800 dark:text-slate-200 font-medium">
+                            {typeof arg === 'object' ? (arg.argument || arg.description || JSON.stringify(arg)) : String(arg)}
+                          </p>
+                          {arg?.supporting_facts && (
                             <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
                               <span className="font-semibold">Support:</span> {arg.supporting_facts}
                             </p>
                           )}
-                          {arg.legal_basis && (
+                          {arg?.legal_basis && (
                             <p className="text-sm text-navy-700 dark:text-teal-300 mt-1">
                               <span className="font-semibold">Legal basis:</span> {arg.legal_basis}
                             </p>
