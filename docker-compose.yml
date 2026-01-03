@@ -1,0 +1,601 @@
+# =============================================================================
+# LEGAL AI SYSTEM - DOCKER COMPOSE CONFIGURATION
+# =============================================================================
+# Local development environment for Legal AI System
+# Includes: PostgreSQL, Redis, FastAPI Backend, Next.js Frontend, 
+# Background Workers, File Storage, and Development Tools
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # =============================================================================
+  # DATABASE SERVICES
+  # =============================================================================
+  
+  # Primary PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: legal-ai-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: legal_ai_system
+      POSTGRES_USER: legalai_user
+      POSTGRES_PASSWORD: secure_password
+      POSTGRES_MULTIPLE_DATABASES: legal_ai_system,legal_ai_analytics,legal_ai_test
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-multiple-db.sh:/docker-entrypoint-initdb.d/init-multiple-db.sh
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./backups/postgres:/backups
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U legalai_user -d legal_ai_system"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - legal-ai-network
+
+  # Redis for caching, sessions, and message broker
+  redis:
+    image: redis:7-alpine
+    container_name: legal-ai-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./docker/redis/redis.conf:/etc/redis/redis.conf:ro
+    command: redis-server /etc/redis/redis.conf --appendonly yes --maxmemory 1gb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - legal-ai-network
+
+  # =============================================================================
+  # COMPLIANCE & SAFETY SERVICES
+  # =============================================================================
+
+  # Legal Compliance Service
+  compliance-service:
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+      target: development
+    container_name: legal-ai-compliance
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://legalai_user:secure_password@postgres:5432/legal_ai_system
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - COMPLIANCE_MODE=strict
+      - DISCLAIMER_ENFORCEMENT=enabled
+      - UPL_PROTECTION=strict
+      - ATTORNEY_REVIEW_THRESHOLD=0.5
+      - LOG_LEVEL=debug
+      - PYTHONPATH=/app
+    ports:
+      - "8080:8000"
+    volumes:
+      - ./backend:/app
+      - ./storage:/app/storage
+      - ./logs:/app/logs
+      - ./audit_logs:/app/audit_logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/compliance/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    command: >
+      sh -c "
+        uvicorn app.compliance_service:app --host 0.0.0.0 --port 8000 --reload
+      "
+    networks:
+      - legal-ai-network
+
+  # Disclaimer API Service
+  disclaimer-api:
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+      target: development
+    container_name: legal-ai-disclaimer
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://legalai_user:secure_password@postgres:5432/legal_ai_system
+      - REDIS_URL=redis://redis:6379/2
+      - DISCLAIMER_TEMPLATES_PATH=/app/templates/disclaimers
+      - STATE_RULES_CONFIG=/app/config/state_rules.json
+      - ENFORCEMENT_MODE=strict
+      - PYTHONPATH=/app
+    ports:
+      - "8082:8000"
+    volumes:
+      - ./backend:/app
+      - ./storage:/app/storage
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/disclaimer/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    command: >
+      sh -c "
+        uvicorn app.disclaimer_service:app --host 0.0.0.0 --port 8000 --reload
+      "
+    networks:
+      - legal-ai-network
+
+  # Feedback Collection Service
+  feedback-service:
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+      target: development
+    container_name: legal-ai-feedback
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://legalai_user:secure_password@postgres:5432/legal_ai_system
+      - REDIS_URL=redis://redis:6379/3
+      - FEEDBACK_RETENTION_DAYS=2555
+      - ANONYMIZATION_ENABLED=true
+      - COMPLIANCE_REPORTING=enabled
+      - PYTHONPATH=/app
+    ports:
+      - "8083:8000"
+    volumes:
+      - ./backend:/app
+      - ./storage:/app/storage
+      - ./logs:/app/logs
+      - ./audit_logs:/app/audit_logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/feedback/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    command: >
+      sh -c "
+        uvicorn app.feedback_service:app --host 0.0.0.0 --port 8000 --reload
+      "
+    networks:
+      - legal-ai-network
+
+  # =============================================================================
+  # APPLICATION SERVICES
+  # =============================================================================
+
+  # FastAPI Backend Application
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+      target: development
+    container_name: legal-ai-backend
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://legalai_user:secure_password@postgres:5432/legal_ai_system
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - LOG_LEVEL=debug
+      - PYTHONPATH=/app
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+      - COMPLIANCE_SERVICE_URL=http://compliance-service:8000
+      - DISCLAIMER_API_URL=http://disclaimer-api:8000
+      - FEEDBACK_SERVICE_URL=http://feedback-service:8000
+      - COMPLIANCE_MODE=strict
+      - UPL_PROTECTION=enabled
+      - ATTORNEY_REVIEW_THRESHOLD=0.5
+      - AUDIT_RETENTION_DAYS=2555
+      - DISCLAIMER_ENFORCEMENT=true
+    ports:
+      - "8000:8000"
+      - "8001:8001"  # WebSocket port
+    volumes:
+      - ./backend:/app
+      - ./storage:/app/storage
+      - ./logs:/app/logs
+      - backend_cache:/app/.cache
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    command: >
+      sh -c "
+        alembic upgrade head &&
+        uvicorn main:app --host 0.0.0.0 --port 8000 --reload --log-level debug
+      "
+    networks:
+      - legal-ai-network
+
+  # Next.js Frontend Application
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend/Dockerfile
+      target: development
+    container_name: legal-ai-frontend
+    restart: unless-stopped
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_WS_URL=ws://localhost:8001
+      - NODE_ENV=development
+      - NEXT_TELEMETRY_DISABLED=1
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+      - frontend_next:/app/.next
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    command: npm run dev
+    networks:
+      - legal-ai-network
+
+  # =============================================================================
+  # BACKGROUND PROCESSING
+  # =============================================================================
+  
+  # Celery Worker for background tasks
+  celery-worker:
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+      target: development
+    container_name: legal-ai-celery-worker
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://legalai_user:secure_password@postgres:5432/legal_ai_system
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - PYTHONPATH=/app
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./backend:/app
+      - ./storage:/app/storage
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A app.celery inspect ping"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+    command: >
+      sh -c "
+        celery -A app.celery worker 
+        --loglevel=info 
+        --concurrency=4 
+        --queues=high_priority,normal_priority,low_priority,document_processing,ai_analysis
+        --hostname=worker@%h
+      "
+    networks:
+      - legal-ai-network
+
+  # Celery Beat for scheduled tasks
+  celery-beat:
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+      target: development
+    container_name: legal-ai-celery-beat
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://legalai_user:secure_password@postgres:5432/legal_ai_system
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - PYTHONPATH=/app
+    volumes:
+      - ./backend:/app
+      - ./storage:/app/storage
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A app.celery beat --loglevel=info --scheduler=django_celery_beat.schedulers:DatabaseScheduler
+    networks:
+      - legal-ai-network
+
+  # Celery Flower for monitoring
+  celery-flower:
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+      target: development
+    container_name: legal-ai-celery-flower
+    restart: unless-stopped
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - FLOWER_BASIC_AUTH=admin:flower_password
+    ports:
+      - "5555:5555"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - redis
+      - celery-worker
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5555"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+    command: celery -A app.celery flower --port=5555 --broker=redis://redis:6379/1
+    networks:
+      - legal-ai-network
+
+  # =============================================================================
+  # STORAGE & FILE SERVICES
+  # =============================================================================
+  
+  # MinIO for S3-compatible local storage
+  minio:
+    image: minio/minio:RELEASE.2024-01-31T20-20-33Z
+    container_name: legal-ai-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+      MINIO_BROWSER_REDIRECT_URL: http://localhost:9001
+    ports:
+      - "9000:9000"    # API port
+      - "9001:9001"    # Console port
+    volumes:
+      - minio_data:/data
+      - ./docker/minio/init.sh:/docker-entrypoint-initdb.d/init.sh
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - legal-ai-network
+
+  # =============================================================================
+  # DEVELOPMENT & MONITORING TOOLS
+  # =============================================================================
+  
+  # PostgreSQL Admin (pgAdmin)
+  pgadmin:
+    image: dpage/pgadmin4:8
+    container_name: legal-ai-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@legalai.com
+      PGADMIN_DEFAULT_PASSWORD: admin_password
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json:ro
+    depends_on:
+      - postgres
+    networks:
+      - legal-ai-network
+
+  # Redis Commander for Redis management
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: legal-ai-redis-commander
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: local:redis:6379
+      HTTP_USER: admin
+      HTTP_PASSWORD: redis_password
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - legal-ai-network
+
+  # Mailhog for email testing
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: legal-ai-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # SMTP port
+      - "8025:8025"  # Web UI port
+    networks:
+      - legal-ai-network
+
+  # =============================================================================
+  # REVERSE PROXY & LOAD BALANCING
+  # =============================================================================
+  
+  # Nginx reverse proxy
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: legal-ai-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - frontend
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - legal-ai-network
+
+  # =============================================================================
+  # MONITORING & OBSERVABILITY (Optional)
+  # =============================================================================
+  
+  # Prometheus for metrics collection
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: legal-ai-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    profiles:
+      - monitoring
+    networks:
+      - legal-ai-network
+
+  # Grafana for metrics visualization
+  grafana:
+    image: grafana/grafana:10.2.2
+    container_name: legal-ai-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: grafana_password
+      GF_USERS_ALLOW_SIGN_UP: false
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./docker/grafana/datasources:/etc/grafana/provisioning/datasources
+    profiles:
+      - monitoring
+    depends_on:
+      - prometheus
+    networks:
+      - legal-ai-network
+
+  # Compliance Monitoring Dashboard
+  compliance-dashboard:
+    image: grafana/grafana:10.2.2
+    container_name: legal-ai-compliance-dashboard
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: compliance_dashboard_password
+      GF_USERS_ALLOW_SIGN_UP: false
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/provisioning/dashboards/compliance-overview.json
+      GF_SECURITY_ADMIN_USER: compliance_admin
+      GF_SERVER_ROOT_URL: http://localhost:3002/
+    ports:
+      - "3002:3000"
+    volumes:
+      - compliance_dashboard_data:/var/lib/grafana
+      - ./docker/grafana/compliance-dashboards:/etc/grafana/provisioning/dashboards
+      - ./docker/grafana/compliance-datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - prometheus
+      - compliance-service
+      - disclaimer-api
+      - feedback-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - legal-ai-network
+
+# =============================================================================
+# VOLUMES
+# =============================================================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  minio_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  backend_cache:
+    driver: local
+  frontend_node_modules:
+    driver: local
+  frontend_next:
+    driver: local
+  compliance_dashboard_data:
+    driver: local
+
+# =============================================================================
+# NETWORKS
+# =============================================================================
+networks:
+  legal-ai-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# =============================================================================
+# PROFILES FOR OPTIONAL SERVICES
+# =============================================================================
+# Usage:
+# docker-compose up                           # Start core services
+# docker-compose --profile monitoring up     # Start with monitoring
+# docker-compose --profile all up            # Start all services

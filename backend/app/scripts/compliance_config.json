@@ -1,0 +1,172 @@
+{
+  "compliance_validation": {
+    "version": "1.0.0",
+    "description": "Legal AI System Compliance Validation Configuration",
+    "checks": {
+      "ai_output_disclaimers": {
+        "enabled": true,
+        "required_patterns": [
+          "This is not legal advice",
+          "not a substitute for professional legal advice", 
+          "consult.*qualified.*attorney",
+          "educational.*purposes.*only"
+        ],
+        "sample_size": 100,
+        "max_missing_percentage": 10
+      },
+      "advice_language_detection": {
+        "enabled": true,
+        "test_cases": [
+          {
+            "text": "You should hire an attorney for this case.",
+            "should_detect": true,
+            "type": "direct_advice"
+          },
+          {
+            "text": "I recommend filing a motion to dismiss immediately.",
+            "should_detect": true,
+            "type": "recommendation"
+          },
+          {
+            "text": "You must respond to this lawsuit within 30 days or you will lose by default.",
+            "should_detect": true,
+            "type": "imperative_advice"
+          },
+          {
+            "text": "Generally, contracts require consideration to be valid.",
+            "should_detect": false,
+            "type": "educational_content"
+          },
+          {
+            "text": "This document appears to be a standard employment agreement.",
+            "should_detect": false,
+            "type": "factual_observation"
+          }
+        ]
+      },
+      "attorney_review_flags": {
+        "enabled": true,
+        "required_violation_types": [
+          "LEGAL_ADVICE",
+          "OVERCONFIDENCE",
+          "ETHICAL_VIOLATION",
+          "DEADLINE_ACCURACY"
+        ],
+        "max_response_time_hours": 24,
+        "min_flags_per_week": 1
+      },
+      "state_rules_application": {
+        "enabled": true,
+        "min_states_covered": 10,
+        "min_rules_per_state": 5,
+        "test_scenarios": [
+          {
+            "state": "CA",
+            "content": "Employment at-will doctrine applies in California",
+            "expected_rules": ["employment", "at_will"]
+          },
+          {
+            "state": "TX",
+            "content": "Texas has specific community property laws", 
+            "expected_rules": ["property", "community"]
+          },
+          {
+            "state": "NY",
+            "content": "New York requires specific landlord-tenant disclosures",
+            "expected_rules": ["landlord_tenant", "disclosure"]
+          }
+        ]
+      },
+      "audit_logging": {
+        "enabled": true,
+        "required_event_types": [
+          "user_login",
+          "document_access", 
+          "ai_output_generated",
+          "attorney_review",
+          "safety_violation_detected",
+          "user_acknowledgment"
+        ],
+        "min_daily_logs": 10,
+        "max_log_age_days": 2555
+      },
+      "user_acknowledgments": {
+        "enabled": true,
+        "required_types": [
+          "terms_of_service",
+          "legal_disclaimer",
+          "not_legal_advice", 
+          "attorney_client_privilege_waiver"
+        ],
+        "max_acknowledgment_age_days": 365,
+        "min_compliance_rate": 0.95
+      },
+      "educational_content": {
+        "enabled": true,
+        "min_content_items": 20,
+        "required_disclaimer_rate": 0.95,
+        "accessibility_standards": [
+          "WCAG_2.1_AA"
+        ],
+        "required_content_types": [
+          "legal_concepts",
+          "court_procedures", 
+          "document_types",
+          "compliance_guides"
+        ]
+      },
+      "referral_system": {
+        "enabled": true,
+        "required_disclaimer_types": [
+          "attorney_referral",
+          "legal_service_referral",
+          "third_party_referral", 
+          "no_endorsement_disclaimer"
+        ],
+        "required_disclaimer_phrases": [
+          "not an endorsement",
+          "independent attorney",
+          "no attorney-client relationship",
+          "verify credentials"
+        ],
+        "min_acknowledgment_rate": 0.95
+      }
+    },
+    "reporting": {
+      "output_formats": ["json", "html", "csv"],
+      "include_evidence": true,
+      "include_remediation": true,
+      "save_reports": true,
+      "report_retention_days": 90
+    },
+    "database": {
+      "tables": {
+        "ai_outputs": "id, content, content_type, state_code, has_disclaimer, created_at",
+        "safety_violations": "id, violation_type, severity, content_id, created_at",
+        "attorney_corrections": "id, content_id, status, created_at, reviewed_at",
+        "audit_logs": "id, event_type, user_id, details, created_at",
+        "user_acknowledgments": "id, user_id, acknowledgment_type, created_at",
+        "educational_content": "id, content_type, has_disclaimer, accessibility_level, active",
+        "referral_disclaimers": "id, referral_type, disclaimer_text, active",
+        "referrals": "id, referral_type, disclaimer_shown, disclaimer_acknowledged, created_at",
+        "state_legal_rules": "id, state_code, rule_type, active"
+      }
+    }
+  },
+  "notifications": {
+    "email_alerts": {
+      "enabled": false,
+      "recipients": [
+        "compliance@legalai.com",
+        "admin@legalai.com"
+      ],
+      "alert_on": ["FAIL", "ERROR"]
+    },
+    "slack_alerts": {
+      "enabled": false,
+      "webhook_url": "",
+      "channel": "#compliance-alerts",
+      "alert_on": ["FAIL", "ERROR", "WARNING"]
+    }
+  }
+}

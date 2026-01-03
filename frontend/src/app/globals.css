@@ -1,0 +1,527 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply antialiased;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply min-h-screen bg-background text-foreground transition-colors duration-200;
+  }
+  :root {
+
+    --background: 0 0% 100%;
+
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+
+    --input: 214.3 31.8% 91.4%;
+
+    --ring: 222.2 84% 4.9%;
+
+    --chart-1: 12 76% 61%;
+
+    --chart-2: 173 58% 39%;
+
+    --chart-3: 197 37% 24%;
+
+    --chart-4: 43 74% 66%;
+
+    --chart-5: 27 87% 67%;
+
+    --radius: 0.5rem
+  }
+  .dark {
+
+    --background: 222.2 84% 4.9%;
+
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+
+    --input: 217.2 32.6% 17.5%;
+
+    --ring: 212.7 26.8% 83.9%;
+
+    --chart-1: 220 70% 50%;
+
+    --chart-2: 160 60% 45%;
+
+    --chart-3: 30 80% 55%;
+
+    --chart-4: 280 65% 60%;
+
+    --chart-5: 340 75% 55%
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors;
+  }
+  
+  .btn-primary {
+    @apply btn bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500;
+  }
+  
+  .btn-secondary {
+    @apply btn bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500;
+  }
+  
+  .card {
+    @apply bg-card text-card-foreground rounded-lg shadow-sm border border-border;
+  }
+}
+
+
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ==============================================
+   DARK MODE - Simplified Consistent Styling
+   ============================================== */
+
+/* Main page background */
+.dark .min-h-screen,
+.dark body {
+  background-color: rgb(15 23 42) !important; /* slate-900 */
+}
+
+/* ALL light backgrounds become uniform dark */
+.dark .bg-white,
+.dark .bg-slate-50,
+.dark .bg-slate-100,
+.dark .bg-slate-200,
+.dark .bg-gray-50,
+.dark .bg-gray-100,
+.dark .bg-gray-200,
+.dark .bg-navy-50,
+.dark .bg-blue-50,
+.dark .bg-blue-100,
+.dark .bg-green-50,
+.dark .bg-green-100,
+.dark .bg-teal-50,
+.dark .bg-teal-100,
+.dark .bg-amber-50,
+.dark .bg-amber-100,
+.dark .bg-yellow-50,
+.dark .bg-yellow-100,
+.dark .bg-red-50,
+.dark .bg-red-100,
+.dark .bg-purple-50,
+.dark .bg-purple-100,
+.dark .bg-indigo-50,
+.dark .bg-indigo-100 {
+  background-color: rgb(30 41 59) !important; /* slate-800 - uniform box color */
+  color: rgb(226 232 240) !important; /* slate-200 - readable text */
+}
+
+/* ALL borders become uniform dark */
+.dark .border-slate-200,
+.dark .border-slate-300,
+.dark .border-gray-200,
+.dark .border-gray-300,
+.dark .border-blue-200,
+.dark .border-blue-300,
+.dark .border-green-200,
+.dark .border-green-300,
+.dark .border-teal-200,
+.dark .border-teal-300,
+.dark .border-amber-200,
+.dark .border-amber-300,
+.dark .border-yellow-200,
+.dark .border-yellow-300,
+.dark .border-red-200,
+.dark .border-red-300,
+.dark .border-purple-200,
+.dark .border-purple-300,
+.dark .border-indigo-200,
+.dark .border-indigo-300 {
+  border-color: rgb(51 65 85) !important; /* slate-700 */
+}
+
+/* Text colors - uniform light text */
+.dark .text-navy-800,
+.dark .text-slate-900,
+.dark .text-slate-800,
+.dark .text-slate-700,
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-gray-700,
+.dark .text-black,
+.dark .text-blue-800,
+.dark .text-blue-700,
+.dark .text-green-800,
+.dark .text-green-700,
+.dark .text-teal-800,
+.dark .text-teal-700,
+.dark .text-amber-800,
+.dark .text-amber-700,
+.dark .text-red-800,
+.dark .text-red-700 {
+  color: rgb(241 245 249) !important; /* slate-100 */
+}
+
+.dark .text-slate-600,
+.dark .text-slate-500,
+.dark .text-gray-600,
+.dark .text-gray-500 {
+  color: rgb(148 163 184) !important; /* slate-400 */
+}
+
+/* Input fields */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: rgb(51 65 85) !important; /* slate-700 */
+  color: rgb(241 245 249) !important; /* slate-100 */
+  border-color: rgb(71 85 105) !important; /* slate-600 */
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: rgb(100 116 139) !important; /* slate-500 */
+}
+
+/* ==============================================
+   TABS & SELECTION BOXES - Consistent Dark Styling
+   ============================================== */
+
+/* Tab containers */
+.dark [role="tablist"] {
+  background-color: rgb(30 41 59) !important; /* slate-800 */
+  border-color: rgb(51 65 85) !important; /* slate-700 */
+}
+
+/* Tab triggers - selected/active state */
+.dark [role="tab"][data-state="active"],
+.dark [data-state="active"][role="tab"],
+.dark .data-\[state\=active\]\:bg-navy-50[data-state="active"],
+.dark .data-\[state\=active\]\:bg-white[data-state="active"],
+.dark .data-\[state\=active\]\:bg-slate-100[data-state="active"],
+.dark button[data-state="active"],
+.dark [data-state="active"] {
+  background-color: rgb(51 65 85) !important; /* slate-700 - visible selection */
+  color: rgb(241 245 249) !important; /* slate-100 */
+}
+
+/* Tab triggers - inactive state */
+.dark [role="tab"],
+.dark [role="tab"][data-state="inactive"],
+.dark [data-state="inactive"] {
+  color: rgb(148 163 184) !important; /* slate-400 */
+}
+
+.dark [role="tab"]:hover,
+.dark [data-state="inactive"]:hover {
+  background-color: rgb(71 85 105) !important; /* slate-600 */
+  color: rgb(241 245 249) !important;
+}
+
+/* Selection cards/boxes (like document upload options) */
+.dark .cursor-pointer.border.rounded-lg:hover,
+.dark .cursor-pointer.border.rounded-xl:hover,
+.dark .hover\:border-blue-500:hover,
+.dark .hover\:border-teal-500:hover,
+.dark .hover\:border-navy-500:hover {
+  border-color: rgb(59 130 246) !important; /* blue-500 */
+  background-color: rgb(51 65 85) !important; /* slate-700 */
+}
+
+/* Selected state for clickable cards */
+.dark .border-blue-500,
+.dark .border-teal-500,
+.dark .border-navy-500,
+.dark .ring-2,
+.dark .ring-blue-500,
+.dark .ring-teal-500 {
+  border-color: rgb(59 130 246) !important; /* blue-500 */
+  background-color: rgb(51 65 85) !important; /* slate-700 */
+}
+
+/* Radio buttons and checkboxes */
+.dark input[type="radio"],
+.dark input[type="checkbox"] {
+  background-color: rgb(51 65 85) !important;
+  border-color: rgb(71 85 105) !important;
+}
+
+.dark input[type="radio"]:checked,
+.dark input[type="checkbox"]:checked {
+  background-color: rgb(59 130 246) !important; /* blue-500 */
+  border-color: rgb(59 130 246) !important;
+}
+
+/* Dropdown/Select menus */
+.dark [role="listbox"],
+.dark [role="menu"],
+.dark [role="combobox"],
+.dark [data-radix-popper-content-wrapper] > div {
+  background-color: rgb(30 41 59) !important; /* slate-800 */
+  border-color: rgb(51 65 85) !important;
+}
+
+.dark [role="option"],
+.dark [role="menuitem"] {
+  color: rgb(226 232 240) !important; /* slate-200 */
+}
+
+.dark [role="option"]:hover,
+.dark [role="menuitem"]:hover,
+.dark [role="option"][data-highlighted],
+.dark [role="menuitem"][data-highlighted] {
+  background-color: rgb(51 65 85) !important; /* slate-700 */
+  color: rgb(241 245 249) !important;
+}
+
+.dark [role="option"][data-state="checked"],
+.dark [aria-selected="true"] {
+  background-color: rgb(51 65 85) !important;
+  color: rgb(241 245 249) !important;
+}
+
+/* Upload/drop zones */
+.dark .border-dashed {
+  border-color: rgb(71 85 105) !important; /* slate-600 */
+  background-color: rgb(30 41 59) !important; /* slate-800 */
+}
+
+.dark .border-dashed:hover {
+  border-color: rgb(59 130 246) !important; /* blue-500 */
+  background-color: rgb(51 65 85) !important;
+}
+
+/* Accordion/Collapsible sections */
+.dark [data-state="open"],
+.dark [data-state="closed"] {
+  background-color: rgb(30 41 59) !important;
+  border-color: rgb(51 65 85) !important;
+}
+
+.dark [data-state="open"] > *,
+.dark [data-state="closed"] > * {
+  color: inherit;
+}
+
+/* Dialog/Modal backgrounds */
+.dark [role="dialog"],
+.dark [role="alertdialog"] {
+  background-color: rgb(30 41 59) !important;
+  border-color: rgb(51 65 85) !important;
+}
+
+/* Tooltip */
+.dark [role="tooltip"] {
+  background-color: rgb(15 23 42) !important; /* slate-900 */
+  color: rgb(226 232 240) !important;
+  border-color: rgb(51 65 85) !important;
+}
+
+/* Progress bars */
+.dark .bg-slate-100,
+.dark .bg-gray-100 {
+  background-color: rgb(51 65 85) !important; /* slate-700 for track */
+}
+
+/* Switch/Toggle components */
+.dark [role="switch"] {
+  background-color: rgb(71 85 105) !important; /* slate-600 when off */
+}
+
+.dark [role="switch"][data-state="checked"],
+.dark [role="switch"][aria-checked="true"] {
+  background-color: rgb(13 148 136) !important; /* teal-600 when on */
+}
+
+/* Buttons - keep colored buttons visible */
+.dark .bg-green-500,
+.dark .bg-green-600,
+.dark .bg-blue-500,
+.dark .bg-blue-600,
+.dark .bg-red-500,
+.dark .bg-red-600,
+.dark .bg-amber-500,
+.dark .bg-amber-600,
+.dark .bg-teal-500,
+.dark .bg-teal-600 {
+  color: white !important;
+}
+
+/* Hover states */
+.dark .hover\:bg-slate-100:hover,
+.dark .hover\:bg-slate-50:hover,
+.dark .hover\:bg-gray-100:hover,
+.dark .hover\:bg-gray-50:hover {
+  background-color: rgb(51 65 85) !important; /* slate-700 */
+}
+
+/* Table rows */
+.dark tr:hover {
+  background-color: rgb(51 65 85) !important;
+}
+
+/* Ensure nested elements inherit color */
+.dark [class*="bg-"][class*="-50"] *,
+.dark [class*="bg-"][class*="-100"] *,
+.dark .bg-white * {
+  color: inherit;
+}
+
+/* SVG icons */
+.dark svg {
+  color: currentColor;
+}
+
+/* Focus rings */
+.dark .focus\:ring-blue-500:focus,
+.dark .focus\:ring-teal-500:focus {
+  --tw-ring-color: rgb(59 130 246 / 0.5);
+}
+
+/* Gradient backgrounds in dark mode */
+.dark .bg-gradient-to-br,
+.dark .bg-gradient-to-r,
+.dark .bg-gradient-to-l,
+.dark .bg-gradient-to-t,
+.dark .bg-gradient-to-b,
+.dark [class*="from-blue-50"],
+.dark [class*="from-indigo-50"],
+.dark [class*="from-navy-50"],
+.dark [class*="from-teal-50"],
+.dark [class*="from-green-50"],
+.dark [class*="from-purple-50"],
+.dark [class*="to-blue-50"],
+.dark [class*="to-indigo-50"],
+.dark [class*="to-navy-50"],
+.dark [class*="to-teal-50"] {
+  background: rgb(30 41 59) !important; /* slate-800 - override gradient */
+}
+
+/* More specific dark mode text colors for labels and descriptions */
+.dark .text-blue-900,
+.dark .text-blue-800,
+.dark .text-indigo-800,
+.dark .text-purple-800,
+.dark .text-green-900,
+.dark .text-green-800,
+.dark .text-yellow-900,
+.dark .text-yellow-800,
+.dark .text-success-800 {
+  color: rgb(241 245 249) !important; /* slate-100 */
+}
+
+.dark .text-blue-700,
+.dark .text-indigo-700,
+.dark .text-purple-700,
+.dark .text-green-700,
+.dark .text-yellow-700,
+.dark .text-success-700 {
+  color: rgb(226 232 240) !important; /* slate-200 */
+}
+
+/* Badge backgrounds in dark mode */
+.dark .bg-blue-100,
+.dark .bg-purple-100,
+.dark .bg-indigo-100,
+.dark .bg-green-100,
+.dark .bg-yellow-100,
+.dark .bg-teal-100 {
+  background-color: rgb(51 65 85) !important; /* slate-700 */
+}
+
+/* Card component styling */
+.dark [class*="CardContent"],
+.dark [class*="CardHeader"] {
+  background-color: transparent !important;
+}
+
+/* Dark border colors for cards */
+.dark .border-blue-400,
+.dark .border-blue-500,
+.dark .border-blue-600 {
+  border-color: rgb(71 85 105) !important; /* slate-600 */
+}
+
+/* Analysis Progress shimmer animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite linear;
+}

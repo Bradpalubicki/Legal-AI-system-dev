@@ -1,0 +1,228 @@
+groups:
+  - name: legal_ai_system_alerts
+    interval: 30s
+    rules:
+      # =====================================================================
+      # HIGH PRIORITY ALERTS - Immediate action required
+      # =====================================================================
+
+      - alert: HighErrorRate
+        expr: |
+          rate(http_requests_total{status_code=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "High HTTP error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} on {{ $labels.endpoint }}"
+          runbook: "https://docs.legal-ai-system.com/runbooks/high-error-rate"
+
+      - alert: ServiceDown
+        expr: up{job="legal-ai-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "Service is down"
+          description: "{{ $labels.job }} service is not responding"
+          runbook: "https://docs.legal-ai-system.com/runbooks/service-down"
+
+      - alert: DatabaseConnectionPoolExhausted
+        expr: db_connection_pool_checked_out / db_connection_pool_size > 0.9
+        for: 5m
+        labels:
+          severity: critical
+          component: database
+        annotations:
+          summary: "Database connection pool nearly exhausted"
+          description: "{{ $value | humanizePercentage }} of database connections are in use"
+          runbook: "https://docs.legal-ai-system.com/runbooks/db-pool-exhausted"
+
+      - alert: HighMemoryUsage
+        expr: memory_usage_bytes / 1024 / 1024 / 1024 > 8
+        for: 10m
+        labels:
+          severity: critical
+          component: system
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is {{ $value }}GB"
+          runbook: "https://docs.legal-ai-system.com/runbooks/high-memory"
+
+      # =====================================================================
+      # MEDIUM PRIORITY ALERTS - Action required soon
+      # =====================================================================
+
+      - alert: HighResponseTime
+        expr: |
+          histogram_quantile(0.95,
+            rate(http_request_duration_seconds_bucket[5m])
+          ) > 2
+        for: 10m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "High API response time"
+          description: "P95 response time is {{ $value | humanizeDuration }} on {{ $labels.endpoint }}"
+          runbook: "https://docs.legal-ai-system.com/runbooks/slow-responses"
+
+      - alert: SlowDatabaseQueries
+        expr: |
+          histogram_quantile(0.95,
+            rate(db_query_duration_seconds_bucket[5m])
+          ) > 1
+        for: 10m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "Slow database queries detected"
+          description: "P95 query time is {{ $value | humanizeDuration }} for {{ $labels.table }}"
+          runbook: "https://docs.legal-ai-system.com/runbooks/slow-queries"
+
+      - alert: LowCacheHitRate
+        expr: |
+          rate(cache_hits_total[5m]) /
+          (rate(cache_hits_total[5m]) + rate(cache_misses_total[5m])) < 0.7
+        for: 15m
+        labels:
+          severity: warning
+          component: cache
+        annotations:
+          summary: "Low cache hit rate"
+          description: "Cache hit rate is {{ $value | humanizePercentage }}"
+          runbook: "https://docs.legal-ai-system.com/runbooks/low-cache-hit-rate"
+
+      - alert: HighRateLimitHits
+        expr: rate(rate_limit_hits_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: rate_limiter
+        annotations:
+          summary: "High rate limit hit rate"
+          description: "{{ $value }} rate limit hits per second on {{ $labels.endpoint }}"
+          runbook: "https://docs.legal-ai-system.com/runbooks/rate-limit-abuse"
+
+      - alert: CeleryQueueBacklog
+        expr: celery_queue_length > 1000
+        for: 10m
+        labels:
+          severity: warning
+          component: background_tasks
+        annotations:
+          summary: "Large Celery queue backlog"
+          description: "{{ $value }} tasks in {{ $labels.queue_name }} queue"
+          runbook: "https://docs.legal-ai-system.com/runbooks/celery-backlog"
+
+      # =====================================================================
+      # AI/ML SPECIFIC ALERTS
+      # =====================================================================
+
+      - alert: HighAIAPICosts
+        expr: rate(ai_cost_dollars_total[1h]) * 24 > 100
+        for: 1h
+        labels:
+          severity: warning
+          component: ai
+        annotations:
+          summary: "High AI API costs"
+          description: "AI costs are ${{ $value }}/day for {{ $labels.provider }}"
+          runbook: "https://docs.legal-ai-system.com/runbooks/high-ai-costs"
+
+      - alert: AIAPIErrors
+        expr: |
+          rate(ai_api_calls_total{status="error"}[10m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+          component: ai
+        annotations:
+          summary: "High AI API error rate"
+          description: "{{ $value }} AI API errors per second for {{ $labels.provider }}"
+          runbook: "https://docs.legal-ai-system.com/runbooks/ai-api-errors"
+
+      # =====================================================================
+      # RESOURCE UTILIZATION ALERTS
+      # =====================================================================
+
+      - alert: HighCPUUsage
+        expr: 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+          runbook: "https://docs.legal-ai-system.com/runbooks/high-cpu"
+
+      - alert: HighDiskUsage
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) < 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "Low disk space"
+          description: "Only {{ $value | humanizePercentage }} disk space remaining on {{ $labels.instance }}"
+          runbook: "https://docs.legal-ai-system.com/runbooks/low-disk-space"
+
+      # =====================================================================
+      # BUSINESS METRICS ALERTS
+      # =====================================================================
+
+      - alert: NoDocumentUploads
+        expr: rate(documents_uploaded_total[30m]) == 0
+        for: 1h
+        labels:
+          severity: info
+          component: business
+        annotations:
+          summary: "No document uploads in the last hour"
+          description: "Zero documents have been uploaded in the past hour"
+          runbook: "https://docs.legal-ai-system.com/runbooks/no-uploads"
+
+      - alert: HighFailedLoginRate
+        expr: |
+          rate(user_logins_total{status="failure"}[5m]) /
+          rate(user_logins_total[5m]) > 0.5
+        for: 10m
+        labels:
+          severity: warning
+          component: authentication
+        annotations:
+          summary: "High failed login rate"
+          description: "{{ $value | humanizePercentage }} of login attempts are failing"
+          runbook: "https://docs.legal-ai-system.com/runbooks/failed-logins"
+
+      # =====================================================================
+      # PREDICTIVE ALERTS
+      # =====================================================================
+
+      - alert: DiskSpaceWillFillIn4Hours
+        expr: |
+          predict_linear(node_filesystem_avail_bytes[1h], 4 * 3600) < 0
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "Disk will be full soon"
+          description: "Disk on {{ $labels.instance }} will be full in approximately 4 hours based on current growth rate"
+          runbook: "https://docs.legal-ai-system.com/runbooks/disk-filling"
+
+      - alert: MemoryLeakDetected
+        expr: |
+          deriv(memory_usage_bytes[30m]) > 100000000
+        for: 30m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "Possible memory leak detected"
+          description: "Memory usage is growing at {{ $value | humanize }}bytes/second"
+          runbook: "https://docs.legal-ai-system.com/runbooks/memory-leak"

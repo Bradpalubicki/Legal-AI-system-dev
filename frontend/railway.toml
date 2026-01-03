@@ -1,0 +1,11 @@
+[build]
+builder = "nixpacks"
+
+[build.envs]
+NEXT_PUBLIC_API_URL = "https://legal-ai-backend-production-7311.up.railway.app"
+
+[deploy]
+healthcheckPath = "/api/health"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3

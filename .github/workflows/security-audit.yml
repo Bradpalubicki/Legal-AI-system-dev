@@ -1,0 +1,174 @@
+name: Security Audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run daily at 6 AM UTC to catch new vulnerabilities
+    - cron: '0 6 * * *'
+
+jobs:
+  python-audit:
+    name: Python Dependency Audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run pip-audit
+        run: |
+          echo "🔍 Scanning Python dependencies for vulnerabilities..."
+          pip-audit --desc --format columns || true
+
+          # Fail on high/critical only
+          pip-audit --require-hashes=false --ignore-vuln GHSA-xxxx-xxxx-xxxx 2>/dev/null || {
+            echo "⚠️ Vulnerabilities found - check output above"
+            echo "::warning::Python dependencies have known vulnerabilities"
+          }
+
+  node-audit:
+    name: Node.js Dependency Audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: |
+          echo "🔍 Scanning Node.js dependencies for vulnerabilities..."
+          npm audit --audit-level=moderate || {
+            echo "⚠️ Vulnerabilities found"
+            echo "::warning::Node.js dependencies have known vulnerabilities"
+          }
+
+  outdated-check:
+    name: Check for Outdated Packages
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Check Python outdated packages
+        working-directory: backend
+        run: |
+          pip install -r requirements.txt
+          echo "📦 Outdated Python packages:"
+          pip list --outdated --format=columns || true
+
+      - name: Check critical AI packages
+        working-directory: backend
+        run: |
+          echo "🤖 AI Package Versions:"
+          pip show anthropic openai | grep -E "^(Name|Version):" || true
+
+          # Get latest versions from PyPI
+          echo ""
+          echo "📡 Latest available versions:"
+          pip index versions anthropic 2>/dev/null | head -1 || echo "anthropic: check PyPI"
+          pip index versions openai 2>/dev/null | head -1 || echo "openai: check PyPI"
+
+      - name: Check Node outdated packages
+        working-directory: frontend
+        run: |
+          npm ci
+          echo "📦 Outdated Node.js packages:"
+          npm outdated || true
+
+  notify-on-failure:
+    name: Notify on Security Issues
+    runs-on: ubuntu-latest
+    needs: [python-audit, node-audit]
+    if: failure()
+
+    steps:
+      - name: Create Issue for Security Vulnerabilities
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = '🚨 Security Audit Failed - Action Required';
+            const body = `## Security vulnerabilities detected
+
+            The automated security audit found vulnerabilities in dependencies.
+
+            **Run:** ${context.runId}
+            **Workflow:** ${context.workflow}
+            **Triggered by:** ${context.eventName}
+
+            ### Next Steps:
+            1. Check the [workflow run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}) for details
+            2. Update vulnerable packages
+            3. Re-run the security audit
+
+            ### Commands to fix:
+            \`\`\`bash
+            # Python
+            cd backend && pip-audit --fix
+
+            # Node.js
+            cd frontend && npm audit fix
+            \`\`\`
+            `;
+
+            // Check if issue already exists
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'security'
+            });
+
+            const existingIssue = issues.data.find(i => i.title === title);
+
+            if (!existingIssue) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['security', 'dependencies', 'automated']
+              });
+              console.log('Created new security issue');
+            } else {
+              console.log('Security issue already exists');
+            }

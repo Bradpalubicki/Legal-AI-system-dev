@@ -1,0 +1,67 @@
+# Pod Disruption Budget for Backend
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: backend-pdb
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: backend-pdb
+    app.kubernetes.io/component: availability
+    environment: production
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: backend
+      app.kubernetes.io/component: api
+---
+# Pod Disruption Budget for Frontend
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: frontend-pdb
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: frontend-pdb
+    app.kubernetes.io/component: availability
+    environment: production
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: frontend
+      app.kubernetes.io/component: web
+---
+# Pod Disruption Budget for Celery Workers
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: celery-worker-pdb
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: celery-worker-pdb
+    app.kubernetes.io/component: availability
+    environment: production
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: celery-worker
+      app.kubernetes.io/component: worker
+---
+# Pod Disruption Budget for NGINX
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: nginx-pdb
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: nginx-pdb
+    app.kubernetes.io/component: availability
+    environment: production
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: nginx
+      app.kubernetes.io/component: reverse-proxy

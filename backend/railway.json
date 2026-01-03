@@ -1,0 +1,11 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "echo 'Build timestamp: 2025-12-19-v7-anthropic-update'"
+  },
+  "deploy": {
+    "startCommand": "alembic stamp 004_comprehensive_audit && alembic upgrade head && gunicorn main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT",
+    "restartPolicyType": "ON_FAILURE"
+  }
+}

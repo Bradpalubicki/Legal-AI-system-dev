@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(claude logout)",
+      "Read(//c/Users/kobri/legal-ai-system/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

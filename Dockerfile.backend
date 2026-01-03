@@ -1,0 +1,32 @@
+# Legal AI System Backend Dockerfile
+FROM python:3.11-slim
+
+# Build argument to bust cache when needed
+ARG CACHE_BUST=1
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements - cache bust ensures fresh install
+COPY backend/requirements.txt ./requirements.txt
+
+# Install Python dependencies (cache bust: ${CACHE_BUST})
+RUN pip install --no-cache-dir -r requirements.txt && echo "Cache bust: ${CACHE_BUST}"
+
+# Copy backend code
+COPY backend/ ./backend/
+COPY shared/ ./shared/
+
+# Set working directory to backend
+WORKDIR /app/backend
+
+# Expose port
+EXPOSE 8000
+
+# Start the application
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

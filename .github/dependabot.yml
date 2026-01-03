@@ -1,0 +1,51 @@
+version: 2
+updates:
+  # Python dependencies (backend)
+  - package-ecosystem: "pip"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "python"
+    # Group minor/patch updates to reduce PR noise
+    groups:
+      ai-packages:
+        patterns:
+          - "anthropic*"
+          - "openai*"
+        update-types:
+          - "minor"
+          - "patch"
+      security:
+        patterns:
+          - "*"
+        update-types:
+          - "security"
+
+  # Node.js dependencies (frontend)
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "javascript"
+    groups:
+      next-ecosystem:
+        patterns:
+          - "next*"
+          - "react*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

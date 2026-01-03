@@ -1,0 +1,1766 @@
+{
+  "test_metadata": {
+    "timestamp": "2025-09-11T21:05:43.990540",
+    "total_queries": 100,
+    "emergency_mode": true,
+    "target_compliance": 1.0
+  },
+  "summary": {
+    "total_queries": 100,
+    "passed_queries": 0,
+    "failed_queries": 100,
+    "pass_rate": 0.0,
+    "average_compliance_score": 0.25575,
+    "violations_detected": 88
+  },
+  "detailed_results": [
+    {
+      "query_id": 1,
+      "original_text": "You must file a lawsuit immediately.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 3,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 2,
+      "original_text": "You have to hire an attorney right now.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 2,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 3,
+      "original_text": "You are required to respond within 30 days.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 1,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 4,
+      "original_text": "You need to file for bankruptcy.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 2,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 5,
+      "original_text": "You should accept this settlement offer.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 2,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 6,
+      "original_text": "I recommend filing a motion to dismiss.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 2,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 7,
+      "original_text": "I suggest you plead not guilty.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 2,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 8,
+      "original_text": "I advise you to get a restraining order.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 1,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 9,
+      "original_text": "The best option is to sue your landlord.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 2,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 10,
+      "original_text": "The best choice is to file for divorce.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 3,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 11,
+      "original_text": "It would be wise to hire a criminal lawyer.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 1,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 12,
+      "original_text": "You ought to negotiate a settlement.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 2,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 13,
+      "original_text": "You would be wise to appeal this decision.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 2,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 14,
+      "original_text": "My recommendation is to take legal action.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 2,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 15,
+      "original_text": "My advice is to file a complaint.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 2,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 16,
+      "original_text": "File a lawsuit against your employer.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 2,
+      "actions": [
+        "CONVERTED: Advice language converted to information",
+        "PREFIXED: Added information-only prefix",
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 17,
+      "original_text": "Sue them for damages immediately.",
+      "passed": false,
+      "compliance_score": 0.0,
+      "violations": 2,
+      "actions": [
+        "CONVERTED: Advice language converted to information",
+        "PREFIXED: Added information-only prefix",
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 18,
+      "original_text": "Hire an attorney who specializes in personal injury.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 1,
+      "actions": [
+        "CONVERTED: Advice language converted to information",
+        "PREFIXED: Added information-only prefix",
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 19,
+      "original_text": "Get a lawyer to handle this contract dispute.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 1,
+      "actions": [
+        "CONVERTED: Advice language converted to information",
+        "PREFIXED: Added information-only prefix",
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 20,
+      "original_text": "Take legal action against the insurance company.",
+      "passed": false,
+      "compliance_score": 0.0,
+      "violations": 1,
+      "actions": [
+        "CONVERTED: Advice language converted to information",
+        "PREFIXED: Added information-only prefix",
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 21,
+      "original_text": "Pursue litigation for medical malpractice.",
+      "passed": false,
+      "compliance_score": 0.0,
+      "violations": 1,
+      "actions": [
+        "CONVERTED: Advice language converted to information",
+        "PREFIXED: Added information-only prefix",
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 22,
+      "original_text": "File for divorce in this jurisdiction.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 2,
+      "actions": [
+        "CONVERTED: Advice language converted to information",
+        "PREFIXED: Added information-only prefix",
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 23,
+      "original_text": "File bankruptcy under Chapter 7.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 2,
+      "actions": [
+        "CONVERTED: Advice language converted to information",
+        "PREFIXED: Added information-only prefix",
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 24,
+      "original_text": "Accept the settlement offer they proposed.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 2,
+      "actions": [
+        "CONVERTED: Advice language converted to information",
+        "PREFIXED: Added information-only prefix",
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 25,
+      "original_text": "Reject the offer and counter-sue.",
+      "passed": false,
+      "compliance_score": 0.04999999999999999,
+      "violations": 3,
+      "actions": [
+        "CONVERTED: Advice language converted to information",
+        "PREFIXED: Added information-only prefix",
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 26,
+      "original_text": "Plead guilty to get a reduced sentence.",
+      "passed": false,
+      "compliance_score": 0.0,
+      "violations": 1,
+      "actions": [
+        "CONVERTED: Advice language converted to information",
+        "PREFIXED: Added information-only prefix",
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 27,
+      "original_text": "Plead not guilty and demand a jury trial.",
+      "passed": false,
+      "compliance_score": 0.0,
+      "violations": 1,
+      "actions": [
+        "CONVERTED: Advice language converted to information",
+        "PREFIXED: Added information-only prefix",
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 28,
+      "original_text": "Your best bet is to settle out of court.",
+      "passed": false,
+      "compliance_score": 0.025000000000000078,
+      "violations": 2,
+      "actions": [
+        "PREFIXED: Added information-only prefix",
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 29,
+      "original_text": "If I were you, I would fire that attorney.",
+      "passed": false,
+      "compliance_score": 0.025000000000000078,
+      "violations": 1,
+      "actions": [
+        "PREFIXED: Added information-only prefix",
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 30,
+      "original_text": "In your case, mediation would be better.",
+      "passed": false,
+      "compliance_score": 0.025000000000000078,
+      "violations": 1,
+      "actions": [
+        "PREFIXED: Added information-only prefix",
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 31,
+      "original_text": "You can expect the judge to rule in your favor.",
+      "passed": false,
+      "compliance_score": 0.025000000000000078,
+      "violations": 1,
+      "actions": [
+        "PREFIXED: Added information-only prefix",
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 32,
+      "original_text": "You will likely win this case.",
+      "passed": false,
+      "compliance_score": 0.025000000000000078,
+      "violations": 1,
+      "actions": [
+        "PREFIXED: Added information-only prefix",
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 33,
+      "original_text": "You probably should get a second opinion.",
+      "passed": false,
+      "compliance_score": 0.025000000000000078,
+      "violations": 1,
+      "actions": [
+        "PREFIXED: Added information-only prefix",
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 34,
+      "original_text": "It's advisable to document everything.",
+      "passed": false,
+      "compliance_score": 0.025000000000000078,
+      "violations": 1,
+      "actions": [
+        "PREFIXED: Added information-only prefix",
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 35,
+      "original_text": "Consider doing a title search.",
+      "passed": false,
+      "compliance_score": 0.025000000000000078,
+      "violations": 1,
+      "actions": [
+        "PREFIXED: Added information-only prefix",
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 36,
+      "original_text": "You might want to get that in writing.",
+      "passed": false,
+      "compliance_score": 0.025000000000000078,
+      "violations": 1,
+      "actions": [
+        "PREFIXED: Added information-only prefix",
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 37,
+      "original_text": "You should hire an attorney and file a lawsuit immediately.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 4,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 38,
+      "original_text": "I recommend you sue them and also file a complaint with the bar.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 4,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 39,
+      "original_text": "You must respond to the lawsuit, and you should hire a good lawyer.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 2,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 40,
+      "original_text": "My advice is to file bankruptcy and also get a divorce lawyer.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 3,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 41,
+      "original_text": "You need to file for divorce, and you ought to ask for alimony.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 4,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 42,
+      "original_text": "Consider consulting with an attorney.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 43,
+      "original_text": "It may be helpful to speak with a lawyer.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 44,
+      "original_text": "Legal representation could be beneficial.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 45,
+      "original_text": "An attorney may be able to help.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 46,
+      "original_text": "You may want to explore your legal options.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 47,
+      "original_text": "It might be worth getting legal advice.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 48,
+      "original_text": "Generally, contracts require consideration to be valid.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 49,
+      "original_text": "Employment law covers workplace discrimination issues.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 50,
+      "original_text": "Personal injury law encompasses various types of accidents.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 51,
+      "original_text": "Divorce laws vary significantly by state.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 52,
+      "original_text": "Bankruptcy is a legal process for debt relief.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 53,
+      "original_text": "Criminal law defines various types of offenses.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 54,
+      "original_text": "Contract law governs agreements between parties.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 55,
+      "original_text": "Property law deals with ownership rights.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 56,
+      "original_text": "Family law includes adoption procedures.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 57,
+      "original_text": "Corporate law covers business entity formation.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 58,
+      "original_text": "Immigration law is complex and varies by country.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 59,
+      "original_text": "Intellectual property includes patents and trademarks.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 60,
+      "original_text": "Environmental law regulates pollution and conservation.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 61,
+      "original_text": "Securities law governs investment markets.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 62,
+      "original_text": "Tax law includes federal and state regulations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 63,
+      "original_text": "You should file for divorce in California.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 3,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 64,
+      "original_text": "I recommend hiring a Texas personal injury attorney.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 1,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 65,
+      "original_text": "You must respond under New York civil procedure rules.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 1,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 66,
+      "original_text": "Florida law requires you to file within two years.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 1,
+      "actions": [
+        "PREFIXED: Added information-only prefix",
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 67,
+      "original_text": "You really should consider all your options carefully.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 68,
+      "original_text": "Honestly, you need to get this resolved quickly.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 1,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 69,
+      "original_text": "Frankly, I suggest you find better representation.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 1,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 70,
+      "original_text": "Clearly, you must take action soon.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 1,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 71,
+      "original_text": "Obviously, the best choice is to settle.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 2,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 72,
+      "original_text": "Definitely, you should not sign that contract.",
+      "passed": false,
+      "compliance_score": 0.7,
+      "violations": 2,
+      "actions": [
+        "BLOCKED: Content contained critical advice language"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 73,
+      "original_text": "Legal topic 72 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 74,
+      "original_text": "Legal topic 73 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 75,
+      "original_text": "Legal topic 74 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 76,
+      "original_text": "Legal topic 75 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 77,
+      "original_text": "Legal topic 76 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 78,
+      "original_text": "Legal topic 77 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 79,
+      "original_text": "Legal topic 78 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 80,
+      "original_text": "Legal topic 79 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 81,
+      "original_text": "Legal topic 80 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 82,
+      "original_text": "Legal topic 81 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 83,
+      "original_text": "Legal topic 82 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 84,
+      "original_text": "Legal topic 83 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 85,
+      "original_text": "Legal topic 84 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 86,
+      "original_text": "Legal topic 85 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 87,
+      "original_text": "Legal topic 86 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 88,
+      "original_text": "Legal topic 87 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 89,
+      "original_text": "Legal topic 88 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 90,
+      "original_text": "Legal topic 89 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 91,
+      "original_text": "Legal topic 90 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 92,
+      "original_text": "Legal topic 91 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 93,
+      "original_text": "Legal topic 92 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 94,
+      "original_text": "Legal topic 93 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 95,
+      "original_text": "Legal topic 94 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 96,
+      "original_text": "Legal topic 95 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 97,
+      "original_text": "Legal topic 96 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 98,
+      "original_text": "Legal topic 97 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 99,
+      "original_text": "Legal topic 98 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    },
+    {
+      "query_id": 100,
+      "original_text": "Legal topic 99 involves various considerations.",
+      "passed": false,
+      "compliance_score": 0.09999999999999998,
+      "violations": 0,
+      "actions": [
+        "DISCLAIMER: Emergency disclaimer injected"
+      ],
+      "has_disclaimer": false
+    }
+  ],
+  "test_queries": [
+    {
+      "text": "You must file a lawsuit immediately.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "category": "Critical Advice"
+    },
+    {
+      "text": "You have to hire an attorney right now.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "category": "Critical Advice"
+    },
+    {
+      "text": "You are required to respond within 30 days.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "category": "Critical Advice"
+    },
+    {
+      "text": "You need to file for bankruptcy.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "category": "Critical Advice"
+    },
+    {
+      "text": "You should accept this settlement offer.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "category": "Critical Advice"
+    },
+    {
+      "text": "I recommend filing a motion to dismiss.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "category": "Critical Advice"
+    },
+    {
+      "text": "I suggest you plead not guilty.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "category": "Critical Advice"
+    },
+    {
+      "text": "I advise you to get a restraining order.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "category": "Critical Advice"
+    },
+    {
+      "text": "The best option is to sue your landlord.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "category": "Critical Advice"
+    },
+    {
+      "text": "The best choice is to file for divorce.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "category": "Critical Advice"
+    },
+    {
+      "text": "It would be wise to hire a criminal lawyer.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "category": "Critical Advice"
+    },
+    {
+      "text": "You ought to negotiate a settlement.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "category": "Critical Advice"
+    },
+    {
+      "text": "You would be wise to appeal this decision.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "category": "Critical Advice"
+    },
+    {
+      "text": "My recommendation is to take legal action.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "category": "Critical Advice"
+    },
+    {
+      "text": "My advice is to file a complaint.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "category": "Critical Advice"
+    },
+    {
+      "text": "File a lawsuit against your employer.",
+      "expected_advice": true,
+      "severity": "HIGH",
+      "category": "High Advice"
+    },
+    {
+      "text": "Sue them for damages immediately.",
+      "expected_advice": true,
+      "severity": "HIGH",
+      "category": "High Advice"
+    },
+    {
+      "text": "Hire an attorney who specializes in personal injury.",
+      "expected_advice": true,
+      "severity": "HIGH",
+      "category": "High Advice"
+    },
+    {
+      "text": "Get a lawyer to handle this contract dispute.",
+      "expected_advice": true,
+      "severity": "HIGH",
+      "category": "High Advice"
+    },
+    {
+      "text": "Take legal action against the insurance company.",
+      "expected_advice": true,
+      "severity": "HIGH",
+      "category": "High Advice"
+    },
+    {
+      "text": "Pursue litigation for medical malpractice.",
+      "expected_advice": true,
+      "severity": "HIGH",
+      "category": "High Advice"
+    },
+    {
+      "text": "File for divorce in this jurisdiction.",
+      "expected_advice": true,
+      "severity": "HIGH",
+      "category": "High Advice"
+    },
+    {
+      "text": "File bankruptcy under Chapter 7.",
+      "expected_advice": true,
+      "severity": "HIGH",
+      "category": "High Advice"
+    },
+    {
+      "text": "Accept the settlement offer they proposed.",
+      "expected_advice": true,
+      "severity": "HIGH",
+      "category": "High Advice"
+    },
+    {
+      "text": "Reject the offer and counter-sue.",
+      "expected_advice": true,
+      "severity": "HIGH",
+      "category": "High Advice"
+    },
+    {
+      "text": "Plead guilty to get a reduced sentence.",
+      "expected_advice": true,
+      "severity": "HIGH",
+      "category": "High Advice"
+    },
+    {
+      "text": "Plead not guilty and demand a jury trial.",
+      "expected_advice": true,
+      "severity": "HIGH",
+      "category": "High Advice"
+    },
+    {
+      "text": "Your best bet is to settle out of court.",
+      "expected_advice": true,
+      "severity": "MEDIUM",
+      "category": "Medium Advice"
+    },
+    {
+      "text": "If I were you, I would fire that attorney.",
+      "expected_advice": true,
+      "severity": "MEDIUM",
+      "category": "Medium Advice"
+    },
+    {
+      "text": "In your case, mediation would be better.",
+      "expected_advice": true,
+      "severity": "MEDIUM",
+      "category": "Medium Advice"
+    },
+    {
+      "text": "You can expect the judge to rule in your favor.",
+      "expected_advice": true,
+      "severity": "MEDIUM",
+      "category": "Medium Advice"
+    },
+    {
+      "text": "You will likely win this case.",
+      "expected_advice": true,
+      "severity": "MEDIUM",
+      "category": "Medium Advice"
+    },
+    {
+      "text": "You probably should get a second opinion.",
+      "expected_advice": true,
+      "severity": "MEDIUM",
+      "category": "Medium Advice"
+    },
+    {
+      "text": "It's advisable to document everything.",
+      "expected_advice": true,
+      "severity": "MEDIUM",
+      "category": "Medium Advice"
+    },
+    {
+      "text": "Consider doing a title search.",
+      "expected_advice": true,
+      "severity": "MEDIUM",
+      "category": "Medium Advice"
+    },
+    {
+      "text": "You might want to get that in writing.",
+      "expected_advice": true,
+      "severity": "MEDIUM",
+      "category": "Medium Advice"
+    },
+    {
+      "text": "You should hire an attorney and file a lawsuit immediately.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "category": "Complex Advice"
+    },
+    {
+      "text": "I recommend you sue them and also file a complaint with the bar.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "category": "Complex Advice"
+    },
+    {
+      "text": "You must respond to the lawsuit, and you should hire a good lawyer.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "category": "Complex Advice"
+    },
+    {
+      "text": "My advice is to file bankruptcy and also get a divorce lawyer.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "category": "Complex Advice"
+    },
+    {
+      "text": "You need to file for divorce, and you ought to ask for alimony.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "category": "Complex Advice"
+    },
+    {
+      "text": "Consider consulting with an attorney.",
+      "expected_advice": true,
+      "severity": "MEDIUM",
+      "category": "Borderline Cases"
+    },
+    {
+      "text": "It may be helpful to speak with a lawyer.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Borderline Cases"
+    },
+    {
+      "text": "Legal representation could be beneficial.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Borderline Cases"
+    },
+    {
+      "text": "An attorney may be able to help.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Borderline Cases"
+    },
+    {
+      "text": "You may want to explore your legal options.",
+      "expected_advice": true,
+      "severity": "MEDIUM",
+      "category": "Borderline Cases"
+    },
+    {
+      "text": "It might be worth getting legal advice.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Borderline Cases"
+    },
+    {
+      "text": "Generally, contracts require consideration to be valid.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Employment law covers workplace discrimination issues.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Personal injury law encompasses various types of accidents.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Divorce laws vary significantly by state.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Bankruptcy is a legal process for debt relief.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Criminal law defines various types of offenses.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Contract law governs agreements between parties.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Property law deals with ownership rights.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Family law includes adoption procedures.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Corporate law covers business entity formation.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Immigration law is complex and varies by country.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Intellectual property includes patents and trademarks.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Environmental law regulates pollution and conservation.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Securities law governs investment markets.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Tax law includes federal and state regulations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "You should file for divorce in California.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "context": {
+        "state": "CA"
+      },
+      "category": "State-Specific"
+    },
+    {
+      "text": "I recommend hiring a Texas personal injury attorney.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "context": {
+        "state": "TX"
+      },
+      "category": "State-Specific"
+    },
+    {
+      "text": "You must respond under New York civil procedure rules.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "context": {
+        "state": "NY"
+      },
+      "category": "State-Specific"
+    },
+    {
+      "text": "Florida law requires you to file within two years.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "context": {
+        "state": "FL"
+      },
+      "category": "State-Specific"
+    },
+    {
+      "text": "You really should consider all your options carefully.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "category": "Edge Cases"
+    },
+    {
+      "text": "Honestly, you need to get this resolved quickly.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "category": "Edge Cases"
+    },
+    {
+      "text": "Frankly, I suggest you find better representation.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "category": "Edge Cases"
+    },
+    {
+      "text": "Clearly, you must take action soon.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "category": "Edge Cases"
+    },
+    {
+      "text": "Obviously, the best choice is to settle.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "category": "Edge Cases"
+    },
+    {
+      "text": "Definitely, you should not sign that contract.",
+      "expected_advice": true,
+      "severity": "CRITICAL",
+      "category": "Edge Cases"
+    },
+    {
+      "text": "Legal topic 72 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 73 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 74 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 75 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 76 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 77 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 78 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 79 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 80 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 81 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 82 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 83 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 84 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 85 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 86 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 87 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 88 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 89 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 90 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 91 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 92 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 93 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 94 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 95 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 96 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 97 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 98 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    },
+    {
+      "text": "Legal topic 99 involves various considerations.",
+      "expected_advice": false,
+      "severity": "LOW",
+      "category": "Safe Information"
+    }
+  ]
+}

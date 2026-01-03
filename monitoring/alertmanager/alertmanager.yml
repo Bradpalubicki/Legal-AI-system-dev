@@ -1,0 +1,397 @@
+# =============================================================================
+# AlertManager Configuration for Legal AI System
+# =============================================================================
+# Comprehensive alerting configuration with escalation paths,
+# legal compliance notifications, and business continuity alerts
+# =============================================================================
+
+global:
+  smtp_smarthost: 'localhost:587'
+  smtp_from: 'alerts@legal-ai.example.com'
+  smtp_auth_username: 'alerts@legal-ai.example.com'
+  smtp_auth_password: 'SMTP_PASSWORD_PLACEHOLDER'
+  
+  # Slack webhook for general notifications
+  slack_api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+
+# Templates for alert formatting
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Routing rules for different types of alerts
+route:
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+  receiver: 'legal-ai-default'
+  
+  routes:
+    # Critical system alerts - immediate escalation
+    - match:
+        severity: critical
+      receiver: 'legal-ai-critical'
+      group_wait: 0s
+      group_interval: 5s
+      repeat_interval: 5m
+      routes:
+        # System down alerts - page on-call
+        - match_re:
+            alertname: '.*SystemDown.*'
+          receiver: 'legal-ai-system-down'
+          repeat_interval: 2m
+        
+        # Database issues - immediate database team notification
+        - match_re:
+            component: database
+          receiver: 'legal-ai-database-critical'
+          repeat_interval: 3m
+        
+        # Security incidents - security team immediate notification
+        - match_re:
+            team: legal-ai-security
+          receiver: 'legal-ai-security-critical'
+          repeat_interval: 2m
+    
+    # Compliance and audit alerts - special handling
+    - match_re:
+        component: '(audit|compliance|data-retention)'
+      receiver: 'legal-ai-compliance'
+      group_wait: 30s
+      repeat_interval: 30m
+    
+    # Legal-specific business alerts
+    - match_re:
+        component: '(document-processor|citation-validator|ai-service)'
+      receiver: 'legal-ai-business'
+      group_wait: 1m
+      repeat_interval: 15m
+    
+    # Infrastructure warnings
+    - match:
+        severity: warning
+      receiver: 'legal-ai-warning'
+      group_wait: 5m
+      repeat_interval: 2h
+    
+    # Development and staging environments
+    - match:
+        environment: staging
+      receiver: 'legal-ai-staging'
+      repeat_interval: 4h
+    
+    - match:
+        environment: development
+      receiver: 'legal-ai-development'
+      repeat_interval: 8h
+
+# Inhibition rules to reduce alert noise
+inhibit_rules:
+  # If the entire system is down, don't alert on individual components
+  - source_match:
+      alertname: LegalAISystemDown
+    target_match_re:
+      alertname: 'LegalAI.*'
+    equal: ['cluster']
+  
+  # If database is down, don't alert on database connection issues
+  - source_match:
+      alertname: LegalAIDatabaseDown
+    target_match_re:
+      alertname: 'LegalAI.*Database.*'
+    equal: ['cluster']
+  
+  # If a service is completely down, don't alert on high latency for that service
+  - source_match_re:
+      alertname: '.*Down'
+    target_match_re:
+      alertname: '.*High.*'
+    equal: ['job']
+
+# Receiver configurations
+receivers:
+  # =============================================================================
+  # DEFAULT RECEIVER
+  # =============================================================================
+  - name: 'legal-ai-default'
+    slack_configs:
+      - channel: '#legal-ai-alerts'
+        title: 'Legal AI Alert - {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Severity:* {{ .Labels.severity }}
+          *Environment:* {{ .Labels.environment | default "production" }}
+          {{ if .Annotations.runbook_url }}*Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
+        send_resolved: true
+
+  # =============================================================================
+  # CRITICAL SYSTEM ALERTS
+  # =============================================================================
+  - name: 'legal-ai-critical'
+    # PagerDuty integration for critical alerts
+    pagerduty_configs:
+      - service_key: 'PAGERDUTY_SERVICE_KEY_PLACEHOLDER'
+        description: 'CRITICAL: {{ .GroupLabels.alertname }} - {{ .CommonAnnotations.summary }}'
+        details:
+          environment: '{{ .GroupLabels.environment | default "production" }}'
+          cluster: '{{ .GroupLabels.cluster }}'
+          component: '{{ .GroupLabels.component }}'
+          runbook: '{{ .CommonAnnotations.runbook_url }}'
+    
+    # Slack for immediate team notification
+    slack_configs:
+      - channel: '#legal-ai-critical'
+        title: '🚨 CRITICAL ALERT - {{ .GroupLabels.alertname }}'
+        text: |
+          <!channel> CRITICAL ISSUE DETECTED
+          
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Component:* {{ .Labels.component }}
+          *Team:* {{ .Labels.team }}
+          {{ if .Annotations.runbook_url }}*Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
+        color: 'danger'
+        send_resolved: true
+    
+    # Email notification for critical alerts
+    email_configs:
+      - to: 'devops@legal-ai.example.com'
+        from: 'alerts@legal-ai.example.com'
+        subject: 'CRITICAL: Legal AI System Alert - {{ .GroupLabels.alertname }}'
+        body: |
+          CRITICAL ALERT in Legal AI System
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Severity: {{ .Labels.severity }}
+          Component: {{ .Labels.component }}
+          Started: {{ .StartsAt }}
+          {{ if .Annotations.runbook_url }}
+          Runbook: {{ .Annotations.runbook_url }}
+          {{ end }}
+          {{ end }}
+
+  # =============================================================================
+  # SYSTEM DOWN - MAXIMUM ESCALATION
+  # =============================================================================
+  - name: 'legal-ai-system-down'
+    # Multiple PagerDuty services for system down
+    pagerduty_configs:
+      - service_key: 'PAGERDUTY_CRITICAL_SERVICE_KEY'
+        description: '🚨 SYSTEM DOWN: Legal AI Platform Unavailable'
+        severity: 'critical'
+    
+    # Multiple Slack channels
+    slack_configs:
+      - channel: '#legal-ai-critical'
+        title: '🚨 SYSTEM DOWN - Legal AI Platform'
+        text: |
+          <!channel> <!here> SYSTEM DOWN ALERT
+          
+          The Legal AI platform is currently unavailable. This affects all client access to legal services.
+          
+          {{ range .Alerts }}
+          *Service:* {{ .Labels.job }}
+          *Started:* {{ .StartsAt }}
+          {{ if .Annotations.runbook_url }}*Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
+        color: 'danger'
+      
+      - channel: '#legal-ai-executives'
+        title: '🚨 BUSINESS IMPACT: Legal AI System Down'
+        text: |
+          BUSINESS IMPACT NOTIFICATION
+          
+          The Legal AI platform is currently unavailable, affecting client services.
+          
+          *Impact:* All legal document processing and AI analysis services are offline
+          *Duration:* {{ range .Alerts }}{{ .StartsAt | since }}{{ end }}
+          *Response Team:* DevOps and Engineering teams have been notified
+        color: 'danger'
+    
+    # Email to executives and key stakeholders
+    email_configs:
+      - to: 'executives@legal-ai.example.com,stakeholders@legal-ai.example.com'
+        subject: 'URGENT: Legal AI System Down - Business Impact'
+        body: |
+          URGENT BUSINESS IMPACT NOTIFICATION
+          
+          The Legal AI system is currently unavailable, affecting client services.
+          
+          Impact: All legal document processing and AI analysis services are offline
+          Response: Technical teams have been notified and are responding
+          
+          We will provide updates every 15 minutes until resolved.
+
+  # =============================================================================
+  # DATABASE CRITICAL ALERTS
+  # =============================================================================
+  - name: 'legal-ai-database-critical'
+    slack_configs:
+      - channel: '#legal-ai-database'
+        title: '🗄️ CRITICAL DATABASE ALERT'
+        text: |
+          <!channel> DATABASE CRITICAL ISSUE
+          
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          {{ if .Annotations.runbook_url }}*Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
+        color: 'danger'
+    
+    email_configs:
+      - to: 'database-team@legal-ai.example.com'
+        subject: 'CRITICAL: Database Issue in Legal AI System'
+
+  # =============================================================================
+  # SECURITY CRITICAL ALERTS
+  # =============================================================================
+  - name: 'legal-ai-security-critical'
+    # Immediate security team notification
+    slack_configs:
+      - channel: '#legal-ai-security'
+        title: '🔒 SECURITY INCIDENT'
+        text: |
+          <!channel> SECURITY INCIDENT DETECTED
+          
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Component:* {{ .Labels.component }}
+          {{ if .Annotations.runbook_url }}*Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
+          
+          Immediate investigation required.
+        color: 'warning'
+    
+    # Email to security team and compliance
+    email_configs:
+      - to: 'security@legal-ai.example.com,compliance@legal-ai.example.com'
+        subject: 'SECURITY INCIDENT: Legal AI System'
+        body: |
+          SECURITY INCIDENT DETECTED
+          
+          A security-related alert has been triggered in the Legal AI system.
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Component: {{ .Labels.component }}
+          Time: {{ .StartsAt }}
+          {{ end }}
+          
+          Immediate investigation and response required.
+
+  # =============================================================================
+  # COMPLIANCE AND AUDIT ALERTS
+  # =============================================================================
+  - name: 'legal-ai-compliance'
+    slack_configs:
+      - channel: '#legal-ai-compliance'
+        title: '⚖️ Compliance Alert'
+        text: |
+          COMPLIANCE ISSUE DETECTED
+          
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Component:* {{ .Labels.component }}
+          {{ if .Annotations.runbook_url }}*Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
+        color: 'warning'
+    
+    email_configs:
+      - to: 'compliance@legal-ai.example.com,legal@legal-ai.example.com'
+        subject: 'Compliance Alert - Legal AI System'
+        body: |
+          COMPLIANCE ALERT
+          
+          A compliance-related issue has been detected in the Legal AI system.
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Component: {{ .Labels.component }}
+          Started: {{ .StartsAt }}
+          {{ end }}
+          
+          Please review and ensure compliance requirements are met.
+
+  # =============================================================================
+  # BUSINESS LOGIC ALERTS
+  # =============================================================================
+  - name: 'legal-ai-business'
+    slack_configs:
+      - channel: '#legal-ai-business'
+        title: '⚖️ Legal AI Business Alert'
+        text: |
+          LEGAL AI BUSINESS ALERT
+          
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Component:* {{ .Labels.component }}
+          *Impact:* Legal workflows may be affected
+          {{ if .Annotations.runbook_url }}*Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
+        color: 'warning'
+
+  # =============================================================================
+  # WARNING LEVEL ALERTS
+  # =============================================================================
+  - name: 'legal-ai-warning'
+    slack_configs:
+      - channel: '#legal-ai-monitoring'
+        title: '⚠️ Legal AI Warning'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Severity:* {{ .Labels.severity }}
+          *Component:* {{ .Labels.component }}
+          {{ if .Annotations.runbook_url }}*Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
+        color: 'warning'
+        send_resolved: true
+
+  # =============================================================================
+  # STAGING ENVIRONMENT ALERTS
+  # =============================================================================
+  - name: 'legal-ai-staging'
+    slack_configs:
+      - channel: '#legal-ai-staging'
+        title: '🧪 Staging Alert - {{ .GroupLabels.alertname }}'
+        text: |
+          STAGING ENVIRONMENT ALERT
+          
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          {{ end }}
+        color: 'good'
+
+  # =============================================================================
+  # DEVELOPMENT ENVIRONMENT ALERTS
+  # =============================================================================
+  - name: 'legal-ai-development'
+    slack_configs:
+      - channel: '#legal-ai-dev'
+        title: '🔧 Dev Alert - {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          {{ end }}
+        color: '#439FE0'
+
+# =============================================================================
+# ALERT TEMPLATES
+# =============================================================================
+# Templates are loaded from /etc/alertmanager/templates/
+# These provide consistent formatting across all notifications

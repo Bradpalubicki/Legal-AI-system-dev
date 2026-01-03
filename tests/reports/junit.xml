@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="5" failures="0" skipped="0" tests="5" time="2.114" timestamp="2025-10-13T17:18:57.495637-07:00" hostname="DESKTOP-P9HE4EI"><testcase classname="backend.tests.unit.test_health" name="test_root_endpoint" time="1.694"><error message="failed on setup with &quot;ModuleNotFoundError: No module named 'app.src'; 'app' is not a package&quot;">..\AppData\Local\Programs\Python\Python313\Lib\site-packages\pytest_asyncio\plugin.py:683: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+backend\tests\conftest.py:48: in test_app
+    from main import app
+backend\main.py:17: in &lt;module&gt;
+    from app.src.core.env_validation import validate_environment_or_exit
+E   ModuleNotFoundError: No module named 'app.src'; 'app' is not a package</error></testcase><testcase classname="backend.tests.unit.test_health" name="test_health_endpoint" time="0.001"><error message="failed on setup with &quot;ModuleNotFoundError: No module named 'app.src'; 'app' is not a package&quot;">backend\tests\conftest.py:48: in test_app
+    from main import app
+backend\main.py:17: in &lt;module&gt;
+    from app.src.core.env_validation import validate_environment_or_exit
+E   ModuleNotFoundError: No module named 'app.src'; 'app' is not a package</error></testcase><testcase classname="backend.tests.unit.test_health" name="test_health_endpoint_content_type" time="0.001"><error message="failed on setup with &quot;ModuleNotFoundError: No module named 'app.src'; 'app' is not a package&quot;">backend\tests\conftest.py:48: in test_app
+    from main import app
+backend\main.py:17: in &lt;module&gt;
+    from app.src.core.env_validation import validate_environment_or_exit
+E   ModuleNotFoundError: No module named 'app.src'; 'app' is not a package</error></testcase><testcase classname="backend.tests.unit.test_health" name="test_health_live_endpoint" time="0.001"><error message="failed on setup with &quot;ModuleNotFoundError: No module named 'app.src'; 'app' is not a package&quot;">backend\tests\conftest.py:48: in test_app
+    from main import app
+backend\main.py:17: in &lt;module&gt;
+    from app.src.core.env_validation import validate_environment_or_exit
+E   ModuleNotFoundError: No module named 'app.src'; 'app' is not a package</error></testcase><testcase classname="backend.tests.unit.test_health" name="test_health_ready_endpoint" time="0.002"><error message="failed on setup with &quot;ModuleNotFoundError: No module named 'app.src'; 'app' is not a package&quot;">backend\tests\conftest.py:48: in test_app
+    from main import app
+backend\main.py:17: in &lt;module&gt;
+    from app.src.core.env_validation import validate_environment_or_exit
+E   ModuleNotFoundError: No module named 'app.src'; 'app' is not a package</error></testcase></testsuite></testsuites>

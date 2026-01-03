@@ -1,0 +1,110 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: legal-ai-base
+  namespace: legal-ai-system
+
+resources:
+  # Namespace and RBAC
+  - namespace.yaml
+  - rbac.yaml
+  
+  # Storage
+  - storage/postgres-pv.yaml
+  - storage/redis-pv.yaml
+  - storage/minio-pv.yaml
+  
+  # Secrets and ConfigMaps
+  - secrets/database-secret.yaml
+  - secrets/redis-secret.yaml
+  - secrets/minio-secret.yaml
+  - secrets/api-keys-secret.yaml
+  - configmaps/postgres-config.yaml
+  - configmaps/redis-config.yaml
+  - configmaps/backend-config.yaml
+  - configmaps/frontend-config.yaml
+  - configmaps/nginx-config.yaml
+  
+  # Database Services
+  - postgres-deployment.yaml
+  - postgres-service.yaml
+  - redis-deployment.yaml
+  - redis-service.yaml
+  - minio-deployment.yaml
+  - minio-service.yaml
+  
+  # Application Services
+  - backend-deployment.yaml
+  - backend-service.yaml
+  - frontend-deployment.yaml
+  - frontend-service.yaml
+  
+  # Background Workers
+  - celery-worker-deployment.yaml
+  - celery-beat-deployment.yaml
+  - celery-flower-deployment.yaml
+  - celery-flower-service.yaml
+  
+  # Reverse Proxy
+  - nginx-deployment.yaml
+  - nginx-service.yaml
+  
+  # Monitoring (optional)
+  - monitoring/prometheus-deployment.yaml
+  - monitoring/prometheus-service.yaml
+  - monitoring/grafana-deployment.yaml
+  - monitoring/grafana-service.yaml
+
+# Common labels applied to all resources
+commonLabels:
+  app.kubernetes.io/name: legal-ai-system
+  app.kubernetes.io/version: "1.0.0"
+  app.kubernetes.io/part-of: legal-ai-platform
+
+# Namespace for all resources
+namespace: legal-ai-system
+
+# Images with tags
+images:
+  - name: legal-ai-backend
+    newTag: "1.0.0"
+  - name: legal-ai-frontend  
+    newTag: "1.0.0"
+  - name: legal-ai-nginx
+    newTag: "1.0.0"
+  - name: postgres
+    newTag: "16-alpine"
+  - name: redis
+    newTag: "7-alpine"
+  - name: minio/minio
+    newTag: "RELEASE.2024-01-31T20-20-33Z"
+
+# Configuration transformations
+configMapGenerator:
+  - name: legal-ai-env-config
+    literals:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=info
+      - PYTHONPATH=/app
+      - NODE_ENV=production
+
+# Secret transformations (these should be managed externally in production)
+secretGenerator:
+  - name: legal-ai-secrets
+    literals:
+      - SECRET_KEY=changeme-in-production
+      - JWT_SECRET_KEY=changeme-in-production
+
+# Replacements for environment-specific values
+replacements:
+  - source:
+      kind: ConfigMap
+      name: legal-ai-env-config
+      fieldPath: data.ENVIRONMENT
+    targets:
+      - select:
+          kind: Deployment
+        fieldPaths:
+          - spec.template.spec.containers.[name=backend].env.[name=ENVIRONMENT].value
+          - spec.template.spec.containers.[name=frontend].env.[name=NODE_ENV].value

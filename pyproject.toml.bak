@@ -1,0 +1,188 @@
+# =============================================================================
+# Legal AI System - Tool Configuration
+# This file contains configuration for development tools only.
+# Backend dependencies are managed in backend/requirements.txt
+# =============================================================================
+
+# =============================================================================
+# TESTING CONFIGURATION
+# =============================================================================
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "backend/tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+minversion = "7.0"
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--verbose",
+    "--tb=short",
+    "--cov=backend/app",
+    "--cov-report=html:tests/coverage/html",
+    "--cov-report=xml:tests/coverage/coverage.xml",
+    "--cov-report=term-missing",
+    "--cov-branch",
+    "--junitxml=tests/reports/junit.xml",
+    "--maxfail=5",
+    "--durations=10",
+]
+markers = [
+    "unit: Unit tests (fast, isolated)",
+    "integration: Integration tests (slower, may require external dependencies)",
+    "e2e: End-to-end tests (slowest, full system tests)",
+    "slow: Slow running tests",
+    "external: Tests requiring external services",
+    "ai: Tests that use AI services",
+    "database: Tests that require database",
+    "redis: Tests that require Redis",
+    "pacer: Tests that use PACER API",
+    "auth: Authentication/authorization tests",
+    "documents: Document processing tests",
+    "legal: Legal-specific functionality tests",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+    "ignore::UserWarning:asyncio",
+    "ignore::RuntimeWarning",
+]
+asyncio_mode = "auto"
+log_cli = true
+log_cli_level = "INFO"
+log_cli_format = "%(asctime)s [%(levelname)8s] %(name)s: %(message)s"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+timeout = 300
+
+# =============================================================================
+# COVERAGE CONFIGURATION
+# =============================================================================
+
+[tool.coverage.run]
+source = ["backend/app"]
+branch = true
+parallel = true
+concurrency = ["thread", "multiprocessing"]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*/*_test.py",
+    "*/conftest.py",
+    "*/__init__.py",
+    "*/migrations/*",
+    "*/venv/*",
+    "*/env/*",
+    "*/.venv/*",
+    "*/node_modules/*",
+    "*/build/*",
+    "*/dist/*",
+    "*/setup.py",
+    "*/manage.py",
+    "*/settings.py",
+    "*/config.py",
+    "*/wsgi.py",
+    "*/asgi.py",
+    "*/urls.py",
+    "*/admin.py",
+    "*/apps.py",
+    "*/models.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "class .*\\(Protocol\\):",
+    "@(abc\\.)?abstractmethod",
+    "\\.\\.\\.",
+    "pass",
+    "if TYPE_CHECKING:",
+]
+show_missing = true
+skip_covered = false
+precision = 2
+
+[tool.coverage.html]
+directory = "tests/coverage/html"
+
+[tool.coverage.xml]
+output = "tests/coverage/coverage.xml"
+
+# =============================================================================
+# CODE QUALITY CONFIGURATION  
+# =============================================================================
+
+[tool.black]
+line-length = 100
+target-version = ['py39', 'py310', 'py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | migrations
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+known_first_party = ["app", "backend", "shared"]
+known_third_party = ["fastapi", "sqlalchemy", "pydantic", "pytest", "openai", "anthropic"]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+skip_glob = ["*/migrations/*"]
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+show_error_codes = true
+pretty = true
+
+[[tool.mypy.overrides]]
+module = [
+    "uvicorn.*",
+    "redis.*", 
+    "celery.*",
+    "spacy.*",
+    "eyecite.*",
+    "PyPDF2.*",
+    "docx.*",
+    "nltk.*",
+    "sklearn.*",
+    "pandas.*",
+    "numpy.*",
+]
+ignore_missing_imports = true
+
+[tool.bandit]
+exclude_dirs = ["tests", "migrations"]
+skips = ["B101", "B601"]
+

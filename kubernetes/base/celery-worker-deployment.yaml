@@ -1,0 +1,263 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-worker
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: celery-worker
+    app.kubernetes.io/component: worker
+    app.kubernetes.io/part-of: legal-ai-system
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: celery-worker
+      app.kubernetes.io/component: worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: celery-worker
+        app.kubernetes.io/component: worker
+        app.kubernetes.io/part-of: legal-ai-system
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: legal-ai-service-account
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+      containers:
+      - name: celery-worker
+        image: legal-ai-backend:1.0.0
+        command: 
+          - celery
+          - -A
+          - app.celery
+          - worker
+          - --loglevel=info
+          - --concurrency=4
+          - --queues=high_priority,normal_priority,low_priority,document_processing,ai_analysis
+          - --hostname=worker@%h
+          - --max-tasks-per-child=1000
+          - --max-memory-per-child=200000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: database-secret
+              key: DATABASE_URL
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: REDIS_URL
+        - name: CELERY_BROKER_URL
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: CELERY_BROKER_URL
+        - name: CELERY_RESULT_BACKEND
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: CELERY_RESULT_BACKEND
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-keys-secret
+              key: SECRET_KEY
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-keys-secret
+              key: OPENAI_API_KEY
+        - name: ANTHROPIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-keys-secret
+              key: ANTHROPIC_API_KEY
+        - name: MINIO_ENDPOINT
+          value: "minio-service:9000"
+        - name: MINIO_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: minio-secret
+              key: MINIO_ROOT_USER
+        - name: MINIO_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: minio-secret
+              key: MINIO_ROOT_PASSWORD
+        - name: PYTHONPATH
+          value: "/app"
+        - name: PYTHONDONTWRITEBYTECODE
+          value: "1"
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        - name: C_FORCE_ROOT
+          value: "1"
+        volumeMounts:
+        - name: temp-storage
+          mountPath: /tmp
+        - name: logs
+          mountPath: /app/logs
+        resources:
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+        livenessProbe:
+          exec:
+            command:
+              - celery
+              - -A
+              - app.celery
+              - inspect
+              - ping
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 30
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+              - celery
+              - -A
+              - app.celery
+              - inspect
+              - ping
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          timeoutSeconds: 15
+          failureThreshold: 3
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+              - ALL
+      volumes:
+      - name: temp-storage
+        emptyDir: {}
+      - name: logs
+        emptyDir: {}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 60
+      nodeSelector:
+        kubernetes.io/arch: amd64
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-worker-document
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: celery-worker-document
+    app.kubernetes.io/component: document-worker
+    app.kubernetes.io/part-of: legal-ai-system
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: celery-worker-document
+      app.kubernetes.io/component: document-worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: celery-worker-document
+        app.kubernetes.io/component: document-worker
+        app.kubernetes.io/part-of: legal-ai-system
+    spec:
+      serviceAccountName: legal-ai-service-account
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+      containers:
+      - name: celery-worker-document
+        image: legal-ai-backend:1.0.0
+        command:
+          - celery
+          - -A
+          - app.celery
+          - worker
+          - --loglevel=info
+          - --concurrency=2
+          - --queues=document_processing
+          - --hostname=document-worker@%h
+          - --max-tasks-per-child=100
+          - --max-memory-per-child=500000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: database-secret
+              key: DATABASE_URL
+        - name: CELERY_BROKER_URL
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: CELERY_BROKER_URL
+        - name: CELERY_RESULT_BACKEND
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: CELERY_RESULT_BACKEND
+        - name: MINIO_ENDPOINT
+          value: "minio-service:9000"
+        - name: MINIO_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: minio-secret
+              key: MINIO_ROOT_USER
+        - name: MINIO_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: minio-secret
+              key: MINIO_ROOT_PASSWORD
+        - name: PYTHONPATH
+          value: "/app"
+        - name: C_FORCE_ROOT
+          value: "1"
+        volumeMounts:
+        - name: temp-storage
+          mountPath: /tmp
+        resources:
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+              - ALL
+      volumes:
+      - name: temp-storage
+        emptyDir: {}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 60

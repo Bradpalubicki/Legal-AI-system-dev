@@ -1,0 +1,127 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: legal-ai-staging
+  namespace: legal-ai-staging
+
+# Base configuration
+bases:
+  - ../../base
+
+# Staging namespace
+namespace: legal-ai-staging
+
+# Common labels for staging
+commonLabels:
+  environment: staging
+  deployment: staging
+  app.kubernetes.io/environment: staging
+
+# Staging-specific annotations
+commonAnnotations:
+  app.kubernetes.io/managed-by: kustomize
+  environment: staging
+  deployment-type: staging
+
+# Staging images (use release candidates or staging tags)
+images:
+  - name: legal-ai-backend
+    newTag: "1.0.0-rc1"
+  - name: legal-ai-frontend
+    newTag: "1.0.0-rc1"
+  - name: legal-ai-nginx
+    newTag: "1.0.0-rc1"
+  - name: postgres
+    newTag: "16-alpine"
+  - name: redis
+    newTag: "7-alpine"
+  - name: minio/minio
+    newTag: "RELEASE.2024-01-31T20-20-33Z"
+
+# Staging-specific resources
+resources:
+  - namespace-staging.yaml
+  - ingress-staging.yaml
+  - monitoring-staging.yaml
+
+# ConfigMap generators for staging
+configMapGenerator:
+  - name: staging-env-config
+    literals:
+      - ENVIRONMENT=staging
+      - DEBUG=false
+      - LOG_LEVEL=info
+      - SECURE_SSL_REDIRECT=true
+      - SECURE_HSTS_SECONDS=31536000
+      - AUDIT_LOG_ENABLED=true
+      - GDPR_COMPLIANCE_MODE=true
+      - CCPA_COMPLIANCE_MODE=true
+      - DOCUMENT_ENCRYPTION_ENABLED=true
+      - RATE_LIMIT_ENABLED=true
+      - CORS_ORIGINS=https://legal-ai-staging.example.com
+      - NEXT_PUBLIC_API_URL=https://legal-ai-staging.example.com/api
+
+# Staging patches (production-like but with reduced resources)
+patchesStrategicMerge:
+  - backend-staging-patch.yaml
+  - frontend-staging-patch.yaml
+  - celery-staging-patch.yaml
+
+# JSON patches for staging-specific configurations
+patches:
+  # Moderate replica counts for staging
+  - target:
+      kind: Deployment
+      name: backend
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+  
+  - target:
+      kind: Deployment
+      name: frontend
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+  
+  - target:
+      kind: Deployment
+      name: celery-worker
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+
+  # Staging resource limits (moderate)
+  - target:
+      kind: Deployment
+      name: backend
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "2Gi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "1000m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: "512Mi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: "250m"
+
+# Replacements for staging values
+replacements:
+  - source:
+      kind: ConfigMap
+      name: staging-env-config
+      fieldPath: data.ENVIRONMENT
+    targets:
+      - select:
+          kind: ConfigMap
+          name: backend-config
+        fieldPaths:
+          - data.ENVIRONMENT

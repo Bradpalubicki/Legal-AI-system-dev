@@ -1,0 +1,88 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: legal-ai-system
+    app.kubernetes.io/component: backend-config
+data:
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "info"
+  DEBUG: "false"
+  PYTHONPATH: "/app"
+  PYTHONDONTWRITEBYTECODE: "1" 
+  PYTHONUNBUFFERED: "1"
+  
+  # FastAPI Configuration
+  APP_NAME: "Legal AI System"
+  APP_VERSION: "1.0.0"
+  API_V1_STR: "/api/v1"
+  
+  # Database Configuration
+  DATABASE_POOL_SIZE: "20"
+  DATABASE_MAX_OVERFLOW: "30"
+  DATABASE_POOL_TIMEOUT: "30"
+  DATABASE_POOL_RECYCLE: "3600"
+  
+  # Security Configuration
+  JWT_ALGORITHM: "HS256"
+  JWT_ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+  JWT_REFRESH_TOKEN_EXPIRE_DAYS: "7"
+  BCRYPT_ROUNDS: "12"
+  PASSWORD_MIN_LENGTH: "8"
+  
+  # CORS Configuration
+  CORS_ORIGINS: "https://legal-ai.example.com"
+  CORS_CREDENTIALS: "true"
+  
+  # AI Configuration
+  AI_ANALYSIS_TIMEOUT: "300"
+  AI_MAX_CONCURRENT_REQUESTS: "5"
+  AI_CACHE_RESULTS: "true"
+  AI_CACHE_TTL: "3600"
+  OPENAI_MODEL: "gpt-4-turbo"
+  OPENAI_MAX_TOKENS: "4000"
+  OPENAI_TEMPERATURE: "0.1"
+  ANTHROPIC_MODEL: "claude-3-sonnet"
+  ANTHROPIC_MAX_TOKENS: "4000"
+  
+  # File Upload Configuration
+  MAX_FILE_SIZE: "100MB"
+  ALLOWED_FILE_TYPES: "pdf,docx,doc,txt,rtf"
+  
+  # Legal Database Configuration
+  WESTLAW_BASE_URL: "https://api.westlaw.com"
+  LEXISNEXIS_BASE_URL: "https://api.lexisnexis.com"
+  COURTLISTENER_BASE_URL: "https://www.courtlistener.com/api/rest/v3"
+  
+  # Email Configuration
+  MAIL_SERVER: "smtp.gmail.com"
+  MAIL_PORT: "587"
+  MAIL_USE_TLS: "true"
+  MAIL_USE_SSL: "false"
+  MAIL_FROM: "legal-ai-system@example.com"
+  MAIL_FROM_NAME: "Legal AI System"
+  
+  # Compliance Configuration
+  AUDIT_LOG_ENABLED: "true"
+  AUDIT_LOG_RETENTION_DAYS: "2555"
+  DATA_RETENTION_POLICY_DAYS: "2555"
+  GDPR_COMPLIANCE_MODE: "true"
+  CCPA_COMPLIANCE_MODE: "true"
+  DOCUMENT_ENCRYPTION_ENABLED: "true"
+  
+  # Rate Limiting
+  RATE_LIMIT_ENABLED: "true"
+  RATE_LIMIT_REQUESTS_PER_MINUTE: "60"
+  RATE_LIMIT_REQUESTS_PER_HOUR: "1000"
+  
+  # Health Check Configuration
+  HEALTH_CHECK_TIMEOUT: "10"
+  HEALTH_CHECK_INTERVAL: "30"
+  
+  # Monitoring Configuration
+  ENABLE_METRICS: "true"
+  METRICS_PORT: "8080"
+  PROMETHEUS_MULTIPROC_DIR: "/tmp/prometheus"
+  SENTRY_ENVIRONMENT: "production"

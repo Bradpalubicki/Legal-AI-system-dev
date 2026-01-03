@@ -1,0 +1,194 @@
+groups:
+  - name: legal_ai_compliance
+    interval: 30s
+    rules:
+      # UPL (Unauthorized Practice of Law) Violations
+      - alert: UPLViolationDetected
+        expr: increase(compliance_violations_total{violation_type="upl"}[5m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          component: compliance
+          violation_type: upl
+        annotations:
+          summary: "UPL violation detected in Legal AI System"
+          description: "{{ $value }} UPL violations detected in the last 5 minutes. Immediate action required to prevent unauthorized practice of law."
+          runbook_url: "https://docs.legal-ai.com/compliance/runbooks/upl-violation"
+
+      # High Rate of Attorney Review Flags
+      - alert: HighAttorneyReviewFlagRate
+        expr: rate(attorney_review_flags_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          component: compliance
+        annotations:
+          summary: "High rate of attorney review flags"
+          description: "Attorney review flags are being raised at {{ $value }} per second, indicating potential legal advice content."
+          runbook_url: "https://docs.legal-ai.com/compliance/runbooks/attorney-review-flags"
+
+      # Critical Attorney Review Flag Rate
+      - alert: CriticalAttorneyReviewFlagRate
+        expr: rate(attorney_review_flags_total{risk_level="critical"}[5m]) > 0.01
+        for: 0m
+        labels:
+          severity: critical
+          component: compliance
+        annotations:
+          summary: "Critical attorney review flags detected"
+          description: "Critical-level attorney review flags detected at {{ $value }} per second. Immediate legal team notification required."
+          runbook_url: "https://docs.legal-ai.com/compliance/runbooks/critical-attorney-review"
+
+      # Missing Disclaimer Enforcement
+      - alert: DisclaimerEnforcementFailure
+        expr: increase(disclaimer_enforcement_total{action="missing"}[10m]) > 5
+        for: 1m
+        labels:
+          severity: warning
+          component: disclaimer
+        annotations:
+          summary: "Disclaimer enforcement failures detected"
+          description: "{{ $value }} instances of missing disclaimers detected in the last 10 minutes."
+          runbook_url: "https://docs.legal-ai.com/compliance/runbooks/disclaimer-enforcement"
+
+      # Compliance Service Down
+      - alert: ComplianceServiceDown
+        expr: up{job="compliance-service"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: compliance
+        annotations:
+          summary: "Legal AI Compliance service is down"
+          description: "Compliance service has been down for more than 1 minute. Legal protections may be compromised."
+          runbook_url: "https://docs.legal-ai.com/compliance/runbooks/service-down"
+
+      # Disclaimer API Down
+      - alert: DisclaimerAPIDown
+        expr: up{job="disclaimer-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: disclaimer
+        annotations:
+          summary: "Disclaimer API is down"
+          description: "Disclaimer API has been down for more than 1 minute. Legal disclaimers may not be displayed."
+          runbook_url: "https://docs.legal-ai.com/compliance/runbooks/disclaimer-api-down"
+
+      # High Compliance Check Latency
+      - alert: HighComplianceCheckLatency
+        expr: histogram_quantile(0.95, rate(compliance_check_duration_seconds_bucket[5m])) > 2
+        for: 2m
+        labels:
+          severity: warning
+          component: compliance
+        annotations:
+          summary: "High compliance check latency"
+          description: "95th percentile compliance check latency is {{ $value }}s, above the 2s threshold."
+          runbook_url: "https://docs.legal-ai.com/compliance/runbooks/high-latency"
+
+      # State Rules Configuration Missing
+      - alert: StateRulesConfigurationMissing
+        expr: absent(state_rules_config_loaded{}) == 1
+        for: 5m
+        labels:
+          severity: warning
+          component: configuration
+        annotations:
+          summary: "State rules configuration not loaded"
+          description: "State-specific legal rules configuration is not available. Geographic compliance may be compromised."
+          runbook_url: "https://docs.legal-ai.com/compliance/runbooks/state-rules-config"
+
+      # Audit Log Storage Issues
+      - alert: AuditLogStorageIssues
+        expr: increase(audit_log_write_errors_total[10m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          component: audit
+        annotations:
+          summary: "Audit log storage errors detected"
+          description: "{{ $value }} audit log write errors in the last 10 minutes. Legal audit trail may be compromised."
+          runbook_url: "https://docs.legal-ai.com/compliance/runbooks/audit-log-errors"
+
+      # Compliance Violation Threshold
+      - alert: ComplianceViolationThreshold
+        expr: increase(compliance_violations_total[1h]) > 10
+        for: 0m
+        labels:
+          severity: warning
+          component: compliance
+        annotations:
+          summary: "High number of compliance violations"
+          description: "{{ $value }} compliance violations detected in the last hour, exceeding threshold."
+          runbook_url: "https://docs.legal-ai.com/compliance/runbooks/violation-threshold"
+
+      # Legal Content Without Review
+      - alert: LegalContentWithoutReview
+        expr: increase(legal_content_unreviewed_total[30m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          component: content_review
+        annotations:
+          summary: "Legal content published without attorney review"
+          description: "{{ $value }} pieces of legal content were published without required attorney review."
+          runbook_url: "https://docs.legal-ai.com/compliance/runbooks/unreviewed-content"
+
+  - name: legal_ai_safety_metrics
+    interval: 60s
+    rules:
+      # Daily UPL Violation Rate
+      - record: legal_ai:upl_violations_per_day
+        expr: increase(compliance_violations_total{violation_type="upl"}[1d])
+
+      # Attorney Review Flag Success Rate
+      - record: legal_ai:attorney_review_flag_rate
+        expr: rate(attorney_review_flags_total[1h])
+
+      # Disclaimer Coverage Percentage
+      - record: legal_ai:disclaimer_coverage_percent
+        expr: (
+          sum(disclaimer_enforcement_total{action="applied"}) /
+          (sum(disclaimer_enforcement_total{action="applied"}) + sum(disclaimer_enforcement_total{action="missing"}))
+        ) * 100
+
+      # Compliance Check Success Rate
+      - record: legal_ai:compliance_success_rate
+        expr: (
+          sum(rate(compliance_checks_total{result="pass"}[5m])) /
+          sum(rate(compliance_checks_total[5m]))
+        ) * 100
+
+      # Average Compliance Response Time
+      - record: legal_ai:avg_compliance_response_time
+        expr: histogram_quantile(0.5, rate(compliance_check_duration_seconds_bucket[5m]))
+
+  - name: legal_ai_sla_monitoring
+    interval: 300s
+    rules:
+      # 99.9% Uptime SLA for Compliance Services
+      - alert: ComplianceSLABreach
+        expr: (
+          avg_over_time(up{job=~"compliance-service|disclaimer-api|feedback-service"}[24h]) < 0.999
+        )
+        for: 5m
+        labels:
+          severity: critical
+          component: sla
+        annotations:
+          summary: "Compliance SLA breach detected"
+          description: "Compliance services availability has fallen below 99.9% SLA in the last 24 hours."
+          runbook_url: "https://docs.legal-ai.com/compliance/runbooks/sla-breach"
+
+      # Response Time SLA (< 500ms for 95% of requests)
+      - alert: ComplianceResponseTimeSLA
+        expr: histogram_quantile(0.95, rate(compliance_check_duration_seconds_bucket[5m])) > 0.5
+        for: 3m
+        labels:
+          severity: warning
+          component: sla
+        annotations:
+          summary: "Compliance response time SLA breach"
+          description: "95th percentile compliance response time is {{ $value }}s, exceeding 500ms SLA."
+          runbook_url: "https://docs.legal-ai.com/compliance/runbooks/response-time-sla"

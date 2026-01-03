@@ -1,0 +1,232 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-service
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/component: visualization
+    app.kubernetes.io/part-of: legal-ai-system
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3000
+    targetPort: 3000
+    protocol: TCP
+    name: http
+  selector:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/component: visualization
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-config
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/component: visualization-config
+data:
+  grafana.ini: |
+    [server]
+    http_port = 3000
+    domain = legal-ai.example.com
+    root_url = https://legal-ai.example.com/grafana/
+    serve_from_sub_path = true
+    
+    [database]
+    type = sqlite3
+    path = /var/lib/grafana/grafana.db
+    
+    [session]
+    provider = memory
+    
+    [security]
+    admin_user = admin
+    cookie_secure = true
+    cookie_samesite = strict
+    
+    [users]
+    allow_sign_up = false
+    allow_org_create = false
+    auto_assign_org = true
+    auto_assign_org_role = Viewer
+    default_theme = dark
+    
+    [auth]
+    disable_login_form = false
+    disable_signout_menu = false
+    
+    [auth.anonymous]
+    enabled = false
+    
+    [log]
+    mode = console
+    level = info
+    
+    [metrics]
+    enabled = true
+    interval_seconds = 10
+    
+    [alerting]
+    enabled = true
+    execute_alerts = true
+    
+    [panels]
+    disable_sanitize_html = false
+    
+    [plugins]
+    enable_alpha = false
+    app_tls_skip_verify_insecure = false
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/component: datasources
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+    - name: Prometheus
+      type: prometheus
+      access: proxy
+      url: http://prometheus-service:9090
+      isDefault: true
+      editable: true
+      jsonData:
+        httpMethod: POST
+        queryTimeout: 60s
+        timeInterval: 30s
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards-config
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/component: dashboards-config
+data:
+  dashboards.yaml: |
+    apiVersion: 1
+    providers:
+    - name: 'default'
+      orgId: 1
+      folder: ''
+      type: file
+      disableDeletion: false
+      updateIntervalSeconds: 30
+      allowUiUpdates: true
+      options:
+        path: /var/lib/grafana/dashboards
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/component: dashboards
+data:
+  legal-ai-overview.json: |
+    {
+      "dashboard": {
+        "id": null,
+        "title": "Legal AI System Overview",
+        "tags": ["legal-ai", "overview"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "id": 1,
+            "title": "System Health",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "up{job=~\"legal-ai-.*\"}",
+                "legendFormat": "{{job}}"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "thresholds": {
+                  "steps": [
+                    {"color": "red", "value": 0},
+                    {"color": "green", "value": 1}
+                  ]
+                }
+              }
+            },
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+          },
+          {
+            "id": 2,
+            "title": "Request Rate",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(http_requests_total{job=\"legal-ai-backend\"}[5m])",
+                "legendFormat": "{{method}} {{endpoint}}"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+          },
+          {
+            "id": 3,
+            "title": "Response Time",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"legal-ai-backend\"}[5m]))",
+                "legendFormat": "95th percentile"
+              },
+              {
+                "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{job=\"legal-ai-backend\"}[5m]))",
+                "legendFormat": "50th percentile"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8}
+          },
+          {
+            "id": 4,
+            "title": "Database Connections",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "postgresql_connections{datname=\"legal_ai_system\"}",
+                "legendFormat": "Active Connections"
+              },
+              {
+                "expr": "postgresql_settings_max_connections",
+                "legendFormat": "Max Connections"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16}
+          },
+          {
+            "id": 5,
+            "title": "Celery Queue Length",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "celery_queue_length",
+                "legendFormat": "{{queue}}"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16}
+          }
+        ],
+        "time": {
+          "from": "now-1h",
+          "to": "now"
+        },
+        "refresh": "30s"
+      }
+    }

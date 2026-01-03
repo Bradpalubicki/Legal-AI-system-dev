@@ -1,0 +1,414 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "legal-ai-compliance-overview",
+    "title": "Legal AI Compliance Overview",
+    "description": "Real-time monitoring of Legal AI system compliance metrics, UPL protection, and attorney review flags",
+    "tags": ["legal-ai", "compliance", "upl", "attorney-review"],
+    "timezone": "utc",
+    "refresh": "30s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "🚨 UPL Violations (Last 24h)",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "increase(compliance_violations_total{violation_type=\"upl\"}[24h])",
+            "legendFormat": "UPL Violations",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": 0},
+                {"color": "yellow", "value": 1},
+                {"color": "red", "value": 5}
+              ]
+            },
+            "unit": "short",
+            "decimals": 0
+          },
+          "overrides": []
+        },
+        "options": {
+          "colorMode": "background",
+          "graphMode": "area",
+          "justifyMode": "center",
+          "orientation": "auto",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"],
+            "fields": ""
+          },
+          "text": {},
+          "textMode": "auto"
+        }
+      },
+      {
+        "id": 2,
+        "title": "⚖️ Attorney Review Flags Rate",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 9, "x": 6, "y": 0},
+        "targets": [
+          {
+            "expr": "rate(attorney_review_flags_total{risk_level=\"critical\"}[5m])",
+            "legendFormat": "Critical",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(attorney_review_flags_total{risk_level=\"high\"}[5m])",
+            "legendFormat": "High",
+            "refId": "B"
+          },
+          {
+            "expr": "rate(attorney_review_flags_total{risk_level=\"medium\"}[5m])",
+            "legendFormat": "Medium",
+            "refId": "C"
+          },
+          {
+            "expr": "rate(attorney_review_flags_total{risk_level=\"low\"}[5m])",
+            "legendFormat": "Low",
+            "refId": "D"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Flags per second",
+            "min": 0,
+            "unit": "rps"
+          }
+        ],
+        "legend": {
+          "alignAsTable": true,
+          "avg": true,
+          "current": true,
+          "max": true,
+          "min": false,
+          "rightSide": false,
+          "show": true,
+          "total": false,
+          "values": true
+        }
+      },
+      {
+        "id": 3,
+        "title": "📊 Compliance Success Rate",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 15, "y": 0},
+        "targets": [
+          {
+            "expr": "legal_ai:compliance_success_rate",
+            "legendFormat": "Success Rate",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "yellow", "value": 90},
+                {"color": "green", "value": 95}
+              ]
+            },
+            "unit": "percent",
+            "decimals": 2,
+            "min": 0,
+            "max": 100
+          }
+        },
+        "options": {
+          "colorMode": "background",
+          "graphMode": "area",
+          "justifyMode": "center"
+        }
+      },
+      {
+        "id": 4,
+        "title": "📄 Disclaimer Coverage",
+        "type": "piechart",
+        "gridPos": {"h": 8, "w": 6, "x": 21, "y": 0},
+        "targets": [
+          {
+            "expr": "sum(disclaimer_enforcement_total{action=\"applied\"})",
+            "legendFormat": "Applied",
+            "refId": "A"
+          },
+          {
+            "expr": "sum(disclaimer_enforcement_total{action=\"missing\"})",
+            "legendFormat": "Missing",
+            "refId": "B"
+          }
+        ],
+        "options": {
+          "pieType": "donut",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "🔍 Compliance Violations by Type",
+        "type": "barchart",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+        "targets": [
+          {
+            "expr": "sum by (violation_type) (increase(compliance_violations_total[1h]))",
+            "legendFormat": "{{violation_type}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "short"
+          }
+        },
+        "options": {
+          "orientation": "horizontal",
+          "groupWidth": 0.7,
+          "barWidth": 0.97,
+          "xField": "violation_type",
+          "showValue": "always"
+        }
+      },
+      {
+        "id": 6,
+        "title": "🚦 Service Status",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 8},
+        "targets": [
+          {
+            "expr": "up{job=\"compliance-service\"}",
+            "legendFormat": "Compliance Service",
+            "refId": "A"
+          },
+          {
+            "expr": "up{job=\"disclaimer-api\"}",
+            "legendFormat": "Disclaimer API",
+            "refId": "B"
+          },
+          {
+            "expr": "up{job=\"feedback-service\"}",
+            "legendFormat": "Feedback Service",
+            "refId": "C"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "green", "value": 1}
+              ]
+            },
+            "unit": "short",
+            "decimals": 0,
+            "mappings": [
+              {
+                "options": {
+                  "0": {"text": "DOWN", "color": "red"},
+                  "1": {"text": "UP", "color": "green"}
+                },
+                "type": "value"
+              }
+            ]
+          }
+        },
+        "options": {
+          "colorMode": "background",
+          "graphMode": "none",
+          "justifyMode": "center",
+          "orientation": "vertical"
+        }
+      },
+      {
+        "id": 7,
+        "title": "⏱️ Compliance Check Response Time",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 9, "x": 18, "y": 8},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(compliance_check_duration_seconds_bucket[5m]))",
+            "legendFormat": "50th percentile",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(compliance_check_duration_seconds_bucket[5m]))",
+            "legendFormat": "95th percentile",
+            "refId": "B"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(compliance_check_duration_seconds_bucket[5m]))",
+            "legendFormat": "99th percentile",
+            "refId": "C"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Response Time (seconds)",
+            "min": 0,
+            "unit": "s"
+          }
+        ],
+        "legend": {
+          "alignAsTable": true,
+          "avg": true,
+          "current": true,
+          "show": true
+        }
+      },
+      {
+        "id": 8,
+        "title": "📈 Compliance Trends (24h)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 16},
+        "targets": [
+          {
+            "expr": "increase(compliance_violations_total{violation_type=\"upl\"}[1h])",
+            "legendFormat": "UPL Violations/hour",
+            "refId": "A"
+          },
+          {
+            "expr": "increase(attorney_review_flags_total{risk_level=\"critical\"}[1h]) * 10",
+            "legendFormat": "Critical Flags/hour (x10)",
+            "refId": "B"
+          },
+          {
+            "expr": "increase(disclaimer_enforcement_total{action=\"missing\"}[1h])",
+            "legendFormat": "Missing Disclaimers/hour",
+            "refId": "C"
+          },
+          {
+            "expr": "legal_ai:compliance_success_rate",
+            "legendFormat": "Compliance Success Rate (%)",
+            "refId": "D"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Count/Rate",
+            "min": 0,
+            "unit": "short"
+          }
+        ],
+        "legend": {
+          "alignAsTable": true,
+          "avg": true,
+          "current": true,
+          "max": true,
+          "show": true,
+          "values": true
+        }
+      },
+      {
+        "id": 9,
+        "title": "🌍 Geographic Compliance (by State)",
+        "type": "table",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
+        "targets": [
+          {
+            "expr": "sum by (state) (increase(compliance_violations_total[24h]))",
+            "legendFormat": "{{state}}",
+            "refId": "A",
+            "format": "table"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": 0},
+                {"color": "yellow", "value": 1},
+                {"color": "red", "value": 5}
+              ]
+            }
+          }
+        },
+        "options": {
+          "showHeader": true,
+          "sortBy": [{"displayName": "Value", "desc": true}]
+        }
+      },
+      {
+        "id": 10,
+        "title": "📊 Audit Log Metrics",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
+        "targets": [
+          {
+            "expr": "rate(audit_log_writes_total[5m])",
+            "legendFormat": "Audit Writes/sec",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(audit_log_write_errors_total[5m])",
+            "legendFormat": "Write Errors/sec",
+            "refId": "B"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Operations/sec",
+            "min": 0,
+            "unit": "rps"
+          }
+        ]
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "service",
+          "type": "query",
+          "query": "label_values(up{job=~\"compliance-service|disclaimer-api|feedback-service\"}, job)",
+          "current": {
+            "selected": false,
+            "text": "All",
+            "value": "$__all"
+          },
+          "includeAll": true,
+          "multi": true,
+          "options": [],
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0,
+          "tagValuesQuery": "",
+          "tagsQuery": "",
+          "type": "query",
+          "useTags": false
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "name": "Compliance Alerts",
+          "datasource": "Prometheus-Compliance",
+          "expr": "ALERTS{alertname=~\".*UPL.*|.*Attorney.*|.*Compliance.*\"} == 1",
+          "iconColor": "red",
+          "enable": true
+        }
+      ]
+    }
+  }
+}

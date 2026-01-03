@@ -1,0 +1,300 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-service
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: prometheus
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/part-of: legal-ai-system
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  ports:
+  - port: 9090
+    targetPort: 9090
+    protocol: TCP
+    name: http
+  selector:
+    app.kubernetes.io/name: prometheus
+    app.kubernetes.io/component: monitoring
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: prometheus
+    app.kubernetes.io/component: monitoring-config
+data:
+  prometheus.yml: |
+    # =============================================================================
+    # Prometheus Configuration for Legal AI System
+    # =============================================================================
+    
+    global:
+      scrape_interval: 30s
+      scrape_timeout: 10s
+      evaluation_interval: 30s
+      external_labels:
+        cluster: 'legal-ai-k8s'
+        environment: 'production'
+    
+    # Alerting configuration
+    alerting:
+      alertmanagers:
+      - static_configs:
+        - targets:
+          - alertmanager-service:9093
+    
+    # Rule files
+    rule_files:
+      - "/etc/prometheus/rules/*.yml"
+    
+    # Scrape configurations
+    scrape_configs:
+    
+    # Prometheus itself
+    - job_name: 'prometheus'
+      static_configs:
+      - targets: ['localhost:9090']
+      scrape_interval: 30s
+      metrics_path: '/metrics'
+    
+    # Kubernetes API server
+    - job_name: 'kubernetes-apiservers'
+      kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+          - default
+      scheme: https
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        insecure_skip_verify: true
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: default;kubernetes;https
+    
+    # Kubernetes nodes
+    - job_name: 'kubernetes-nodes'
+      kubernetes_sd_configs:
+      - role: node
+      scheme: https
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        insecure_skip_verify: true
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+    
+    # Kubernetes pods
+    - job_name: 'kubernetes-pods'
+      kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+          - legal-ai-system
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: kubernetes_pod_name
+    
+    # Legal AI Backend
+    - job_name: 'legal-ai-backend'
+      kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+          - legal-ai-system
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name]
+        action: keep
+        regex: backend-service
+      - source_labels: [__meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: metrics
+      scrape_interval: 15s
+      metrics_path: '/metrics'
+    
+    # Legal AI Workers (Celery)
+    - job_name: 'legal-ai-workers'
+      kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+          - legal-ai-system
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_component]
+        action: keep
+        regex: worker
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        target_label: __address__
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+    
+    # PostgreSQL (using postgres_exporter)
+    - job_name: 'postgresql'
+      kubernetes_sd_configs:
+      - role: service
+        namespaces:
+          names:
+          - legal-ai-system
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name]
+        action: keep
+        regex: postgres-exporter-service
+      scrape_interval: 30s
+      metrics_path: '/metrics'
+    
+    # Redis (using redis_exporter)
+    - job_name: 'redis'
+      kubernetes_sd_configs:
+      - role: service
+        namespaces:
+          names:
+          - legal-ai-system
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name]
+        action: keep
+        regex: redis-exporter-service
+      scrape_interval: 30s
+      metrics_path: '/metrics'
+    
+    # MinIO
+    - job_name: 'minio'
+      kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+          - legal-ai-system
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name]
+        action: keep
+        regex: minio-service
+      - source_labels: [__meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: api
+      metrics_path: '/minio/v2/metrics/cluster'
+      scrape_interval: 30s
+    
+    # NGINX Ingress Controller
+    - job_name: 'nginx-ingress'
+      kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+          - ingress-nginx
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+        action: keep
+        regex: ingress-nginx
+      - source_labels: [__meta_kubernetes_pod_container_port_number]
+        action: keep
+        regex: "10254"
+      scrape_interval: 30s
+      metrics_path: '/metrics'
+  
+  # Alerting rules
+  rules.yml: |
+    groups:
+    - name: legal-ai-system
+      rules:
+      
+      # High CPU Usage
+      - alert: HighCPUUsage
+        expr: (100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is above 80% for more than 5 minutes on {{ $labels.instance }}"
+      
+      # High Memory Usage
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is above 90% for more than 5 minutes on {{ $labels.instance }}"
+      
+      # Pod Restart
+      - alert: PodRestartingTooOften
+        expr: rate(kube_pod_container_status_restarts_total[1h]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Pod is restarting too often"
+          description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is restarting too frequently"
+      
+      # Service Down
+      - alert: ServiceDown
+        expr: up{job=~"legal-ai-.*"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service is down"
+          description: "Service {{ $labels.job }} has been down for more than 2 minutes"
+      
+      # Database Connection Issues
+      - alert: DatabaseConnectionHigh
+        expr: postgresql_connections{datname="legal_ai_system"} / postgresql_settings_max_connections > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High database connections"
+          description: "Database connections are above 80% of max connections"
+      
+      # Celery Queue Length
+      - alert: CeleryQueueHigh
+        expr: celery_queue_length > 100
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Celery queue is growing"
+          description: "Celery queue {{ $labels.queue }} has more than 100 tasks pending"
+      
+      # Disk Space Low
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_free_bytes / node_filesystem_size_bytes) * 100 < 10
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Low disk space"
+          description: "Disk space is below 10% on {{ $labels.instance }} {{ $labels.mountpoint }}"

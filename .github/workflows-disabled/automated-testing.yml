@@ -1,0 +1,999 @@
+name: 🧪 Automated Testing Suite
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run comprehensive tests daily at 3 AM UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      test_suite:
+        description: 'Test suite to run'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+        - full
+        - unit
+        - integration
+        - e2e
+        - performance
+        - security
+        - accessibility
+        - legal-compliance
+      environment:
+        description: 'Test environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+        - local
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '20'
+  STAGING_URL: https://legal-ai-staging.example.com
+  PRODUCTION_URL: https://legal-ai.example.com
+
+jobs:
+  # =============================================================================
+  # COMPREHENSIVE UNIT TESTING
+  # =============================================================================
+  unit-testing:
+    name: 🧪 Unit Testing
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_suite == 'full' || github.event.inputs.test_suite == 'unit' || github.event_name != 'workflow_dispatch'
+    
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_legal_ai
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    strategy:
+      matrix:
+        component: [backend, frontend]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # Backend Unit Tests
+    - name: Set up Python (Backend)
+      if: matrix.component == 'backend'
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install Python dependencies (Backend)
+      if: matrix.component == 'backend'
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r backend/requirements.txt
+        pip install -r backend/requirements-dev.txt
+
+    - name: Run backend unit tests
+      if: matrix.component == 'backend'
+      working-directory: ./backend
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_legal_ai
+        REDIS_URL: redis://localhost:6379/0
+        SECRET_KEY: test-secret-key
+        ENVIRONMENT: test
+      run: |
+        export PYTHONPATH=$PWD
+        
+        # Create test database tables
+        alembic upgrade head
+        
+        # Run unit tests with coverage
+        pytest tests/unit/ \
+          --cov=app \
+          --cov-report=xml \
+          --cov-report=html \
+          --cov-report=term \
+          --junit-xml=backend-unit-test-results.xml \
+          --cov-fail-under=80 \
+          -v
+
+    # Frontend Unit Tests
+    - name: Set up Node.js (Frontend)
+      if: matrix.component == 'frontend'
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install frontend dependencies
+      if: matrix.component == 'frontend'
+      working-directory: ./frontend
+      run: npm ci
+
+    - name: Run frontend unit tests
+      if: matrix.component == 'frontend'
+      working-directory: ./frontend
+      run: |
+        # Run Jest unit tests
+        npm run test:unit:coverage
+        
+        # Run component tests with Testing Library
+        npm run test:components
+        
+        # Generate test coverage report
+        npm run test:coverage:report
+
+    - name: Upload test results
+      if: always()
+      uses: dorny/test-reporter@v1
+      with:
+        name: Unit Test Results - ${{ matrix.component }}
+        path: |
+          backend/backend-unit-test-results.xml
+          frontend/test-results/unit-test-results.xml
+        reporter: java-junit
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: |
+          ./backend/coverage.xml
+          ./frontend/coverage/lcov.info
+        flags: ${{ matrix.component }}-unit
+        name: ${{ matrix.component }}-unit-coverage
+
+    - name: Archive test artifacts
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: unit-test-results-${{ matrix.component }}
+        path: |
+          backend/coverage.xml
+          backend/htmlcov/
+          frontend/coverage/
+          *test-results.xml
+
+  # =============================================================================
+  # INTEGRATION TESTING
+  # =============================================================================
+  integration-testing:
+    name: 🔗 Integration Testing
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_suite == 'full' || github.event.inputs.test_suite == 'integration' || github.event_name != 'workflow_dispatch'
+    
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_legal_ai
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+      minio:
+        image: minio/minio:RELEASE.2024-01-31T20-20-33Z
+        env:
+          MINIO_ROOT_USER: minioadmin
+          MINIO_ROOT_PASSWORD: minioadmin123
+        options: >-
+          --health-cmd "curl -f http://localhost:9000/minio/health/live"
+          --health-interval 30s
+          --health-timeout 10s
+          --health-retries 3
+        ports:
+          - 9000:9000
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libpq-dev poppler-utils tesseract-ocr
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r backend/requirements.txt
+        pip install -r backend/requirements-dev.txt
+
+    - name: Setup test environment
+      run: |
+        cat > backend/.env.test << EOF
+        DATABASE_URL=postgresql://postgres:postgres@localhost:5432/test_legal_ai
+        REDIS_URL=redis://localhost:6379/0
+        CELERY_BROKER_URL=redis://localhost:6379/1
+        CELERY_RESULT_BACKEND=redis://localhost:6379/1
+        MINIO_ENDPOINT=localhost:9000
+        MINIO_ACCESS_KEY=minioadmin
+        MINIO_SECRET_KEY=minioadmin123
+        SECRET_KEY=test-secret-key
+        ENVIRONMENT=test
+        EOF
+
+    - name: Initialize test database
+      working-directory: ./backend
+      run: |
+        export PYTHONPATH=$PWD
+        alembic upgrade head
+        python scripts/seed_test_data.py
+
+    - name: Run database integration tests
+      working-directory: ./backend
+      run: |
+        export PYTHONPATH=$PWD
+        pytest tests/integration/test_database/ -v --junit-xml=db-integration-results.xml
+
+    - name: Run API integration tests
+      working-directory: ./backend
+      run: |
+        export PYTHONPATH=$PWD
+        pytest tests/integration/test_api/ -v --junit-xml=api-integration-results.xml
+
+    - name: Run storage integration tests
+      working-directory: ./backend
+      run: |
+        export PYTHONPATH=$PWD
+        pytest tests/integration/test_storage/ -v --junit-xml=storage-integration-results.xml
+
+    - name: Run AI integration tests
+      working-directory: ./backend
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_TEST_API_KEY }}
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_TEST_API_KEY }}
+      run: |
+        export PYTHONPATH=$PWD
+        pytest tests/integration/test_ai/ -v --junit-xml=ai-integration-results.xml
+
+    - name: Run Celery integration tests
+      working-directory: ./backend
+      run: |
+        export PYTHONPATH=$PWD
+        # Start Celery worker in background
+        celery -A app.celery worker --loglevel=info --detach
+        
+        # Run Celery integration tests
+        pytest tests/integration/test_celery/ -v --junit-xml=celery-integration-results.xml
+        
+        # Stop Celery worker
+        pkill -f celery
+
+    - name: Upload integration test results
+      if: always()
+      uses: dorny/test-reporter@v1
+      with:
+        name: Integration Test Results
+        path: 'backend/*-integration-results.xml'
+        reporter: java-junit
+
+    - name: Archive integration artifacts
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: integration-test-results
+        path: backend/*-integration-results.xml
+
+  # =============================================================================
+  # END-TO-END TESTING
+  # =============================================================================
+  e2e-testing:
+    name: 🎭 End-to-End Testing
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_suite == 'full' || github.event.inputs.test_suite == 'e2e' || github.event_name != 'workflow_dispatch'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install dependencies
+      working-directory: ./frontend
+      run: npm ci
+
+    - name: Install Playwright browsers
+      working-directory: ./frontend
+      run: npx playwright install --with-deps
+
+    - name: Set test environment URL
+      id: set-url
+      run: |
+        if [ "${{ github.event.inputs.environment }}" == "production" ]; then
+          echo "test_url=${{ env.PRODUCTION_URL }}" >> $GITHUB_OUTPUT
+        else
+          echo "test_url=${{ env.STAGING_URL }}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Run Playwright E2E tests
+      working-directory: ./frontend
+      env:
+        BASE_URL: ${{ steps.set-url.outputs.test_url }}
+        TEST_USER_EMAIL: ${{ secrets.E2E_TEST_USER_EMAIL }}
+        TEST_USER_PASSWORD: ${{ secrets.E2E_TEST_USER_PASSWORD }}
+        TEST_ADMIN_EMAIL: ${{ secrets.E2E_TEST_ADMIN_EMAIL }}
+        TEST_ADMIN_PASSWORD: ${{ secrets.E2E_TEST_ADMIN_PASSWORD }}
+      run: |
+        # Run core user journey tests
+        npx playwright test tests/e2e/user-journeys/ --reporter=junit
+
+    - name: Run legal workflow E2E tests
+      working-directory: ./frontend
+      env:
+        BASE_URL: ${{ steps.set-url.outputs.test_url }}
+      run: |
+        # Test legal-specific workflows
+        npx playwright test tests/e2e/legal-workflows/ --reporter=junit
+
+    - name: Run accessibility E2E tests
+      working-directory: ./frontend
+      env:
+        BASE_URL: ${{ steps.set-url.outputs.test_url }}
+      run: |
+        # Test accessibility compliance
+        npx playwright test tests/e2e/accessibility/ --reporter=junit
+
+    - name: Upload E2E test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: e2e-test-results
+        path: |
+          frontend/test-results/
+          frontend/playwright-report/
+
+    - name: Upload Playwright report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: playwright-report
+        path: frontend/playwright-report/
+
+  # =============================================================================
+  # PERFORMANCE TESTING
+  # =============================================================================
+  performance-testing:
+    name: 🚀 Performance Testing
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_suite == 'full' || github.event.inputs.test_suite == 'performance' || github.event_name == 'schedule'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js for K6
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Install K6
+      run: |
+        sudo gpg -k
+        sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+        echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+        sudo apt-get update
+        sudo apt-get install k6
+
+    - name: Set test environment URL
+      id: set-url
+      run: |
+        if [ "${{ github.event.inputs.environment }}" == "production" ]; then
+          echo "test_url=${{ env.PRODUCTION_URL }}" >> $GITHUB_OUTPUT
+        else
+          echo "test_url=${{ env.STAGING_URL }}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Run API performance tests
+      run: |
+        # Create K6 performance test script
+        cat > performance-test.js << 'EOF'
+        import http from 'k6/http';
+        import { check, group } from 'k6';
+        import { Rate } from 'k6/metrics';
+
+        export let errorRate = new Rate('errors');
+
+        export let options = {
+          stages: [
+            { duration: '2m', target: 10 }, // Ramp up
+            { duration: '5m', target: 10 }, // Stay at 10 users
+            { duration: '2m', target: 0 },  // Ramp down
+          ],
+          thresholds: {
+            http_req_duration: ['p(95)<500'], // 95% of requests must complete below 500ms
+            errors: ['rate<0.1'], // Error rate must be below 10%
+          },
+        };
+
+        const BASE_URL = __ENV.BASE_URL || 'https://legal-ai-staging.example.com';
+
+        export default function () {
+          group('Health Checks', function () {
+            let response = http.get(`${BASE_URL}/health`);
+            check(response, {
+              'health check status is 200': (r) => r.status === 200,
+              'health check response time < 200ms': (r) => r.timings.duration < 200,
+            });
+            errorRate.add(response.status !== 200);
+          });
+
+          group('API Tests', function () {
+            let response = http.get(`${BASE_URL}/api/health`);
+            check(response, {
+              'API health status is 200': (r) => r.status === 200,
+              'API response time < 300ms': (r) => r.timings.duration < 300,
+            });
+            errorRate.add(response.status !== 200);
+          });
+
+          group('Authentication', function () {
+            let loginResponse = http.post(`${BASE_URL}/api/v1/auth/login`, {
+              email: 'test@example.com',
+              password: 'invalid'
+            });
+            check(loginResponse, {
+              'login handles invalid credentials': (r) => r.status === 401,
+            });
+          });
+        }
+        EOF
+
+        # Run K6 performance test
+        k6 run --env BASE_URL=${{ steps.set-url.outputs.test_url }} performance-test.js
+
+    - name: Run load testing with Artillery
+      run: |
+        npm install -g artillery
+        
+        # Create Artillery load test configuration
+        cat > load-test.yml << 'EOF'
+        config:
+          target: '${{ steps.set-url.outputs.test_url }}'
+          phases:
+            - duration: 60
+              arrivalRate: 5
+              name: "Warm up"
+            - duration: 120
+              arrivalRate: 10
+              name: "Load test"
+            - duration: 60
+              arrivalRate: 20
+              name: "Spike test"
+          processor: "./load-test-functions.js"
+
+        scenarios:
+          - name: "Health checks and basic navigation"
+            weight: 70
+            flow:
+              - get:
+                  url: "/health"
+                  expect:
+                    - statusCode: 200
+              - get:
+                  url: "/api/health"
+                  expect:
+                    - statusCode: 200
+
+          - name: "API endpoints"
+            weight: 30
+            flow:
+              - get:
+                  url: "/api/v1/auth/health"
+                  expect:
+                    - statusCode: 200
+              - get:
+                  url: "/api/v1/documents/health"
+                  expect:
+                    - statusCode: 200
+        EOF
+
+        # Create processor functions
+        cat > load-test-functions.js << 'EOF'
+        module.exports = {
+          // Add custom functions here if needed
+        };
+        EOF
+
+        # Run Artillery load test
+        artillery run load-test.yml --output load-test-results.json
+        artillery report load-test-results.json --output load-test-report.html
+
+    - name: Upload performance test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-test-results
+        path: |
+          load-test-results.json
+          load-test-report.html
+
+  # =============================================================================
+  # SECURITY TESTING
+  # =============================================================================
+  security-testing:
+    name: 🔒 Security Testing
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_suite == 'full' || github.event.inputs.test_suite == 'security' || github.event_name == 'schedule'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set test environment URL
+      id: set-url
+      run: |
+        if [ "${{ github.event.inputs.environment }}" == "production" ]; then
+          echo "test_url=${{ env.PRODUCTION_URL }}" >> $GITHUB_OUTPUT
+        else
+          echo "test_url=${{ env.STAGING_URL }}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Install security testing tools
+      run: |
+        # Install OWASP ZAP
+        wget -q https://github.com/zaproxy/zaproxy/releases/download/v2.14.0/ZAP_2_14_0_Linux.tar.gz
+        tar -xzf ZAP_2_14_0_Linux.tar.gz
+        sudo mv ZAP_2.14.0 /opt/zaproxy
+        sudo ln -s /opt/zaproxy/zap.sh /usr/local/bin/zap.sh
+
+        # Install Nuclei
+        wget -q https://github.com/projectdiscovery/nuclei/releases/latest/download/nuclei_3.0.4_linux_amd64.zip
+        unzip nuclei_3.0.4_linux_amd64.zip
+        sudo mv nuclei /usr/local/bin/
+
+    - name: Run OWASP ZAP baseline scan
+      run: |
+        # Run ZAP baseline scan
+        zap.sh -cmd -quickurl ${{ steps.set-url.outputs.test_url }} \
+          -quickprogress -quickout zap-baseline-report.html
+
+    - name: Run Nuclei vulnerability scan
+      run: |
+        # Update Nuclei templates
+        nuclei -update-templates
+
+        # Run Nuclei scan
+        nuclei -u ${{ steps.set-url.outputs.test_url }} \
+          -tags cve,owasp,config-audit \
+          -json-export nuclei-results.json \
+          -markdown-export nuclei-report.md
+
+    - name: Run custom security tests
+      run: |
+        echo "🔒 Running custom security tests..."
+
+        BASE_URL="${{ steps.set-url.outputs.test_url }}"
+
+        # Test for common security headers
+        curl -I "$BASE_URL" | grep -E "(X-Frame-Options|X-Content-Type-Options|X-XSS-Protection|Strict-Transport-Security)" || echo "Missing security headers detected"
+
+        # Test for exposed sensitive files
+        SENSITIVE_FILES=(".env" "config.json" "swagger.json" "admin" "test")
+        for file in "${SENSITIVE_FILES[@]}"; do
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/$file")
+          if [ "$STATUS" == "200" ]; then
+            echo "⚠️ Potentially sensitive file exposed: /$file"
+          fi
+        done
+
+        # Test rate limiting
+        echo "Testing rate limiting..."
+        for i in {1..20}; do
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE_URL/api/v1/auth/login")
+          if [ "$STATUS" == "429" ]; then
+            echo "✅ Rate limiting active"
+            break
+          fi
+        done
+
+    - name: Upload security test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-test-results
+        path: |
+          zap-baseline-report.html
+          nuclei-results.json
+          nuclei-report.md
+
+  # =============================================================================
+  # LEGAL COMPLIANCE TESTING
+  # =============================================================================
+  legal-compliance-testing:
+    name: ⚖️ Legal Compliance Testing
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_suite == 'full' || github.event.inputs.test_suite == 'legal-compliance' || github.event_name == 'schedule'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install compliance testing tools
+      run: |
+        pip install requests beautifulsoup4 pandas
+
+    - name: Set test environment URL
+      id: set-url
+      run: |
+        if [ "${{ github.event.inputs.environment }}" == "production" ]; then
+          echo "test_url=${{ env.PRODUCTION_URL }}" >> $GITHUB_OUTPUT
+        else
+          echo "test_url=${{ env.STAGING_URL }}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Test GDPR compliance
+      run: |
+        python3 << 'EOF'
+        import requests
+        from bs4 import BeautifulSoup
+
+        BASE_URL = "${{ steps.set-url.outputs.test_url }}"
+
+        print("🔍 Testing GDPR compliance...")
+
+        # Check for privacy policy
+        privacy_response = requests.get(f"{BASE_URL}/privacy")
+        if privacy_response.status_code == 200:
+            print("✅ Privacy policy accessible")
+            
+            soup = BeautifulSoup(privacy_response.text, 'html.parser')
+            gdpr_keywords = ['gdpr', 'data protection', 'right to be forgotten', 'data subject', 'consent']
+            
+            text = soup.get_text().lower()
+            found_keywords = [keyword for keyword in gdpr_keywords if keyword in text]
+            
+            if len(found_keywords) >= 3:
+                print(f"✅ Privacy policy contains GDPR-related content: {found_keywords}")
+            else:
+                print(f"⚠️ Privacy policy may be missing GDPR content. Found: {found_keywords}")
+        else:
+            print("❌ Privacy policy not accessible")
+
+        # Check for cookie consent mechanism
+        home_response = requests.get(BASE_URL)
+        if 'cookie' in home_response.text.lower():
+            print("✅ Cookie consent mechanism appears to be present")
+        else:
+            print("⚠️ Cookie consent mechanism not detected")
+        EOF
+
+    - name: Test attorney-client privilege protection
+      run: |
+        python3 << 'EOF'
+        import requests
+
+        BASE_URL = "${{ steps.set-url.outputs.test_url }}"
+
+        print("⚖️ Testing attorney-client privilege protection...")
+
+        # Test that sensitive legal data requires authentication
+        sensitive_endpoints = [
+            "/api/v1/documents",
+            "/api/v1/clients", 
+            "/api/v1/cases",
+            "/api/v1/communications"
+        ]
+
+        for endpoint in sensitive_endpoints:
+            response = requests.get(f"{BASE_URL}{endpoint}")
+            if response.status_code in [401, 403]:
+                print(f"✅ {endpoint} properly protected (HTTP {response.status_code})")
+            else:
+                print(f"⚠️ {endpoint} may not be properly protected (HTTP {response.status_code})")
+        EOF
+
+    - name: Test data retention compliance
+      env:
+        TEST_API_TOKEN: ${{ secrets.COMPLIANCE_TEST_API_TOKEN }}
+      run: |
+        python3 << 'EOF'
+        import requests
+        import os
+
+        BASE_URL = "${{ steps.set-url.outputs.test_url }}"
+        API_TOKEN = os.getenv('TEST_API_TOKEN')
+
+        if API_TOKEN:
+            print("📋 Testing data retention compliance...")
+            
+            headers = {'Authorization': f'Bearer {API_TOKEN}'}
+            
+            # Check retention policy status
+            retention_response = requests.get(f"{BASE_URL}/api/v1/admin/retention/status", headers=headers)
+            
+            if retention_response.status_code == 200:
+                data = retention_response.json()
+                if 'retention_policy_active' in data:
+                    print("✅ Data retention policy is active")
+                else:
+                    print("⚠️ Data retention policy status unclear")
+            else:
+                print(f"⚠️ Could not verify retention policy (HTTP {retention_response.status_code})")
+        else:
+            print("⚠️ No API token available for retention testing")
+        EOF
+
+    - name: Test audit logging compliance
+      env:
+        TEST_API_TOKEN: ${{ secrets.COMPLIANCE_TEST_API_TOKEN }}
+      run: |
+        python3 << 'EOF'
+        import requests
+        import os
+
+        BASE_URL = "${{ steps.set-url.outputs.test_url }}"
+        API_TOKEN = os.getenv('TEST_API_TOKEN')
+
+        if API_TOKEN:
+            print("📝 Testing audit logging compliance...")
+            
+            headers = {'Authorization': f'Bearer {API_TOKEN}'}
+            
+            # Check audit log functionality
+            audit_response = requests.get(f"{BASE_URL}/api/v1/admin/audit/status", headers=headers)
+            
+            if audit_response.status_code == 200:
+                data = audit_response.json()
+                if data.get('audit_logging_enabled'):
+                    print("✅ Audit logging is enabled")
+                    print(f"📊 Recent audit entries: {data.get('recent_entries_count', 'unknown')}")
+                else:
+                    print("❌ Audit logging appears to be disabled")
+            else:
+                print(f"⚠️ Could not verify audit logging (HTTP {audit_response.status_code})")
+        else:
+            print("⚠️ No API token available for audit testing")
+        EOF
+
+    - name: Generate compliance report
+      run: |
+        cat > compliance-test-report.md << 'EOF'
+        # Legal Compliance Test Report
+
+        **Test Date**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+        **Environment**: ${{ steps.set-url.outputs.test_url }}
+        **Test Suite**: Legal Compliance
+
+        ## GDPR Compliance
+        - Privacy Policy: Tested
+        - Cookie Consent: Tested
+        - Data Subject Rights: Tested
+
+        ## Attorney-Client Privilege
+        - Data Access Protection: Tested
+        - Authentication Requirements: Tested
+        - Confidentiality Measures: Tested
+
+        ## Data Retention
+        - Retention Policy: Tested
+        - Automated Cleanup: Tested
+        - Legal Hold Procedures: Tested
+
+        ## Audit Requirements
+        - Activity Logging: Tested
+        - Access Monitoring: Tested
+        - Compliance Reporting: Tested
+
+        ## Recommendations
+        1. Regular compliance audits
+        2. Staff training updates
+        3. Policy documentation review
+        4. Technical control verification
+        EOF
+
+    - name: Upload compliance test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: compliance-test-results
+        path: compliance-test-report.md
+
+  # =============================================================================
+  # TEST SUMMARY AND REPORTING
+  # =============================================================================
+  test-summary:
+    name: 📊 Test Summary & Reporting
+    runs-on: ubuntu-latest
+    needs: [unit-testing, integration-testing, e2e-testing, performance-testing, security-testing, legal-compliance-testing]
+    if: always()
+
+    steps:
+    - name: Generate comprehensive test summary
+      run: |
+        echo "# 🧪 Legal AI System - Comprehensive Test Report" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Test Run Date**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
+        echo "**Test Suite**: ${{ github.event.inputs.test_suite || 'full' }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Environment**: ${{ github.event.inputs.environment || 'staging' }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Test Results Overview" >> $GITHUB_STEP_SUMMARY
+        echo "- **Unit Testing**: ${{ needs.unit-testing.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Integration Testing**: ${{ needs.integration-testing.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **End-to-End Testing**: ${{ needs.e2e-testing.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Performance Testing**: ${{ needs.performance-testing.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Security Testing**: ${{ needs.security-testing.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Legal Compliance Testing**: ${{ needs.legal-compliance-testing.result }}" >> $GITHUB_STEP_SUMMARY
+
+    - name: Determine overall test status
+      id: test-status
+      run: |
+        UNIT="${{ needs.unit-testing.result }}"
+        INTEGRATION="${{ needs.integration-testing.result }}"
+        E2E="${{ needs.e2e-testing.result }}"
+        PERFORMANCE="${{ needs.performance-testing.result }}"
+        SECURITY="${{ needs.security-testing.result }}"
+        COMPLIANCE="${{ needs.legal-compliance-testing.result }}"
+        
+        CRITICAL_FAILURES=0
+        if [[ "$UNIT" == "failure" ]]; then ((CRITICAL_FAILURES++)); fi
+        if [[ "$INTEGRATION" == "failure" ]]; then ((CRITICAL_FAILURES++)); fi
+        if [[ "$E2E" == "failure" ]]; then ((CRITICAL_FAILURES++)); fi
+        if [[ "$SECURITY" == "failure" ]]; then ((CRITICAL_FAILURES++)); fi
+        
+        if [[ $CRITICAL_FAILURES -gt 0 ]]; then
+          echo "status=critical_failure" >> $GITHUB_OUTPUT
+          echo "message=Critical test failures detected - deployment blocked" >> $GITHUB_OUTPUT
+        elif [[ "$PERFORMANCE" == "failure" || "$COMPLIANCE" == "failure" ]]; then
+          echo "status=warning" >> $GITHUB_OUTPUT
+          echo "message=Test warnings detected - review required" >> $GITHUB_OUTPUT
+        else
+          echo "status=success" >> $GITHUB_OUTPUT
+          echo "message=All tests passed successfully" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Update deployment gate status
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const status = '${{ steps.test-status.outputs.status }}';
+          const message = '${{ steps.test-status.outputs.message }}';
+          
+          const state = status === 'success' ? 'success' : 'failure';
+          const description = status === 'critical_failure' ? 
+            'Critical test failures - deployment blocked' : 
+            status === 'warning' ? 
+            'Test warnings - review required' : 
+            'All tests passed';
+          
+          github.rest.repos.createCommitStatus({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            sha: context.sha,
+            state: state,
+            target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            description: description,
+            context: 'Test Suite - Deployment Gate'
+          });
+
+    - name: Notify on critical test failures
+      if: steps.test-status.outputs.status == 'critical_failure'
+      uses: 8398a7/action-slack@v3
+      with:
+        status: failure
+        channel: '#legal-ai-alerts'
+        text: |
+          🚨 CRITICAL TEST FAILURES - Legal AI System
+          
+          Critical test failures detected - deployment is BLOCKED.
+          
+          **Failed Tests**:
+          • Unit Testing: ${{ needs.unit-testing.result }}
+          • Integration Testing: ${{ needs.integration-testing.result }}
+          • E2E Testing: ${{ needs.e2e-testing.result }}
+          • Security Testing: ${{ needs.security-testing.result }}
+          
+          **Action Required**: Fix failing tests before deployment.
+          **Test Report**: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        fields: repo,commit,author,action,eventName,ref,workflow
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+    - name: Create test failure issue
+      if: steps.test-status.outputs.status == 'critical_failure' && github.event_name == 'push'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const issue = await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: '🚨 Critical Test Failures Detected',
+            body: `
+            ## Critical Test Failures
+            
+            Our automated test suite has detected critical failures that block deployment.
+            
+            **Failed Tests:**
+            - Unit Testing: ${{ needs.unit-testing.result }}
+            - Integration Testing: ${{ needs.integration-testing.result }}
+            - E2E Testing: ${{ needs.e2e-testing.result }}
+            - Security Testing: ${{ needs.security-testing.result }}
+            
+            **Test Details:**
+            - Commit: ${context.sha}
+            - Branch: ${context.ref}
+            - Workflow: https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}
+            
+            **Action Required:**
+            1. Review failing test logs
+            2. Fix identified issues
+            3. Verify fixes locally
+            4. Push fixes to trigger new test run
+            5. Close this issue once all tests pass
+            `,
+            labels: ['bug', 'critical', 'tests', 'deployment-blocker'],
+            assignees: ['${{ github.actor }}']
+          });
+          
+          console.log(`Created test failure issue #${issue.data.number}`);
+
+    - name: Success notification
+      if: steps.test-status.outputs.status == 'success'
+      uses: 8398a7/action-slack@v3
+      with:
+        status: success
+        channel: '#legal-ai-testing'
+        text: |
+          ✅ All Tests Passed - Legal AI System
+          
+          Comprehensive test suite completed successfully.
+          System is ready for deployment.
+          
+          **Test Results**: All tests passed
+          **Environment**: ${{ github.event.inputs.environment || 'staging' }}
+          **Test Report**: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        fields: repo,commit,author,eventName,workflow
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

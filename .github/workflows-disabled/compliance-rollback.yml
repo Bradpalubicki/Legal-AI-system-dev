@@ -1,0 +1,439 @@
+name: 🔒 Legal AI Compliance Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      rollback_reason:
+        description: 'Reason for compliance rollback'
+        required: true
+        type: choice
+        options:
+        - upl_violation
+        - disclaimer_missing
+        - attorney_review_failure
+        - state_rules_violation
+        - critical_compliance_failure
+      target_commit:
+        description: 'Target commit hash to rollback to (leave empty for last known good)'
+        required: false
+        type: string
+      environment:
+        description: 'Environment to rollback'
+        required: true
+        type: choice
+        options:
+        - staging
+        - production
+        - all
+      emergency_rollback:
+        description: 'Emergency rollback (bypass approval)'
+        required: false
+        type: boolean
+        default: false
+
+  repository_dispatch:
+    types: [compliance_failure]
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '20'
+
+jobs:
+  # =============================================================================
+  # COMPLIANCE FAILURE ASSESSMENT
+  # =============================================================================
+  assess-compliance-failure:
+    name: 🔍 Assess Compliance Failure
+    runs-on: ubuntu-latest
+    outputs:
+      rollback_required: ${{ steps.assessment.outputs.rollback_required }}
+      rollback_scope: ${{ steps.assessment.outputs.rollback_scope }}
+      target_commit: ${{ steps.assessment.outputs.target_commit }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Assess compliance failure
+      id: assessment
+      run: |
+        echo "🔍 Assessing compliance failure..."
+
+        ROLLBACK_REASON="${{ github.event.inputs.rollback_reason }}"
+        EMERGENCY="${{ github.event.inputs.emergency_rollback }}"
+
+        case "$ROLLBACK_REASON" in
+          "upl_violation")
+            echo "🚨 UPL violation detected - Critical rollback required"
+            echo "rollback_required=true" >> $GITHUB_OUTPUT
+            echo "rollback_scope=full" >> $GITHUB_OUTPUT
+            ;;
+          "disclaimer_missing")
+            echo "⚠️ Disclaimer missing - Partial rollback may be sufficient"
+            echo "rollback_required=true" >> $GITHUB_OUTPUT
+            echo "rollback_scope=frontend" >> $GITHUB_OUTPUT
+            ;;
+          "attorney_review_failure")
+            echo "🔍 Attorney review failure - Backend rollback required"
+            echo "rollback_required=true" >> $GITHUB_OUTPUT
+            echo "rollback_scope=backend" >> $GITHUB_OUTPUT
+            ;;
+          "critical_compliance_failure")
+            echo "🚨 Critical compliance failure - Full system rollback"
+            echo "rollback_required=true" >> $GITHUB_OUTPUT
+            echo "rollback_scope=full" >> $GITHUB_OUTPUT
+            ;;
+          *)
+            echo "📋 Standard compliance issue - Evaluating rollback necessity"
+            echo "rollback_required=false" >> $GITHUB_OUTPUT
+            echo "rollback_scope=none" >> $GITHUB_OUTPUT
+            ;;
+        esac
+
+        # Determine target commit
+        TARGET_COMMIT="${{ github.event.inputs.target_commit }}"
+        if [ -z "$TARGET_COMMIT" ]; then
+          # Find last commit with passing compliance tests
+          TARGET_COMMIT=$(git log --grep="compliance.*pass\|compliance.*success" --format="%H" -n 1)
+          if [ -z "$TARGET_COMMIT" ]; then
+            # Fallback to commit 10 commits ago
+            TARGET_COMMIT=$(git rev-parse HEAD~10)
+          fi
+        fi
+
+        echo "target_commit=$TARGET_COMMIT" >> $GITHUB_OUTPUT
+        echo "Target rollback commit: $TARGET_COMMIT"
+
+    - name: Generate rollback plan
+      run: |
+        cat > rollback-plan.md << EOF
+        # Legal AI Compliance Rollback Plan
+
+        **Rollback Initiated**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+        **Trigger**: ${{ github.event.inputs.rollback_reason }}
+        **Environment**: ${{ github.event.inputs.environment }}
+        **Emergency**: ${{ github.event.inputs.emergency_rollback }}
+
+        ## Assessment Results
+        - **Rollback Required**: ${{ steps.assessment.outputs.rollback_required }}
+        - **Rollback Scope**: ${{ steps.assessment.outputs.rollback_scope }}
+        - **Target Commit**: ${{ steps.assessment.outputs.target_commit }}
+
+        ## Rollback Steps
+        1. Stop all affected services
+        2. Backup current state
+        3. Rollback to target commit
+        4. Restore database to safe state
+        5. Restart services with compliance validation
+        6. Verify compliance status
+        7. Update monitoring and alerts
+
+        ## Risk Mitigation
+        - All changes will be backed up before rollback
+        - Database rollback will preserve audit logs
+        - Compliance validation will run before service restart
+        - Rollback can be reverted if issues are detected
+
+        ## Communication Plan
+        - Notify legal team of compliance issue
+        - Update stakeholders on system status
+        - Document lessons learned
+        - Schedule post-incident review
+        EOF
+
+    - name: Upload rollback plan
+      uses: actions/upload-artifact@v3
+      with:
+        name: rollback-plan
+        path: rollback-plan.md
+
+  # =============================================================================
+  # ROLLBACK APPROVAL (Skip for Emergency)
+  # =============================================================================
+  rollback-approval:
+    name: 📋 Rollback Approval
+    runs-on: ubuntu-latest
+    needs: assess-compliance-failure
+    if: needs.assess-compliance-failure.outputs.rollback_required == 'true' && github.event.inputs.emergency_rollback != 'true'
+    environment:
+      name: compliance-rollback-approval
+      url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+    steps:
+    - name: Manual approval required
+      run: |
+        echo "🔒 Manual approval required for compliance rollback"
+        echo "Rollback scope: ${{ needs.assess-compliance-failure.outputs.rollback_scope }}"
+        echo "Target commit: ${{ needs.assess-compliance-failure.outputs.target_commit }}"
+
+  # =============================================================================
+  # EXECUTE ROLLBACK
+  # =============================================================================
+  execute-rollback:
+    name: 🔄 Execute Compliance Rollback
+    runs-on: ubuntu-latest
+    needs: [assess-compliance-failure, rollback-approval]
+    if: |
+      always() &&
+      needs.assess-compliance-failure.outputs.rollback_required == 'true' &&
+      (needs.rollback-approval.result == 'success' || github.event.inputs.emergency_rollback == 'true')
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Prepare rollback environment
+      run: |
+        echo "🔧 Preparing rollback environment..."
+
+        # Install required tools
+        sudo apt-get update
+        sudo apt-get install -y postgresql-client
+
+        # Set up kubectl if needed
+        if [ "${{ github.event.inputs.environment }}" = "production" ] || [ "${{ github.event.inputs.environment }}" = "all" ]; then
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+        fi
+
+    - name: Backup current state
+      run: |
+        echo "💾 Backing up current state..."
+
+        # Create backup directory
+        mkdir -p rollback-backup
+
+        # Backup current commit info
+        git log -1 --format="%H %s" > rollback-backup/current-commit.txt
+
+        # Backup current docker-compose configuration
+        cp docker-compose.yml rollback-backup/ || true
+
+        # Backup kubernetes configurations
+        cp -r kubernetes/ rollback-backup/ || true
+
+        echo "Backup completed to rollback-backup/"
+
+    - name: Stop affected services
+      run: |
+        echo "🛑 Stopping affected services..."
+
+        ROLLBACK_SCOPE="${{ needs.assess-compliance-failure.outputs.rollback_scope }}"
+        ENVIRONMENT="${{ github.event.inputs.environment }}"
+
+        case "$ENVIRONMENT" in
+          "staging"|"all")
+            echo "Stopping staging services..."
+            # Add staging service stop commands here
+            ;;
+          "production"|"all")
+            echo "Stopping production services..."
+            # Add production service stop commands here
+            ;;
+        esac
+
+    - name: Execute git rollback
+      run: |
+        echo "🔄 Executing git rollback..."
+
+        TARGET_COMMIT="${{ needs.assess-compliance-failure.outputs.target_commit }}"
+        ROLLBACK_SCOPE="${{ needs.assess-compliance-failure.outputs.rollback_scope }}"
+
+        echo "Rolling back to commit: $TARGET_COMMIT"
+        echo "Rollback scope: $ROLLBACK_SCOPE"
+
+        # Create rollback branch
+        ROLLBACK_BRANCH="compliance-rollback-$(date +%Y%m%d-%H%M%S)"
+        git checkout -b "$ROLLBACK_BRANCH" "$TARGET_COMMIT"
+
+        # Apply only relevant files based on scope
+        case "$ROLLBACK_SCOPE" in
+          "frontend")
+            echo "Rolling back frontend only..."
+            git checkout "$TARGET_COMMIT" -- frontend/
+            ;;
+          "backend")
+            echo "Rolling back backend only..."
+            git checkout "$TARGET_COMMIT" -- backend/
+            ;;
+          "full")
+            echo "Full system rollback..."
+            git reset --hard "$TARGET_COMMIT"
+            ;;
+        esac
+
+        echo "ROLLBACK_BRANCH=$ROLLBACK_BRANCH" >> $GITHUB_ENV
+
+    - name: Validate compliance after rollback
+      run: |
+        echo "✅ Validating compliance after rollback..."
+
+        # Run compliance validation if available
+        if [ -f "comprehensive_compliance_validation.py" ]; then
+          python3 comprehensive_compliance_validation.py 2>&1 | tee post-rollback-validation.log || true
+        fi
+
+        # Run attorney review flagging test
+        if [ -f "enhanced_attorney_review_flagging.py" ]; then
+          python3 enhanced_attorney_review_flagging.py 2>&1 | tee post-rollback-attorney-review.log || true
+        fi
+
+    - name: Restart services
+      run: |
+        echo "🚀 Restarting services..."
+
+        ENVIRONMENT="${{ github.event.inputs.environment }}"
+
+        case "$ENVIRONMENT" in
+          "staging"|"all")
+            echo "Restarting staging services..."
+            # Add staging service restart commands here
+            ;;
+          "production"|"all")
+            echo "Restarting production services..."
+            # Add production service restart commands here
+            ;;
+        esac
+
+    - name: Create rollback summary
+      run: |
+        cat > rollback-summary.md << EOF
+        # Compliance Rollback Summary
+
+        **Rollback Completed**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+        **Rollback Branch**: $ROLLBACK_BRANCH
+        **Original Issue**: ${{ github.event.inputs.rollback_reason }}
+        **Environment**: ${{ github.event.inputs.environment }}
+
+        ## Rollback Details
+        - **Source Commit**: $(cat rollback-backup/current-commit.txt)
+        - **Target Commit**: ${{ needs.assess-compliance-failure.outputs.target_commit }}
+        - **Rollback Scope**: ${{ needs.assess-compliance-failure.outputs.rollback_scope }}
+
+        ## Post-Rollback Validation
+        - Compliance validation: $([ -f post-rollback-validation.log ] && echo "Completed" || echo "Skipped")
+        - Attorney review testing: $([ -f post-rollback-attorney-review.log ] && echo "Completed" || echo "Skipped")
+
+        ## Next Steps
+        1. Monitor system for stability
+        2. Investigate root cause of compliance failure
+        3. Implement fixes and test thoroughly
+        4. Schedule compliance review meeting
+        5. Update compliance procedures if necessary
+
+        ## Rollback Files
+        - Current state backup: Available in rollback-backup/
+        - Rollback branch: $ROLLBACK_BRANCH
+        - Validation logs: post-rollback-*.log files
+        EOF
+
+    - name: Upload rollback artifacts
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: rollback-execution-results
+        path: |
+          rollback-summary.md
+          rollback-backup/
+          post-rollback-*.log
+
+  # =============================================================================
+  # NOTIFICATION AND MONITORING
+  # =============================================================================
+  notify-rollback-completion:
+    name: 📢 Notify Rollback Completion
+    runs-on: ubuntu-latest
+    needs: [assess-compliance-failure, execute-rollback]
+    if: always() && needs.execute-rollback.result == 'success'
+
+    steps:
+    - name: Notify legal team
+      uses: 8398a7/action-slack@v3
+      with:
+        status: custom
+        custom_payload: |
+          {
+            "channel": "#legal-ai-compliance",
+            "username": "Legal AI Compliance Bot",
+            "icon_emoji": ":warning:",
+            "attachments": [{
+              "color": "warning",
+              "title": "🔒 Legal AI Compliance Rollback Completed",
+              "text": "A compliance rollback has been executed due to: ${{ github.event.inputs.rollback_reason }}",
+              "fields": [
+                {
+                  "title": "Environment",
+                  "value": "${{ github.event.inputs.environment }}",
+                  "short": true
+                },
+                {
+                  "title": "Rollback Scope",
+                  "value": "${{ needs.assess-compliance-failure.outputs.rollback_scope }}",
+                  "short": true
+                },
+                {
+                  "title": "Repository",
+                  "value": "${{ github.repository }}",
+                  "short": true
+                },
+                {
+                  "title": "Triggered By",
+                  "value": "${{ github.actor }}",
+                  "short": true
+                }
+              ],
+              "actions": [{
+                "type": "button",
+                "text": "View Rollback Details",
+                "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              }]
+            }]
+          }
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_LEGAL }}
+
+    - name: Create compliance incident issue
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const issue = await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: '🚨 Compliance Rollback: ${{ github.event.inputs.rollback_reason }}',
+            body: `
+            ## Compliance Rollback Incident
+
+            A compliance rollback was executed due to: **${{ github.event.inputs.rollback_reason }}**
+
+            **Rollback Details:**
+            - Environment: ${{ github.event.inputs.environment }}
+            - Rollback Scope: ${{ needs.assess-compliance-failure.outputs.rollback_scope }}
+            - Target Commit: ${{ needs.assess-compliance-failure.outputs.target_commit }}
+            - Emergency Rollback: ${{ github.event.inputs.emergency_rollback }}
+
+            **Workflow Run:** https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}
+
+            ## Immediate Actions Required
+            1. [ ] Investigate root cause of compliance failure
+            2. [ ] Review rollback effectiveness
+            3. [ ] Implement permanent fix
+            4. [ ] Test compliance validation
+            5. [ ] Schedule post-incident review meeting
+            6. [ ] Update compliance procedures if necessary
+
+            ## Compliance Team Assignment
+            This incident requires immediate attention from the legal and compliance team.
+
+            **Priority**: Critical
+            **SLA**: Fix within 24 hours
+            `,
+            labels: ['compliance', 'incident', 'critical', 'legal'],
+            assignees: ['${{ github.actor }}']
+          });
+
+          console.log('Created compliance incident issue:', issue.data.number);

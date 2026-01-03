@@ -1,0 +1,411 @@
+# =============================================================================
+# Legal AI System - Prometheus Alerting Rules
+# =============================================================================
+# Comprehensive alerting for legal document processing system,
+# covering application health, compliance, and business metrics
+# =============================================================================
+
+groups:
+  # =============================================================================
+  # CRITICAL SYSTEM ALERTS
+  # =============================================================================
+  - name: legal-ai-system-critical
+    rules:
+      # Application is completely down
+      - alert: LegalAISystemDown
+        expr: up{job=~"legal-ai-.*"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: system
+          team: legal-ai-devops
+        annotations:
+          summary: "Legal AI System service is down"
+          description: "{{ $labels.job }} has been down for more than 1 minute. This affects client access to legal services."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/system-down"
+
+      # High error rate across the application
+      - alert: LegalAIHighErrorRate
+        expr: (rate(http_requests_total{job="legal-ai-backend",status=~"5.."}[5m]) / rate(http_requests_total{job="legal-ai-backend"}[5m])) * 100 > 5
+        for: 2m
+        labels:
+          severity: critical
+          component: backend
+          team: legal-ai-dev
+        annotations:
+          summary: "High error rate in Legal AI Backend"
+          description: "Error rate is {{ $value }}% for the last 5 minutes. This may indicate a serious issue with the application."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/high-error-rate"
+
+      # Database connectivity issues
+      - alert: LegalAIDatabaseDown
+        expr: up{job="postgresql"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          component: database
+          team: legal-ai-devops
+        annotations:
+          summary: "Legal AI Database is unreachable"
+          description: "PostgreSQL database is down. This will cause complete system failure."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/database-down"
+
+      # Redis (cache/sessions) is down
+      - alert: LegalAIRedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: cache
+          team: legal-ai-devops
+        annotations:
+          summary: "Legal AI Redis is down"
+          description: "Redis service is unavailable. This affects user sessions and caching."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/redis-down"
+
+  # =============================================================================
+  # APPLICATION PERFORMANCE ALERTS
+  # =============================================================================
+  - name: legal-ai-performance
+    rules:
+      # High response time for API endpoints
+      - alert: LegalAIHighLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="legal-ai-backend"}[5m])) > 5
+        for: 5m
+        labels:
+          severity: warning
+          component: backend
+          team: legal-ai-dev
+        annotations:
+          summary: "High latency in Legal AI API"
+          description: "95th percentile latency is {{ $value }}s for API requests. Users may experience slow response times."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/high-latency"
+
+      # Document processing taking too long
+      - alert: LegalAIDocumentProcessingDelay
+        expr: rate(document_processing_duration_seconds_sum{job="legal-ai-backend"}[10m]) / rate(document_processing_duration_seconds_count{job="legal-ai-backend"}[10m]) > 300
+        for: 10m
+        labels:
+          severity: warning
+          component: document-processor
+          team: legal-ai-dev
+        annotations:
+          summary: "Document processing is slow"
+          description: "Average document processing time is {{ $value }}s. Legal workflows may be delayed."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/slow-document-processing"
+
+      # AI API response time degradation
+      - alert: LegalAISlowAIResponse
+        expr: rate(ai_request_duration_seconds_sum{job="legal-ai-backend"}[10m]) / rate(ai_request_duration_seconds_count{job="legal-ai-backend"}[10m]) > 30
+        for: 5m
+        labels:
+          severity: warning
+          component: ai-service
+          team: legal-ai-dev
+        annotations:
+          summary: "AI service response time is high"
+          description: "Average AI request time is {{ $value }}s. Legal analysis may be delayed."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/slow-ai-response"
+
+  # =============================================================================
+  # RESOURCE UTILIZATION ALERTS
+  # =============================================================================
+  - name: legal-ai-resources
+    rules:
+      # High CPU usage
+      - alert: LegalAIHighCPU
+        expr: rate(container_cpu_usage_seconds_total{namespace="legal-ai-system"}[5m]) * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+          component: infrastructure
+          team: legal-ai-devops
+        annotations:
+          summary: "High CPU usage in Legal AI system"
+          description: "CPU usage is {{ $value }}% for container {{ $labels.container }} in pod {{ $labels.pod }}."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/high-cpu"
+
+      # High memory usage
+      - alert: LegalAIHighMemory
+        expr: (container_memory_usage_bytes{namespace="legal-ai-system"} / container_spec_memory_limit_bytes{namespace="legal-ai-system"}) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+          team: legal-ai-devops
+        annotations:
+          summary: "High memory usage in Legal AI system"
+          description: "Memory usage is {{ $value }}% for container {{ $labels.container }} in pod {{ $labels.pod }}."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/high-memory"
+
+      # Database connection pool exhaustion
+      - alert: LegalAIDatabaseConnectionsHigh
+        expr: (pg_stat_activity_count{job="postgresql"} / pg_settings_max_connections{job="postgresql"}) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+          team: legal-ai-dev
+        annotations:
+          summary: "High database connection usage"
+          description: "Database connections are at {{ $value }}% of maximum capacity."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/high-db-connections"
+
+      # Storage space running low
+      - alert: LegalAILowDiskSpace
+        expr: (node_filesystem_free_bytes{fstype!="tmpfs",mountpoint="/"} / node_filesystem_size_bytes{fstype!="tmpfs",mountpoint="/"}) * 100 < 15
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+          team: legal-ai-devops
+        annotations:
+          summary: "Low disk space on Legal AI system"
+          description: "Disk space is {{ $value }}% free on {{ $labels.instance }}."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/low-disk-space"
+
+  # =============================================================================
+  # LEGAL-SPECIFIC BUSINESS ALERTS
+  # =============================================================================
+  - name: legal-ai-business
+    rules:
+      # Document processing failures
+      - alert: LegalAIDocumentProcessingFailures
+        expr: rate(document_processing_errors_total{job="legal-ai-backend"}[10m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: document-processor
+          team: legal-ai-dev
+        annotations:
+          summary: "High document processing failure rate"
+          description: "Document processing failures at {{ $value }} per second. Legal workflows may be impacted."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/document-processing-failures"
+
+      # Citation validation failures
+      - alert: LegalAICitationValidationFailures
+        expr: rate(citation_validation_errors_total{job="legal-ai-backend"}[10m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          component: citation-validator
+          team: legal-ai-dev
+        annotations:
+          summary: "High citation validation failure rate"
+          description: "Citation validation failing at {{ $value }} per second. Legal research accuracy may be affected."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/citation-validation-failures"
+
+      # AI analysis queue backup
+      - alert: LegalAIAnalysisQueueBackup
+        expr: celery_queue_length{queue="ai_analysis"} > 100
+        for: 15m
+        labels:
+          severity: warning
+          component: ai-queue
+          team: legal-ai-dev
+        annotations:
+          summary: "AI analysis queue is backed up"
+          description: "AI analysis queue has {{ $value }} pending tasks. Legal analysis may be delayed."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/ai-queue-backup"
+
+      # Unusual authentication failures
+      - alert: LegalAIUnusualAuthFailures
+        expr: rate(auth_failures_total{job="legal-ai-backend"}[5m]) > 2
+        for: 5m
+        labels:
+          severity: warning
+          component: authentication
+          team: legal-ai-security
+        annotations:
+          summary: "Unusual authentication failure rate"
+          description: "Authentication failures at {{ $value }} per second. Possible security incident."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/auth-failures"
+
+  # =============================================================================
+  # COMPLIANCE AND SECURITY ALERTS
+  # =============================================================================
+  - name: legal-ai-compliance
+    rules:
+      # Audit logging failures
+      - alert: LegalAIAuditLoggingFailure
+        expr: rate(audit_log_errors_total{job="legal-ai-backend"}[10m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: audit
+          team: legal-ai-security
+        annotations:
+          summary: "Audit logging is failing"
+          description: "Audit log errors detected. This is a compliance violation and must be addressed immediately."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/audit-logging-failure"
+
+      # Data retention policy violations
+      - alert: LegalAIDataRetentionViolation
+        expr: data_retention_overdue_records{job="legal-ai-backend"} > 0
+        for: 60m
+        labels:
+          severity: warning
+          component: data-retention
+          team: legal-ai-compliance
+        annotations:
+          summary: "Data retention policy violation"
+          description: "{{ $value }} records are overdue for deletion per retention policy."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/data-retention-violation"
+
+      # SSL certificate expiration
+      - alert: LegalAISSLCertificateExpiring
+        expr: (probe_ssl_earliest_cert_expiry{job="blackbox-ssl"} - time()) / 86400 < 30
+        for: 1h
+        labels:
+          severity: warning
+          component: infrastructure
+          team: legal-ai-devops
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "SSL certificate for {{ $labels.instance }} expires in {{ $value }} days."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/ssl-certificate-expiring"
+
+      # Privileged access usage
+      - alert: LegalAIPrivilegedAccessUsage
+        expr: rate(privileged_operations_total{job="legal-ai-backend"}[1h]) > 10
+        for: 0s
+        labels:
+          severity: info
+          component: security
+          team: legal-ai-security
+        annotations:
+          summary: "Privileged access being used"
+          description: "{{ $value }} privileged operations per hour. Monitor for appropriate usage."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/privileged-access"
+
+  # =============================================================================
+  # EXTERNAL SERVICE DEPENDENCY ALERTS
+  # =============================================================================
+  - name: legal-ai-external-services
+    rules:
+      # Legal research API failures
+      - alert: LegalAILegalResearchAPIFailures
+        expr: rate(legal_research_api_errors_total{job="legal-ai-backend"}[10m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: external-api
+          team: legal-ai-dev
+        annotations:
+          summary: "Legal research API failures"
+          description: "Legal research API failing at {{ $value }} per second. Legal research functionality impacted."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/legal-research-api-failures"
+
+      # AI provider API rate limiting
+      - alert: LegalAIRateLimited
+        expr: rate(ai_api_rate_limit_errors_total{job="legal-ai-backend"}[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+          component: ai-provider
+          team: legal-ai-dev
+        annotations:
+          summary: "AI provider API rate limiting detected"
+          description: "AI provider rate limiting at {{ $value }} per second. Consider throttling or upgrading limits."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/ai-rate-limiting"
+
+      # Email service failures
+      - alert: LegalAIEmailServiceFailures
+        expr: rate(email_send_errors_total{job="legal-ai-backend"}[10m]) > 0.02
+        for: 5m
+        labels:
+          severity: warning
+          component: notification
+          team: legal-ai-dev
+        annotations:
+          summary: "Email service failures detected"
+          description: "Email sending failures at {{ $value }} per second. Client notifications may be affected."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/email-failures"
+
+  # =============================================================================
+  # CELERY WORKER ALERTS
+  # =============================================================================
+  - name: legal-ai-workers
+    rules:
+      # No active Celery workers
+      - alert: LegalAINoActiveWorkers
+        expr: sum(up{job="legal-ai-workers"}) == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: workers
+          team: legal-ai-dev
+        annotations:
+          summary: "No active Celery workers"
+          description: "All Celery workers are down. Background tasks will not be processed."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/no-workers"
+
+      # Worker memory usage too high
+      - alert: LegalAIWorkerHighMemory
+        expr: process_resident_memory_bytes{job="legal-ai-workers"} > 2000000000  # 2GB
+        for: 10m
+        labels:
+          severity: warning
+          component: workers
+          team: legal-ai-dev
+        annotations:
+          summary: "Celery worker using too much memory"
+          description: "Worker {{ $labels.instance }} is using {{ $value | humanize }}B of memory."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/worker-high-memory"
+
+      # Task failures increasing
+      - alert: LegalAITaskFailuresHigh
+        expr: rate(celery_task_failure_total{job="legal-ai-workers"}[10m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: workers
+          team: legal-ai-dev
+        annotations:
+          summary: "High Celery task failure rate"
+          description: "Task failures at {{ $value }} per second. Check worker logs for issues."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/task-failures"
+
+  # =============================================================================
+  # KUBERNETES-SPECIFIC ALERTS
+  # =============================================================================
+  - name: legal-ai-kubernetes
+    rules:
+      # Pod restart loop
+      - alert: LegalAIPodRestartLoop
+        expr: rate(kube_pod_container_status_restarts_total{namespace="legal-ai-system"}[15m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          component: kubernetes
+          team: legal-ai-devops
+        annotations:
+          summary: "Pod restarting frequently"
+          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is restarting frequently."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/pod-restarts"
+
+      # Deployment rollout stuck
+      - alert: LegalAIDeploymentRolloutStuck
+        expr: kube_deployment_status_condition{condition="Progressing",status="false",namespace="legal-ai-system"} == 1
+        for: 15m
+        labels:
+          severity: critical
+          component: kubernetes
+          team: legal-ai-devops
+        annotations:
+          summary: "Deployment rollout is stuck"
+          description: "Deployment {{ $labels.deployment }} rollout is not progressing."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/deployment-stuck"
+
+      # PersistentVolume filling up
+      - alert: LegalAIPVFillingUp
+        expr: (kubelet_volume_stats_used_bytes{namespace="legal-ai-system"} / kubelet_volume_stats_capacity_bytes{namespace="legal-ai-system"}) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          component: storage
+          team: legal-ai-devops
+        annotations:
+          summary: "PersistentVolume filling up"
+          description: "PV {{ $labels.persistentvolumeclaim }} is {{ $value }}% full."
+          runbook_url: "https://wiki.example.com/legal-ai/runbooks/pv-filling-up"

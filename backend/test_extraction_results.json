@@ -1,0 +1,521 @@
+{
+  "SBA Loan with Breakdown": {
+    "financial_transactions": [
+      {
+        "transaction_type": "SBA Loan",
+        "total_amount": "$5,000,000",
+        "amount_numeric": 5000000.0,
+        "context": "2ND AMENDED COMPLAINT  The debtors received an SBA loan in the total amount of $5,000,000 from ABC Bank. The loan was allocated as follows:      Working Capital: $2,400,000     Equipment Purchase: $1,500,000     Real Estate: $800,000     Operating Expenses: $300,000  This loan is secured by all busi",
+        "source_text": "The debtors received an SBA loan in the total amount of $5,000,000 from ABC Bank.",
+        "confidence": 0.8999999999999999,
+        "category_confidence": 0.7999999999999999,
+        "is_breakdown_item": false,
+        "parent_description": null,
+        "position_in_document": 80
+      },
+      {
+        "transaction_type": "SBA Loan",
+        "total_amount": "$2,400,000",
+        "amount_numeric": 2400000.0,
+        "context": "2ND AMENDED COMPLAINT  The debtors received an SBA loan in the total amount of $5,000,000 from ABC Bank. The loan was allocated as follows:      Working Capital: $2,400,000     Equipment Purchase: $1,500,000     Real Estate: $800,000     Operating Expenses: $300,000  This loan is secured by all busi",
+        "source_text": "Working Capital: $2,400,000",
+        "confidence": 0.8999999999999999,
+        "category_confidence": 0.7999999999999999,
+        "is_breakdown_item": true,
+        "parent_description": "The loan was allocated as follows:",
+        "position_in_document": 163
+      },
+      {
+        "transaction_type": "SBA Loan",
+        "total_amount": "$1,500,000",
+        "amount_numeric": 1500000.0,
+        "context": "2ND AMENDED COMPLAINT  The debtors received an SBA loan in the total amount of $5,000,000 from ABC Bank. The loan was allocated as follows:      Working Capital: $2,400,000     Equipment Purchase: $1,500,000     Real Estate: $800,000     Operating Expenses: $300,000  This loan is secured by all busi",
+        "source_text": "Equipment Purchase: $1,500,000",
+        "confidence": 0.8999999999999999,
+        "category_confidence": 0.7999999999999999,
+        "is_breakdown_item": true,
+        "parent_description": "The loan was allocated as follows:",
+        "position_in_document": 198
+      },
+      {
+        "transaction_type": "SBA Loan",
+        "total_amount": "$800,000",
+        "amount_numeric": 800000.0,
+        "context": "2ND AMENDED COMPLAINT  The debtors received an SBA loan in the total amount of $5,000,000 from ABC Bank. The loan was allocated as follows:      Working Capital: $2,400,000     Equipment Purchase: $1,500,000     Real Estate: $800,000     Operating Expenses: $300,000  This loan is secured by all busi",
+        "source_text": "Real Estate: $800,000",
+        "confidence": 0.8999999999999999,
+        "category_confidence": 0.7999999999999999,
+        "is_breakdown_item": true,
+        "parent_description": "The loan was allocated as follows:",
+        "position_in_document": 226
+      },
+      {
+        "transaction_type": "SBA Loan",
+        "total_amount": "$300,000",
+        "amount_numeric": 300000.0,
+        "context": "DED COMPLAINT  The debtors received an SBA loan in the total amount of $5,000,000 from ABC Bank. The loan was allocated as follows:      Working Capital: $2,400,000     Equipment Purchase: $1,500,000     Real Estate: $800,000     Operating Expenses: $300,000  This loan is secured by all business ass",
+        "source_text": "Operating Expenses: $300,000",
+        "confidence": 0.8999999999999999,
+        "category_confidence": 0.7999999999999999,
+        "is_breakdown_item": true,
+        "parent_description": "The loan was allocated as follows:",
+        "position_in_document": 259
+      }
+    ],
+    "total_debt_summary": {},
+    "insurance_policies": [],
+    "claims_breakdown": [],
+    "claims_summary": {},
+    "legal_precedents": [],
+    "payment_schedules": [],
+    "docket_numbers": [],
+    "extraction_metadata": {
+      "extraction_date": "2025-10-24T14:00:33.262293",
+      "document_analyzed": "SBA Loan with Breakdown.txt",
+      "confidence_score": 0.5,
+      "method": "regex_fallback",
+      "extraction_type": "DYNAMIC - pattern-based, not hardcoded"
+    },
+    "dates_extracted": []
+  },
+  "Multiple Claims (Palubicki-style)": {
+    "financial_transactions": [
+      {
+        "transaction_type": "Debt",
+        "total_amount": "$1,250,000.00",
+        "amount_numeric": 1250000.0,
+        "context": "CLAIMS BREAKDOWN - In re Mayfair Capital  The following proofs of claim have been filed:  POC #1234 - John Palubicki - $1,250,000.00 (Unsecured) POC #1235 - Jane Smith - $425,729.59 (Priority) POC #1236 - ACME Corp - $320,000.00 (Secured) Claim No. 1237 - XYZ Services - $125,000.00 (Unsecured) Proof",
+        "source_text": "POC #1234 - John Palubicki - $1,250,000.00 (Unsecured)",
+        "confidence": 0.6,
+        "category_confidence": 0.7999999999999999,
+        "is_breakdown_item": false,
+        "parent_description": null,
+        "position_in_document": 120
+      },
+      {
+        "transaction_type": "Debt",
+        "total_amount": "$425,729.59",
+        "amount_numeric": 425729.59,
+        "context": "CLAIMS BREAKDOWN - In re Mayfair Capital  The following proofs of claim have been filed:  POC #1234 - John Palubicki - $1,250,000.00 (Unsecured) POC #1235 - Jane Smith - $425,729.59 (Priority) POC #1236 - ACME Corp - $320,000.00 (Secured) Claim No. 1237 - XYZ Services - $125,000.00 (Unsecured) Proof",
+        "source_text": "POC #1235 - Jane Smith - $425,729.59 (Priority)",
+        "confidence": 0.6,
+        "category_confidence": 0.7999999999999999,
+        "is_breakdown_item": false,
+        "parent_description": null,
+        "position_in_document": 171
+      },
+      {
+        "transaction_type": "Debt",
+        "total_amount": "$320,000.00",
+        "amount_numeric": 320000.0,
+        "context": "CLAIMS BREAKDOWN - In re Mayfair Capital  The following proofs of claim have been filed:  POC #1234 - John Palubicki - $1,250,000.00 (Unsecured) POC #1235 - Jane Smith - $425,729.59 (Priority) POC #1236 - ACME Corp - $320,000.00 (Secured) Claim No. 1237 - XYZ Services - $125,000.00 (Unsecured) Proof",
+        "source_text": "POC #1236 - ACME Corp - $320,000.00 (Secured)",
+        "confidence": 0.7,
+        "category_confidence": 0.7999999999999999,
+        "is_breakdown_item": false,
+        "parent_description": null,
+        "position_in_document": 218
+      },
+      {
+        "transaction_type": "Debt",
+        "total_amount": "$125,000.00",
+        "amount_numeric": 125000.0,
+        "context": "re Mayfair Capital  The following proofs of claim have been filed:  POC #1234 - John Palubicki - $1,250,000.00 (Unsecured) POC #1235 - Jane Smith - $425,729.59 (Priority) POC #1236 - ACME Corp - $320,000.00 (Secured) Claim No. 1237 - XYZ Services - $125,000.00 (Unsecured) Proof of Claim 1238 filed b",
+        "source_text": "Claim No. 1237 - XYZ Services - $125,000.00 (Unsecured)",
+        "confidence": 0.7,
+        "category_confidence": 0.7999999999999999,
+        "is_breakdown_item": false,
+        "parent_description": null,
+        "position_in_document": 272
+      },
+      {
+        "transaction_type": "Other",
+        "total_amount": "$75,000.00",
+        "amount_numeric": 75000.0,
+        "context": "OC #1234 - John Palubicki - $1,250,000.00 (Unsecured) POC #1235 - Jane Smith - $425,729.59 (Priority) POC #1236 - ACME Corp - $320,000.00 (Secured) Claim No. 1237 - XYZ Services - $125,000.00 (Unsecured) Proof of Claim 1238 filed by Tech Solutions - $75,000.00  Scheduled Claims: - Municipal Taxes: $",
+        "source_text": "Proof of Claim 1238 filed by Tech Solutions - $75,000.00",
+        "confidence": 0.7,
+        "category_confidence": 0.4,
+        "is_breakdown_item": false,
+        "parent_description": null,
+        "position_in_document": 342
+      },
+      {
+        "transaction_type": "Other",
+        "total_amount": "$73,335.00",
+        "amount_numeric": 73335.0,
+        "context": "red) POC #1235 - Jane Smith - $425,729.59 (Priority) POC #1236 - ACME Corp - $320,000.00 (Secured) Claim No. 1237 - XYZ Services - $125,000.00 (Unsecured) Proof of Claim 1238 filed by Tech Solutions - $75,000.00  Scheduled Claims: - Municipal Taxes: $73,335.00 - Court Fees: $10,000.00  Total Claims:",
+        "source_text": "- Municipal Taxes: $73,335.00",
+        "confidence": 0.7,
+        "category_confidence": 0.4,
+        "is_breakdown_item": true,
+        "parent_description": "Scheduled Claims:",
+        "position_in_document": 391
+      },
+      {
+        "transaction_type": "Other",
+        "total_amount": "$10,000.00",
+        "amount_numeric": 10000.0,
+        "context": "th - $425,729.59 (Priority) POC #1236 - ACME Corp - $320,000.00 (Secured) Claim No. 1237 - XYZ Services - $125,000.00 (Unsecured) Proof of Claim 1238 filed by Tech Solutions - $75,000.00  Scheduled Claims: - Municipal Taxes: $73,335.00 - Court Fees: $10,000.00  Total Claims: $2,279,064.59",
+        "source_text": "- Court Fees: $10,000.00",
+        "confidence": 0.7,
+        "category_confidence": 0.4,
+        "is_breakdown_item": true,
+        "parent_description": "- Municipal Taxes:",
+        "position_in_document": 416
+      },
+      {
+        "transaction_type": "Other",
+        "total_amount": "$2,279,064.59",
+        "amount_numeric": 2279064.59,
+        "context": ") POC #1236 - ACME Corp - $320,000.00 (Secured) Claim No. 1237 - XYZ Services - $125,000.00 (Unsecured) Proof of Claim 1238 filed by Tech Solutions - $75,000.00  Scheduled Claims: - Municipal Taxes: $73,335.00 - Court Fees: $10,000.00  Total Claims: $2,279,064.59",
+        "source_text": "Total Claims: $2,279,064.59",
+        "confidence": 0.7,
+        "category_confidence": 0.4,
+        "is_breakdown_item": false,
+        "parent_description": null,
+        "position_in_document": 442
+      }
+    ],
+    "total_debt_summary": {},
+    "insurance_policies": [],
+    "claims_breakdown": [
+      {
+        "claim_number": "1234",
+        "claim_type": "Proof of Claim",
+        "source_text": "The following proofs of claim have been filed:  POC #1234 - John Palubicki - $1,250,000.00 (Unsecured) POC #1235 - Jane Smith - $425,729.59 (Priority) POC #1236 - ACME Corp - $320,000.00 (Secured) Claim No. 1237 - XYZ Services - $125,000.00 (Unsecure",
+        "confidence": 0.95,
+        "position_in_document": 91,
+        "claim_amount": "$1,250,000.00",
+        "claim_amount_numeric": 1250000.0,
+        "claimant_name": "Tech Solutions"
+      },
+      {
+        "claim_number": "1235",
+        "claim_type": "Proof of Claim",
+        "source_text": "1234 - John Palubicki - $1,250,000.00 (Unsecured) POC #1235 - Jane Smith - $425,729.59 (Priority) POC #1236 - ACME Corp - $320,000.00 (Secured) Claim No. 1237 - XYZ Services - $125,000.00 (Unsecured) Proof of Claim 1238 filed by Tech Solutions - $75,",
+        "confidence": 0.95,
+        "position_in_document": 146,
+        "claim_amount": "$1,250,000.00",
+        "claim_amount_numeric": 1250000.0,
+        "claimant_name": "Tech Solutions"
+      },
+      {
+        "claim_number": "1236",
+        "claim_type": "Proof of Claim",
+        "source_text": ") POC #1235 - Jane Smith - $425,729.59 (Priority) POC #1236 - ACME Corp - $320,000.00 (Secured) Claim No. 1237 - XYZ Services - $125,000.00 (Unsecured) Proof of Claim 1238 filed by Tech Solutions - $75,000.00  Scheduled Claims: - Municipal Taxes: $73",
+        "confidence": 0.95,
+        "position_in_document": 194,
+        "claim_amount": "$425,729.59",
+        "claim_amount_numeric": 425729.59,
+        "claimant_name": "Tech Solutions"
+      },
+      {
+        "claim_number": "1238",
+        "claim_type": "Claim",
+        "source_text": "No. 1237 - XYZ Services - $125,000.00 (Unsecured) Proof of Claim 1238 filed by Tech Solutions - $75,000.00  Scheduled Claims: - Municipal Taxes: $73,335.00 - Court Fees: $10,000.00  Total Claims: $2,279,064.59",
+        "confidence": 0.95,
+        "position_in_document": 296,
+        "claim_amount": "$125,000.00",
+        "claim_amount_numeric": 125000.0,
+        "claimant_name": "Tech Solutions"
+      },
+      {
+        "claim_number": "1237",
+        "claim_type": "Claim",
+        "source_text": "ty) POC #1236 - ACME Corp - $320,000.00 (Secured) Claim No. 1237 - XYZ Services - $125,000.00 (Unsecured) Proof of Claim 1238 filed by Tech Solutions - $75,000.00  Scheduled Claims: - Municipal Taxes: $73,335.00 - Court Fees: $10,000.00  Total Claims",
+        "confidence": 0.95,
+        "position_in_document": 240,
+        "claim_amount": "$320,000.00",
+        "claim_amount_numeric": 320000.0,
+        "claimant_name": "Tech Solutions"
+      },
+      {
+        "claim_number": "1238",
+        "claim_type": "Claim",
+        "source_text": "- XYZ Services - $125,000.00 (Unsecured) Proof of Claim 1238 filed by Tech Solutions - $75,000.00  Scheduled Claims: - Municipal Taxes: $73,335.00 - Court Fees: $10,000.00  Total Claims: $2,279,064.59",
+        "confidence": 0.95,
+        "position_in_document": 305,
+        "claim_amount": "$125,000.00",
+        "claim_amount_numeric": 125000.0,
+        "claimant_name": "Tech Solutions"
+      }
+    ],
+    "claims_summary": {},
+    "legal_precedents": [],
+    "payment_schedules": [],
+    "docket_numbers": [],
+    "extraction_metadata": {
+      "extraction_date": "2025-10-24T14:00:33.715895",
+      "document_analyzed": "Multiple Claims (Palubicki-style).txt",
+      "confidence_score": 0.5,
+      "method": "regex_fallback",
+      "extraction_type": "DYNAMIC - pattern-based, not hardcoded"
+    },
+    "dates_extracted": []
+  },
+  "Docket Numbers and Citations": {
+    "financial_transactions": [],
+    "total_debt_summary": {},
+    "insurance_policies": [],
+    "claims_breakdown": [],
+    "claims_summary": {},
+    "legal_precedents": [
+      {
+        "citation": "28 U.S.C. \u00a7 157",
+        "citation_type": "Statute",
+        "context": "in this matter.  [Docket. 640] contains the debtor's response.  The Court in Bartenwerfer v. Buckley, 598 U.S. 69 (2023) held that community property liability applies to both spouses. Additionally, 28 U.S.C. \u00a7 157 and 28 U.S.C. \u00a7 1334 establish the jurisdictional basis for bankruptcy proceedings.  See also Fed. R. Bankr. P. 9011 regarding representations to the court.",
+        "source_text": "28 U.S.C. \u00a7 157",
+        "confidence": 0.85,
+        "position_in_document": 290
+      },
+      {
+        "citation": "28 U.S.C. \u00a7 1334",
+        "citation_type": "Statute",
+        "context": "ocket. 640] contains the debtor's response.  The Court in Bartenwerfer v. Buckley, 598 U.S. 69 (2023) held that community property liability applies to both spouses. Additionally, 28 U.S.C. \u00a7 157 and 28 U.S.C. \u00a7 1334 establish the jurisdictional basis for bankruptcy proceedings.  See also Fed. R. Bankr. P. 9011 regarding representations to the court.",
+        "source_text": "28 U.S.C. \u00a7 1334",
+        "confidence": 0.85,
+        "position_in_document": 310
+      },
+      {
+        "citation": "Fed. R. Bankr. P. 9011",
+        "citation_type": "Court Rule",
+        "context": ". 69 (2023) held that community property liability applies to both spouses. Additionally, 28 U.S.C. \u00a7 157 and 28 U.S.C. \u00a7 1334 establish the jurisdictional basis for bankruptcy proceedings.  See also Fed. R. Bankr. P. 9011 regarding representations to the court.",
+        "source_text": "Fed. R. Bankr. P. 9011",
+        "confidence": 0.85,
+        "position_in_document": 400
+      }
+    ],
+    "payment_schedules": [],
+    "docket_numbers": [
+      {
+        "docket_number": "631",
+        "full_match": "Docket No. 631",
+        "context": "OBJECTION TO CONFIRMATION  This objection refers to Docket No. 631, 633, and 634-35 filed in this matter.  [Docket. 640] contains the debtor's response.  The Court in Bartenwerfer v. Buckley, 598 U.S. 69 (2023) held",
+        "confidence": 0.9,
+        "position_in_document": 53
+      },
+      {
+        "docket_number": "640",
+        "full_match": "[Docket. 640]",
+        "context": "OBJECTION TO CONFIRMATION  This objection refers to Docket No. 631, 633, and 634-35 filed in this matter.  [Docket. 640] contains the debtor's response.  The Court in Bartenwerfer v. Buckley, 598 U.S. 69 (2023) held that community property liability applies to both spou",
+        "confidence": 0.9,
+        "position_in_document": 108
+      }
+    ],
+    "extraction_metadata": {
+      "extraction_date": "2025-10-24T14:00:34.167839",
+      "document_analyzed": "Docket Numbers and Citations.txt",
+      "confidence_score": 0.5,
+      "method": "regex_fallback",
+      "extraction_type": "DYNAMIC - pattern-based, not hardcoded"
+    },
+    "dates_extracted": []
+  },
+  "Insurance Policy (Lloyd's)": {
+    "financial_transactions": [],
+    "total_debt_summary": {},
+    "insurance_policies": [
+      {
+        "coverage_limit": "$6,000,000",
+        "coverage_limit_numeric": 6000000.0,
+        "confidence": 0.7,
+        "source_text": "\nINSURANCE COVERAGE DISPUTE\n\nThe debtor maintains Directors & Officers liability insurance underwritten by\nLloyd's of London, Syndicates 5678 and 9012, under Policy No. ABC123XYZ789.\n\nCoverage limit: $6,000,000 combined single limit\nPolicy period: 01/01/2023 to 01/01/2024\nAnnual premium: $45,000\n\nNa",
+        "policy_number": "ABC123XYZ789",
+        "underwriter": "Lloyd's of London",
+        "policy_type": "D&O",
+        "policy_period_start": "01/01/2023",
+        "policy_period_end": "01/01/2024"
+      },
+      {
+        "coverage_limit": "$45,000",
+        "coverage_limit_numeric": 45000.0,
+        "confidence": 0.6,
+        "source_text": " maintains Directors & Officers liability insurance underwritten by\nLloyd's of London, Syndicates 5678 and 9012, under Policy No. ABC123XYZ789.\n\nCoverage limit: $6,000,000 combined single limit\nPolicy period: 01/01/2023 to 01/01/2024\nAnnual premium: $45,000\n\nNamed insureds: Mayfair Capital, LLC and ",
+        "policy_number": "ABC123XYZ789",
+        "underwriter": "Lloyd's of London",
+        "policy_type": "D&O",
+        "policy_period_start": "01/01/2023",
+        "policy_period_end": "01/01/2024"
+      },
+      {
+        "underwriter": "Lloyd's of London",
+        "syndicate_numbers": [
+          "5678",
+          "9012"
+        ],
+        "source_text": "Lloyd's of London, Syndicates 5678 and 9012, ",
+        "context": "INSURANCE COVERAGE DISPUTE  The debtor maintains Directors & Officers liability insurance underwritten by Lloyd's of London, Syndicates 5678 and 9012, under Policy No. ABC123XYZ789.  Coverage limit: $6,000,000 combined single limit Policy period: 01/01/2023 to 01/01/2024 Annual premium: $45,000  Named insureds: Mayfair Capital, LLC and all directors and officers.",
+        "confidence": 0.9,
+        "policy_number": "ABC123XYZ789"
+      }
+    ],
+    "claims_breakdown": [],
+    "claims_summary": {},
+    "legal_precedents": [],
+    "payment_schedules": [],
+    "docket_numbers": [],
+    "extraction_metadata": {
+      "extraction_date": "2025-10-24T14:00:34.680016",
+      "document_analyzed": "Insurance Policy (Lloyd's).txt",
+      "confidence_score": 0.5,
+      "method": "regex_fallback",
+      "extraction_type": "DYNAMIC - pattern-based, not hardcoded"
+    },
+    "dates_extracted": [
+      {
+        "date": "01/01/2023",
+        "context": "12, under Policy No. ABC123XYZ789.  Coverage limit: $6,000,000 combined single limit Policy period: 01/01/2023 to 01/01/2024 Annual premium: $45,000  Named insureds: Mayfair Capital, LLC and all directors and o",
+        "position": 248
+      },
+      {
+        "date": "01/01/2024",
+        "context": "cy No. ABC123XYZ789.  Coverage limit: $6,000,000 combined single limit Policy period: 01/01/2023 to 01/01/2024 Annual premium: $45,000  Named insureds: Mayfair Capital, LLC and all directors and officers.",
+        "position": 262
+      }
+    ]
+  },
+  "Advertising Debt (N2 Company)": {
+    "financial_transactions": [
+      {
+        "transaction_type": "Factoring",
+        "total_amount": "$920,617.94",
+        "amount_numeric": 920617.94,
+        "context": "CREDITOR LISTING  N2 Company, LLC is owed $920,617.94 for digital advertising services rendered between January 2022 and December 2022.  Additional debts include:   - MCA Agreement with FastCash: $450,000   - Factoring Agreement with Invoice Finance Co: $680,000   - Equipment Lease with TechLease: $",
+        "source_text": "N2 Company, LLC is owed $920,617.94 for digital advertising services",
+        "confidence": 0.6,
+        "category_confidence": 0.8999999999999999,
+        "is_breakdown_item": false,
+        "parent_description": null,
+        "position_in_document": 43
+      },
+      {
+        "transaction_type": "Factoring",
+        "total_amount": "$450,000",
+        "amount_numeric": 450000.0,
+        "context": "CREDITOR LISTING  N2 Company, LLC is owed $920,617.94 for digital advertising services rendered between January 2022 and December 2022.  Additional debts include:   - MCA Agreement with FastCash: $450,000   - Factoring Agreement with Invoice Finance Co: $680,000   - Equipment Lease with TechLease: $",
+        "source_text": "- MCA Agreement with FastCash: $450,000",
+        "confidence": 0.7999999999999999,
+        "category_confidence": 0.8999999999999999,
+        "is_breakdown_item": true,
+        "parent_description": "Additional debts include:",
+        "position_in_document": 197
+      },
+      {
+        "transaction_type": "Factoring",
+        "total_amount": "$680,000",
+        "amount_numeric": 680000.0,
+        "context": "ITOR LISTING  N2 Company, LLC is owed $920,617.94 for digital advertising services rendered between January 2022 and December 2022.  Additional debts include:   - MCA Agreement with FastCash: $450,000   - Factoring Agreement with Invoice Finance Co: $680,000   - Equipment Lease with TechLease: $125,",
+        "source_text": "- Factoring Agreement with Invoice Finance Co: $680,000",
+        "confidence": 0.7999999999999999,
+        "category_confidence": 0.8999999999999999,
+        "is_breakdown_item": true,
+        "parent_description": "Additional debts include:",
+        "position_in_document": 255
+      },
+      {
+        "transaction_type": "Factoring",
+        "total_amount": "$125,500",
+        "amount_numeric": 125500.0,
+        "context": "7.94 for digital advertising services rendered between January 2022 and December 2022.  Additional debts include:   - MCA Agreement with FastCash: $450,000   - Factoring Agreement with Invoice Finance Co: $680,000   - Equipment Lease with TechLease: $125,500  Total unsecured claims exceed $2,176,117",
+        "source_text": "- Equipment Lease with TechLease: $125,500",
+        "confidence": 0.7999999999999999,
+        "category_confidence": 0.8999999999999999,
+        "is_breakdown_item": true,
+        "parent_description": "Additional debts include:",
+        "position_in_document": 300
+      },
+      {
+        "transaction_type": "Factoring",
+        "total_amount": "$2,176,117.94",
+        "amount_numeric": 2176117.94,
+        "context": "ndered between January 2022 and December 2022.  Additional debts include:   - MCA Agreement with FastCash: $450,000   - Factoring Agreement with Invoice Finance Co: $680,000   - Equipment Lease with TechLease: $125,500  Total unsecured claims exceed $2,176,117.94",
+        "source_text": "Total unsecured claims exceed $2,176,117.94",
+        "confidence": 0.7999999999999999,
+        "category_confidence": 0.8999999999999999,
+        "is_breakdown_item": false,
+        "parent_description": null,
+        "position_in_document": 340
+      }
+    ],
+    "total_debt_summary": {},
+    "insurance_policies": [],
+    "claims_breakdown": [],
+    "claims_summary": {},
+    "legal_precedents": [],
+    "payment_schedules": [],
+    "docket_numbers": [],
+    "extraction_metadata": {
+      "extraction_date": "2025-10-24T14:00:35.122594",
+      "document_analyzed": "Advertising Debt (N2 Company).txt",
+      "confidence_score": 0.5,
+      "method": "regex_fallback",
+      "extraction_type": "DYNAMIC - pattern-based, not hardcoded"
+    },
+    "dates_extracted": []
+  },
+  "Various Legal Citations": {
+    "financial_transactions": [
+      {
+        "transaction_type": "Judgment",
+        "total_amount": "$15,750,000",
+        "amount_numeric": 15750000.0,
+        "context": "- Smith v. Jones, 123 F.3d 456 (9th Cir. 2020) - Brown v. Board of Education, 347 U.S. 483 (1954) - 11 U.S.C. \u00a7 547 (preferences) - 11 U.S.C. \u00a7 523(a)(2) (fraud exception) - Fed. R. Civ. P. 56 (summary judgment)  The total liability is estimated at $15,750,000.",
+        "source_text": "The total liability is estimated at $15,750,000.",
+        "confidence": 0.6,
+        "category_confidence": 0.7999999999999999,
+        "is_breakdown_item": false,
+        "parent_description": null,
+        "position_in_document": 296
+      }
+    ],
+    "total_debt_summary": {},
+    "insurance_policies": [],
+    "claims_breakdown": [],
+    "claims_summary": {},
+    "legal_precedents": [
+      {
+        "citation": "Smith v. Jones, 123 F.3d 456 (9th Cir. 2020)",
+        "citation_type": "Case Law",
+        "context": "LEGAL MEMORANDUM  This matter is governed by: - Smith v. Jones, 123 F.3d 456 (9th Cir. 2020) - Brown v. Board of Education, 347 U.S. 483 (1954) - 11 U.S.C. \u00a7 547 (preferences) - 11 U.S.C. \u00a7 523(a)(2) (fraud exception) - Fed. R. Civ. P. 56 (summary judgment)  The total liability is estimated",
+        "source_text": "Smith v. Jones, 123 F.3d 456 (9th Cir. 2020)",
+        "confidence": 0.85,
+        "position_in_document": 49
+      },
+      {
+        "citation": "11 U.S.C. \u00a7 547",
+        "citation_type": "Statute",
+        "context": "LEGAL MEMORANDUM  This matter is governed by: - Smith v. Jones, 123 F.3d 456 (9th Cir. 2020) - Brown v. Board of Education, 347 U.S. 483 (1954) - 11 U.S.C. \u00a7 547 (preferences) - 11 U.S.C. \u00a7 523(a)(2) (fraud exception) - Fed. R. Civ. P. 56 (summary judgment)  The total liability is estimated at $15,750,000.",
+        "source_text": "11 U.S.C. \u00a7 547",
+        "confidence": 0.85,
+        "position_in_document": 147
+      },
+      {
+        "citation": "11 U.S.C. \u00a7 523(a)",
+        "citation_type": "Statute",
+        "context": "LEGAL MEMORANDUM  This matter is governed by: - Smith v. Jones, 123 F.3d 456 (9th Cir. 2020) - Brown v. Board of Education, 347 U.S. 483 (1954) - 11 U.S.C. \u00a7 547 (preferences) - 11 U.S.C. \u00a7 523(a)(2) (fraud exception) - Fed. R. Civ. P. 56 (summary judgment)  The total liability is estimated at $15,750,000.",
+        "source_text": "11 U.S.C. \u00a7 523(a)",
+        "confidence": 0.85,
+        "position_in_document": 179
+      },
+      {
+        "citation": "Fed. R. Civ. P. 56",
+        "citation_type": "Court Rule",
+        "context": "is matter is governed by: - Smith v. Jones, 123 F.3d 456 (9th Cir. 2020) - Brown v. Board of Education, 347 U.S. 483 (1954) - 11 U.S.C. \u00a7 547 (preferences) - 11 U.S.C. \u00a7 523(a)(2) (fraud exception) - Fed. R. Civ. P. 56 (summary judgment)  The total liability is estimated at $15,750,000.",
+        "source_text": "Fed. R. Civ. P. 56",
+        "confidence": 0.85,
+        "position_in_document": 221
+      }
+    ],
+    "payment_schedules": [],
+    "docket_numbers": [],
+    "extraction_metadata": {
+      "extraction_date": "2025-10-24T14:00:35.565190",
+      "document_analyzed": "Various Legal Citations.txt",
+      "confidence_score": 0.5,
+      "method": "regex_fallback",
+      "extraction_type": "DYNAMIC - pattern-based, not hardcoded"
+    },
+    "dates_extracted": []
+  }
+}

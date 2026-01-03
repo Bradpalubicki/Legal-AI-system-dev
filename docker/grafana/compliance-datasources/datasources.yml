@@ -1,0 +1,65 @@
+apiVersion: 1
+
+datasources:
+  - name: Prometheus-Compliance
+    type: prometheus
+    uid: prometheus-compliance
+    access: proxy
+    url: http://prometheus:9090
+    basicAuth: false
+    isDefault: true
+    editable: false
+    jsonData:
+      httpMethod: POST
+      manageAlerts: true
+      prometheusType: Prometheus
+      prometheusVersion: 2.48.0
+      exemplarTraceIdDestinations:
+        - name: trace_id
+          datasourceUid: tempo-compliance
+
+  - name: Legal-AI-DB
+    type: postgres
+    uid: legal-ai-db
+    access: proxy
+    url: postgres:5432
+    database: legal_ai_system
+    user: legalai_user
+    secureJsonData:
+      password: secure_password
+    editable: false
+    jsonData:
+      sslmode: disable
+      postgresVersion: 1600
+      maxOpenConns: 10
+      maxIdleConns: 2
+      connMaxLifetime: 14400
+
+  - name: Tempo-Compliance
+    type: tempo
+    uid: tempo-compliance
+    access: proxy
+    url: http://tempo:3200
+    editable: false
+    jsonData:
+      httpMethod: GET
+      tracesToLogsV2:
+        datasourceUid: loki-compliance
+        tags: ['service_name', 'trace_id']
+        filterBySpanID: true
+      serviceMap:
+        datasourceUid: prometheus-compliance
+
+  - name: Loki-Compliance
+    type: loki
+    uid: loki-compliance
+    access: proxy
+    url: http://loki:3100
+    editable: false
+    jsonData:
+      maxLines: 1000
+      derivedFields:
+        - name: trace_id
+          matcherRegex: "trace_id=(\\w+)"
+          url: "$${__value.raw}"
+          datasourceUid: tempo-compliance

@@ -1,0 +1,87 @@
+# =============================================================================
+# Production Frontend Dockerfile for Legal AI System (Next.js)
+# Multi-stage build for optimized, secure production deployment
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Stage 1: Dependencies - Install node modules
+# -----------------------------------------------------------------------------
+FROM node:20-alpine AS deps
+
+# Install libc6-compat for Alpine compatibility
+RUN apk add --no-cache libc6-compat
+
+WORKDIR /app
+
+# Copy package files
+COPY frontend/package.json frontend/package-lock.json* ./
+
+# Install dependencies
+RUN npm ci --omit=dev --ignore-scripts
+
+# -----------------------------------------------------------------------------
+# Stage 2: Builder - Build Next.js application
+# -----------------------------------------------------------------------------
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copy application source
+COPY frontend/ ./
+
+# Build arguments for environment variables
+# Only NEXT_PUBLIC_* variables are embedded in the build
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_APP_NAME="Legal AI System"
+
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
+    NEXT_PUBLIC_APP_NAME=$NEXT_PUBLIC_APP_NAME \
+    NEXT_TELEMETRY_DISABLED=1 \
+    NODE_ENV=production
+
+# Build Next.js application
+RUN npm run build
+
+# -----------------------------------------------------------------------------
+# Stage 3: Production - Minimal runtime image
+# -----------------------------------------------------------------------------
+FROM node:20-alpine AS runner
+
+# Set working directory
+WORKDIR /app
+
+# Set environment to production
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1
+
+# Create non-root user for security
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+# Copy necessary files from builder
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/package.json ./package.json
+
+# Copy Next.js build output
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Switch to non-root user
+USER nextjs
+
+# Expose port
+EXPOSE 3000
+
+# Set hostname to accept connections from any interface
+ENV HOSTNAME="0.0.0.0"
+ENV PORT=3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD node -e "require('http').get('http://localhost:3000/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); })" || exit 1
+
+# Start Next.js server
+CMD ["node", "server.js"]

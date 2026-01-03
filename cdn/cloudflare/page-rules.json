@@ -1,0 +1,241 @@
+{
+  "page_rules": [
+    {
+      "name": "Cache Static Assets - Images",
+      "status": "active",
+      "priority": 1,
+      "targets": [
+        {
+          "target": "url",
+          "constraint": {
+            "operator": "matches",
+            "value": "*.(jpg|jpeg|png|gif|svg|webp|ico)"
+          }
+        }
+      ],
+      "actions": [
+        {
+          "id": "cache_level",
+          "value": "cache_everything"
+        },
+        {
+          "id": "edge_cache_ttl",
+          "value": 2592000
+        },
+        {
+          "id": "browser_cache_ttl",
+          "value": 2592000
+        }
+      ]
+    },
+    {
+      "name": "Cache Static Assets - Fonts",
+      "status": "active",
+      "priority": 2,
+      "targets": [
+        {
+          "target": "url",
+          "constraint": {
+            "operator": "matches",
+            "value": "*.(woff|woff2|ttf|eot|otf)"
+          }
+        }
+      ],
+      "actions": [
+        {
+          "id": "cache_level",
+          "value": "cache_everything"
+        },
+        {
+          "id": "edge_cache_ttl",
+          "value": 31536000
+        },
+        {
+          "id": "browser_cache_ttl",
+          "value": 31536000
+        }
+      ]
+    },
+    {
+      "name": "Cache Static Assets - JS/CSS",
+      "status": "active",
+      "priority": 3,
+      "targets": [
+        {
+          "target": "url",
+          "constraint": {
+            "operator": "matches",
+            "value": "*.(js|css)"
+          }
+        }
+      ],
+      "actions": [
+        {
+          "id": "cache_level",
+          "value": "cache_everything"
+        },
+        {
+          "id": "edge_cache_ttl",
+          "value": 604800
+        },
+        {
+          "id": "browser_cache_ttl",
+          "value": 604800
+        }
+      ]
+    },
+    {
+      "name": "Cache API Responses - Read Operations",
+      "status": "active",
+      "priority": 4,
+      "targets": [
+        {
+          "target": "url",
+          "constraint": {
+            "operator": "matches",
+            "value": "*/api/v1/documents/*/view"
+          }
+        }
+      ],
+      "actions": [
+        {
+          "id": "cache_level",
+          "value": "cache_everything"
+        },
+        {
+          "id": "edge_cache_ttl",
+          "value": 300
+        },
+        {
+          "id": "browser_cache_ttl",
+          "value": 60
+        },
+        {
+          "id": "cache_by_device_type",
+          "value": false
+        }
+      ]
+    },
+    {
+      "name": "Bypass Cache - Dynamic API",
+      "status": "active",
+      "priority": 5,
+      "targets": [
+        {
+          "target": "url",
+          "constraint": {
+            "operator": "matches",
+            "value": "*/api/*"
+          }
+        }
+      ],
+      "actions": [
+        {
+          "id": "cache_level",
+          "value": "bypass"
+        }
+      ]
+    },
+    {
+      "name": "Bypass Cache - Authentication",
+      "status": "active",
+      "priority": 6,
+      "targets": [
+        {
+          "target": "url",
+          "constraint": {
+            "operator": "matches",
+            "value": "*/auth/*"
+          }
+        }
+      ],
+      "actions": [
+        {
+          "id": "cache_level",
+          "value": "bypass"
+        },
+        {
+          "id": "security_level",
+          "value": "high"
+        }
+      ]
+    },
+    {
+      "name": "Security Headers",
+      "status": "active",
+      "priority": 7,
+      "targets": [
+        {
+          "target": "url",
+          "constraint": {
+            "operator": "matches",
+            "value": "*"
+          }
+        }
+      ],
+      "actions": [
+        {
+          "id": "security_headers",
+          "value": {
+            "strict_transport_security": {
+              "enabled": true,
+              "max_age": 31536000,
+              "include_subdomains": true,
+              "preload": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Compression",
+      "status": "active",
+      "priority": 8,
+      "targets": [
+        {
+          "target": "url",
+          "constraint": {
+            "operator": "matches",
+            "value": "*"
+          }
+        }
+      ],
+      "actions": [
+        {
+          "id": "minify",
+          "value": {
+            "html": true,
+            "css": true,
+            "js": true
+          }
+        },
+        {
+          "id": "brotli",
+          "value": "on"
+        }
+      ]
+    }
+  ],
+  "cache_reserve": {
+    "enabled": true,
+    "description": "Enable Cache Reserve for persistent edge caching"
+  },
+  "argo_smart_routing": {
+    "enabled": true,
+    "description": "Enable Argo Smart Routing for faster global delivery"
+  },
+  "polish": {
+    "enabled": true,
+    "mode": "lossless",
+    "webp": true,
+    "description": "Automatic image optimization"
+  },
+  "rocket_loader": {
+    "enabled": false,
+    "description": "Disabled to prevent conflicts with Next.js"
+  },
+  "early_hints": {
+    "enabled": true,
+    "description": "Enable Early Hints for faster page loads"
+  }
+}

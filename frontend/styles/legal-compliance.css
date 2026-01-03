@@ -1,0 +1,318 @@
+/**
+ * Legal Compliance UI Styles
+ * Ensures proper visibility and accessibility of compliance elements
+ * CRITICAL: Disclaimer components must be clearly visible per UPL requirements
+ */
+
+/* Fixed Bottom Disclaimer Banner */
+.fixed-bottom-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(8px);
+}
+
+/* Risk Level Colors */
+.risk-critical {
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  color: white;
+}
+
+.risk-high {
+  background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+  color: white;
+}
+
+.risk-medium {
+  background: linear-gradient(135deg, #ca8a04 0%, #a16207 100%);
+  color: white;
+}
+
+.risk-low {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: white;
+}
+
+/* Disclaimer Modal Styles */
+.disclaimer-modal {
+  backdrop-filter: blur(4px);
+}
+
+.disclaimer-content {
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Attorney Finder Styles */
+.attorney-card {
+  transition: all 0.2s ease-in-out;
+  border: 1px solid #e5e7eb;
+}
+
+.attorney-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+/* Content Disclaimer Inline */
+.content-disclaimer {
+  border-left: 4px solid;
+  padding: 0.75rem;
+  background-color: #f9fafb;
+  margin: 1rem 0;
+  border-radius: 0 0.375rem 0.375rem 0;
+}
+
+.content-disclaimer.risk-critical {
+  border-left-color: #dc2626;
+  background-color: #fef2f2;
+}
+
+.content-disclaimer.risk-high {
+  border-left-color: #ea580c;
+  background-color: #fff7ed;
+}
+
+.content-disclaimer.risk-medium {
+  border-left-color: #ca8a04;
+  background-color: #fffbeb;
+}
+
+.content-disclaimer.risk-low {
+  border-left-color: #2563eb;
+  background-color: #eff6ff;
+}
+
+/* Accessibility Enhancements */
+.disclaimer-button {
+  min-height: 44px; /* Touch target size */
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease-in-out;
+}
+
+.disclaimer-button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.disclaimer-button:hover {
+  transform: translateY(-1px);
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .fixed-bottom-banner {
+    border-top: 2px solid currentColor;
+  }
+  
+  .content-disclaimer {
+    border-left-width: 6px;
+    font-weight: 600;
+  }
+  
+  .disclaimer-modal {
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .disclaimer-content {
+    animation: none;
+  }
+  
+  .disclaimer-button {
+    transition: none;
+  }
+  
+  .disclaimer-button:hover {
+    transform: none;
+  }
+}
+
+/* Print Styles - Ensure disclaimers appear in print */
+@media print {
+  .fixed-bottom-banner {
+    position: relative !important;
+    background: white !important;
+    color: black !important;
+    border: 2px solid black;
+    page-break-inside: avoid;
+  }
+  
+  .content-disclaimer {
+    background: white !important;
+    color: black !important;
+    border: 1px solid black;
+    page-break-inside: avoid;
+  }
+  
+  /* Hide interactive elements in print */
+  .disclaimer-button,
+  .attorney-finder-button {
+    display: none;
+  }
+  
+  /* Show disclaimer text prominently */
+  .disclaimer-text {
+    font-size: 12pt;
+    font-weight: bold;
+  }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .fixed-bottom-banner {
+    padding: 1rem;
+  }
+  
+  .disclaimer-modal .modal-content {
+    margin: 0.5rem;
+    max-height: 95vh;
+  }
+  
+  .attorney-finder-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Tablet Responsive */
+@media (max-width: 1024px) {
+  .disclaimer-modal .modal-content {
+    margin: 1rem;
+    max-width: 90vw;
+  }
+}
+
+/* Large Screen Optimizations */
+@media (min-width: 1440px) {
+  .fixed-bottom-banner {
+    max-width: 1440px;
+    left: 50%;
+    transform: translateX(-50%);
+    right: auto;
+    border-radius: 0.5rem 0.5rem 0 0;
+  }
+}
+
+/* Focus Management for Modals */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  max-width: 64rem;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* Ensure text is readable */
+.disclaimer-text {
+  line-height: 1.6;
+  color: #374151;
+}
+
+.disclaimer-text strong {
+  color: #111827;
+  font-weight: 600;
+}
+
+/* Status Indicators */
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.status-critical {
+  background-color: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.status-high {
+  background-color: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+}
+
+.status-medium {
+  background-color: #fffbeb;
+  color: #a16207;
+  border: 1px solid #fde68a;
+}
+
+.status-low {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+/* Loading States */
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Compliance Badge */
+.compliance-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #10b981;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}

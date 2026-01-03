@@ -1,0 +1,145 @@
+# =============================================================================
+# Grafana Configuration ConfigMaps for Legal AI System
+# =============================================================================
+# Configuration and provisioning files for production Grafana deployment
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-config
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/component: configuration
+data:
+  grafana.ini: |
+    [default]
+    instance_name = Legal AI System - Monitoring
+    default_org_name = Legal AI Organization
+
+    [server]
+    protocol = http
+    http_addr = 0.0.0.0
+    http_port = 3000
+    domain = grafana.legal-ai.example.com
+    root_url = https://%(domain)s/
+    enable_gzip = true
+
+    [database]
+    type = postgres
+    host = postgres.legal-ai-system.svc.cluster.local:5432
+    name = legal_ai_grafana
+    user = grafana_user
+    ssl_mode = require
+
+    [security]
+    admin_user = admin
+    allow_sign_up = false
+    password_min_length = 12
+    cookie_secure = true
+    cookie_samesite = strict
+    content_type_protection_header = true
+
+    [auth]
+    disable_login_form = false
+    login_maximum_inactive_lifetime_duration = 8h
+    login_maximum_lifetime_duration = 24h
+
+    [users]
+    allow_sign_up = false
+    allow_org_create = false
+    auto_assign_org_role = Viewer
+    viewers_can_edit = false
+
+    [dashboards]
+    min_refresh_interval = 5s
+
+    [unified_alerting]
+    enabled = true
+    min_interval = 10s
+    evaluate_timeout = 30s
+
+    [metrics]
+    enabled = true
+    basic_auth_username = legal-ai-monitoring
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/component: datasources
+data:
+  datasources.yml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        orgId: 1
+        url: http://prometheus.legal-ai-system.svc.cluster.local:9090
+        isDefault: true
+        editable: false
+        jsonData:
+          timeInterval: 30s
+          queryTimeout: 60s
+          httpMethod: POST
+          manageAlerts: true
+          alertmanagerUid: alertmanager
+        version: 1
+
+      - name: Loki
+        type: loki
+        access: proxy
+        orgId: 1
+        url: http://loki.legal-ai-system.svc.cluster.local:3100
+        isDefault: false
+        editable: false
+        jsonData:
+          timeout: 60s
+          maxLines: 1000
+          derivedFields:
+            - datasourceUid: jaeger
+              matcherRegex: 'trace_id=([\\w]+)'
+              name: trace_id
+              url: 'http://jaeger.legal-ai-system.svc.cluster.local:16686/trace/$${__value.raw}'
+        version: 1
+
+      - name: AlertManager
+        type: alertmanager
+        access: proxy
+        orgId: 1
+        url: http://alertmanager.legal-ai-system.svc.cluster.local:9093
+        isDefault: false
+        editable: false
+        uid: alertmanager
+        jsonData:
+          implementation: prometheus
+        version: 1
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards-config
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/component: dashboard-config
+data:
+  dashboards.yaml: |
+    apiVersion: 1
+    providers:
+      - name: 'legal-ai-dashboards'
+        orgId: 1
+        folder: 'Legal AI System'
+        type: file
+        disableDeletion: false
+        updateIntervalSeconds: 10
+        allowUiUpdates: true
+        options:
+          path: /var/lib/grafana/dashboards

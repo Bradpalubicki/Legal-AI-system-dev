@@ -1,0 +1,653 @@
+name: 📊 Monitoring & Alerting
+
+on:
+  schedule:
+    # Run every 15 minutes during business hours (9 AM - 6 PM UTC)
+    - cron: '*/15 9-18 * * 1-5'
+    # Run every hour outside business hours
+    - cron: '0 * * * *'
+    # Daily comprehensive health check at 6 AM UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      check_type:
+        description: 'Type of monitoring check'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - health
+        - performance
+        - security
+        - compliance
+        - resources
+      environment:
+        description: 'Environment to monitor'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+        - development
+
+env:
+  PRODUCTION_URL: https://legal-ai.example.com
+  STAGING_URL: https://legal-ai-staging.example.com
+  DEVELOPMENT_URL: https://legal-ai-dev.example.com
+
+jobs:
+  # =============================================================================
+  # APPLICATION HEALTH MONITORING
+  # =============================================================================
+  health-monitoring:
+    name: 🏥 Application Health Check
+    runs-on: ubuntu-latest
+    if: github.event.inputs.check_type == 'all' || github.event.inputs.check_type == 'health' || github.event_name != 'workflow_dispatch'
+    
+    strategy:
+      matrix:
+        environment: [production, staging]
+        
+    steps:
+    - name: Set environment URL
+      id: set-url
+      run: |
+        case "${{ matrix.environment }}" in
+          production) echo "url=${{ env.PRODUCTION_URL }}" >> $GITHUB_OUTPUT ;;
+          staging) echo "url=${{ env.STAGING_URL }}" >> $GITHUB_OUTPUT ;;
+          development) echo "url=${{ env.DEVELOPMENT_URL }}" >> $GITHUB_OUTPUT ;;
+        esac
+
+    - name: Health check - Main application
+      run: |
+        URL="${{ steps.set-url.outputs.url }}"
+        echo "🔍 Checking health of ${URL}"
+        
+        RESPONSE=$(curl -s -o /dev/null -w "%{http_code},%{time_total},%{time_connect}" "${URL}/health")
+        HTTP_CODE=$(echo $RESPONSE | cut -d',' -f1)
+        TOTAL_TIME=$(echo $RESPONSE | cut -d',' -f2)
+        CONNECT_TIME=$(echo $RESPONSE | cut -d',' -f3)
+        
+        echo "HTTP Status: ${HTTP_CODE}"
+        echo "Response Time: ${TOTAL_TIME}s"
+        echo "Connect Time: ${CONNECT_TIME}s"
+        
+        if [ "${HTTP_CODE}" != "200" ]; then
+          echo "::error::Health check failed for ${{ matrix.environment }} - HTTP ${HTTP_CODE}"
+          exit 1
+        fi
+        
+        # Check if response time is acceptable (< 5 seconds)
+        if (( $(echo "${TOTAL_TIME} > 5.0" | bc -l) )); then
+          echo "::warning::Slow response time detected: ${TOTAL_TIME}s"
+        fi
+
+    - name: Health check - API endpoints
+      run: |
+        URL="${{ steps.set-url.outputs.url }}"
+        ENDPOINTS=("/api/health" "/api/v1/auth/health" "/api/v1/documents/health" "/api/v1/ai/health")
+        
+        for endpoint in "${ENDPOINTS[@]}"; do
+          echo "🔍 Checking ${URL}${endpoint}"
+          
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${URL}${endpoint}")
+          
+          if [ "${HTTP_CODE}" != "200" ]; then
+            echo "::error::API endpoint ${endpoint} failed - HTTP ${HTTP_CODE}"
+            exit 1
+          else
+            echo "✅ ${endpoint} - OK"
+          fi
+        done
+
+    - name: Database connectivity check
+      run: |
+        URL="${{ steps.set-url.outputs.url }}"
+        
+        echo "🗃️ Checking database connectivity"
+        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${URL}/api/v1/health/database")
+        
+        if [ "${HTTP_CODE}" != "200" ]; then
+          echo "::error::Database connectivity check failed - HTTP ${HTTP_CODE}"
+          exit 1
+        fi
+
+    - name: Redis connectivity check
+      run: |
+        URL="${{ steps.set-url.outputs.url }}"
+        
+        echo "📦 Checking Redis connectivity"
+        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${URL}/api/v1/health/redis")
+        
+        if [ "${HTTP_CODE}" != "200" ]; then
+          echo "::error::Redis connectivity check failed - HTTP ${HTTP_CODE}"
+          exit 1
+        fi
+
+    - name: Celery worker status check
+      run: |
+        URL="${{ steps.set-url.outputs.url }}"
+        
+        echo "⚙️ Checking Celery worker status"
+        RESPONSE=$(curl -s "${URL}/api/v1/health/workers")
+        
+        ACTIVE_WORKERS=$(echo "${RESPONSE}" | jq -r '.active_workers // 0')
+        
+        if [ "${ACTIVE_WORKERS}" -eq 0 ]; then
+          echo "::error::No active Celery workers detected"
+          exit 1
+        else
+          echo "✅ ${ACTIVE_WORKERS} active workers"
+        fi
+
+    - name: Storage service check
+      run: |
+        URL="${{ steps.set-url.outputs.url }}"
+        
+        echo "💾 Checking storage service (MinIO)"
+        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${URL}/api/v1/health/storage")
+        
+        if [ "${HTTP_CODE}" != "200" ]; then
+          echo "::error::Storage service check failed - HTTP ${HTTP_CODE}"
+          exit 1
+        fi
+
+  # =============================================================================
+  # PERFORMANCE MONITORING
+  # =============================================================================
+  performance-monitoring:
+    name: 🚀 Performance Monitoring
+    runs-on: ubuntu-latest
+    if: github.event.inputs.check_type == 'all' || github.event.inputs.check_type == 'performance' || github.event_name != 'workflow_dispatch'
+    
+    strategy:
+      matrix:
+        environment: [production, staging]
+
+    steps:
+    - name: Set environment URL
+      id: set-url
+      run: |
+        case "${{ matrix.environment }}" in
+          production) echo "url=${{ env.PRODUCTION_URL }}" >> $GITHUB_OUTPUT ;;
+          staging) echo "url=${{ env.STAGING_URL }}" >> $GITHUB_OUTPUT ;;
+        esac
+
+    - name: Install performance testing tools
+      run: |
+        # Install Apache Bench for load testing
+        sudo apt-get update
+        sudo apt-get install -y apache2-utils curl jq bc
+
+    - name: Response time monitoring
+      run: |
+        URL="${{ steps.set-url.outputs.url }}"
+        
+        echo "⏱️ Measuring response times for key endpoints"
+        
+        ENDPOINTS=("/" "/api/health" "/api/v1/documents" "/api/v1/auth/me")
+        
+        for endpoint in "${ENDPOINTS[@]}"; do
+          echo "Testing ${endpoint}..."
+          
+          TIMES=$(for i in {1..5}; do
+            curl -s -o /dev/null -w "%{time_total}" "${URL}${endpoint}"
+            echo
+          done)
+          
+          AVG_TIME=$(echo "${TIMES}" | awk '{sum+=$1} END {print sum/NR}')
+          MAX_TIME=$(echo "${TIMES}" | sort -n | tail -1)
+          
+          echo "Average: ${AVG_TIME}s, Max: ${MAX_TIME}s"
+          
+          # Alert if average response time > 3 seconds
+          if (( $(echo "${AVG_TIME} > 3.0" | bc -l) )); then
+            echo "::warning::Slow response detected for ${endpoint}: ${AVG_TIME}s average"
+          fi
+        done
+
+    - name: Load testing with Apache Bench
+      run: |
+        URL="${{ steps.set-url.outputs.url }}"
+        
+        echo "🔥 Running light load test"
+        
+        # Light load test: 100 requests, 10 concurrent
+        ab -n 100 -c 10 -g load-test.data "${URL}/api/health" > load-test-results.txt
+        
+        # Extract key metrics
+        RPS=$(grep "Requests per second" load-test-results.txt | awk '{print $4}')
+        MEAN_TIME=$(grep "Time per request.*mean" load-test-results.txt | head -1 | awk '{print $4}')
+        
+        echo "Requests per second: ${RPS}"
+        echo "Mean time per request: ${MEAN_TIME}ms"
+        
+        # Alert if RPS is too low for production
+        if [ "${{ matrix.environment }}" = "production" ]; then
+          if (( $(echo "${RPS} < 50.0" | bc -l) )); then
+            echo "::warning::Low RPS detected: ${RPS} req/sec"
+          fi
+        fi
+
+    - name: Memory and CPU usage check
+      run: |
+        URL="${{ steps.set-url.outputs.url }}"
+        
+        echo "💻 Checking resource usage"
+        
+        METRICS=$(curl -s "${URL}/api/v1/metrics/system")
+        
+        CPU_USAGE=$(echo "${METRICS}" | jq -r '.cpu_usage_percent // "unknown"')
+        MEMORY_USAGE=$(echo "${METRICS}" | jq -r '.memory_usage_percent // "unknown"')
+        
+        echo "CPU Usage: ${CPU_USAGE}%"
+        echo "Memory Usage: ${MEMORY_USAGE}%"
+        
+        if [ "${CPU_USAGE}" != "unknown" ] && (( $(echo "${CPU_USAGE} > 80.0" | bc -l) )); then
+          echo "::warning::High CPU usage detected: ${CPU_USAGE}%"
+        fi
+        
+        if [ "${MEMORY_USAGE}" != "unknown" ] && (( $(echo "${MEMORY_USAGE} > 85.0" | bc -l) )); then
+          echo "::warning::High memory usage detected: ${MEMORY_USAGE}%"
+        fi
+
+  # =============================================================================
+  # SECURITY MONITORING
+  # =============================================================================
+  security-monitoring:
+    name: 🔒 Security Monitoring
+    runs-on: ubuntu-latest
+    if: github.event.inputs.check_type == 'all' || github.event.inputs.check_type == 'security' || github.event_name != 'workflow_dispatch'
+
+    strategy:
+      matrix:
+        environment: [production, staging]
+
+    steps:
+    - name: Set environment URL
+      id: set-url
+      run: |
+        case "${{ matrix.environment }}" in
+          production) echo "url=${{ env.PRODUCTION_URL }}" >> $GITHUB_OUTPUT ;;
+          staging) echo "url=${{ env.STAGING_URL }}" >> $GITHUB_OUTPUT ;;
+        esac
+
+    - name: SSL certificate check
+      run: |
+        URL="${{ steps.set-url.outputs.url }}"
+        DOMAIN=$(echo "${URL}" | sed 's|https\?://||' | sed 's|/.*||')
+        
+        echo "🔐 Checking SSL certificate for ${DOMAIN}"
+        
+        CERT_INFO=$(openssl s_client -connect "${DOMAIN}:443" -servername "${DOMAIN}" 2>/dev/null < /dev/null)
+        EXPIRY_DATE=$(echo "${CERT_INFO}" | openssl x509 -noout -enddate | cut -d= -f2)
+        
+        EXPIRY_EPOCH=$(date -d "${EXPIRY_DATE}" +%s)
+        CURRENT_EPOCH=$(date +%s)
+        DAYS_UNTIL_EXPIRY=$(( (EXPIRY_EPOCH - CURRENT_EPOCH) / 86400 ))
+        
+        echo "Certificate expires in ${DAYS_UNTIL_EXPIRY} days"
+        
+        if [ "${DAYS_UNTIL_EXPIRY}" -lt 30 ]; then
+          echo "::warning::SSL certificate expires soon: ${DAYS_UNTIL_EXPIRY} days"
+        fi
+        
+        if [ "${DAYS_UNTIL_EXPIRY}" -lt 7 ]; then
+          echo "::error::SSL certificate expires very soon: ${DAYS_UNTIL_EXPIRY} days"
+          exit 1
+        fi
+
+    - name: Security headers check
+      run: |
+        URL="${{ steps.set-url.outputs.url }}"
+        
+        echo "🛡️ Checking security headers"
+        
+        HEADERS=$(curl -s -I "${URL}")
+        
+        # Check for important security headers
+        SECURITY_HEADERS=(
+          "X-Frame-Options"
+          "X-Content-Type-Options"
+          "X-XSS-Protection"
+          "Strict-Transport-Security"
+          "Content-Security-Policy"
+          "Referrer-Policy"
+        )
+        
+        MISSING_HEADERS=()
+        
+        for header in "${SECURITY_HEADERS[@]}"; do
+          if ! echo "${HEADERS}" | grep -qi "${header}"; then
+            MISSING_HEADERS+=("${header}")
+          else
+            echo "✅ ${header} - Present"
+          fi
+        done
+        
+        if [ ${#MISSING_HEADERS[@]} -gt 0 ]; then
+          echo "::warning::Missing security headers: ${MISSING_HEADERS[*]}"
+        fi
+
+    - name: Authentication endpoint security check
+      run: |
+        URL="${{ steps.set-url.outputs.url }}"
+        
+        echo "🔑 Testing authentication security"
+        
+        # Test rate limiting on login endpoint
+        for i in {1..10}; do
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            "${URL}/api/v1/auth/login" \
+            -H "Content-Type: application/json" \
+            -d '{"email":"invalid@test.com","password":"invalid"}')
+          
+          if [ "${HTTP_CODE}" = "429" ]; then
+            echo "✅ Rate limiting is working (HTTP 429 received)"
+            break
+          fi
+          
+          if [ $i -eq 10 ]; then
+            echo "::warning::Rate limiting may not be properly configured"
+          fi
+        done
+
+    - name: Check for exposed sensitive endpoints
+      run: |
+        URL="${{ steps.set-url.outputs.url }}"
+        
+        echo "🕵️ Checking for exposed sensitive endpoints"
+        
+        SENSITIVE_ENDPOINTS=(
+          "/admin"
+          "/debug"
+          "/test"
+          "/.env"
+          "/config"
+          "/swagger"
+          "/docs"
+        )
+        
+        for endpoint in "${SENSITIVE_ENDPOINTS[@]}"; do
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${URL}${endpoint}")
+          
+          if [ "${HTTP_CODE}" = "200" ] && [ "${{ matrix.environment }}" = "production" ]; then
+            echo "::warning::Potentially sensitive endpoint exposed: ${endpoint} (HTTP ${HTTP_CODE})"
+          fi
+        done
+
+  # =============================================================================
+  # COMPLIANCE MONITORING
+  # =============================================================================
+  compliance-monitoring:
+    name: ⚖️ Compliance Monitoring
+    runs-on: ubuntu-latest
+    if: github.event.inputs.check_type == 'all' || github.event.inputs.check_type == 'compliance' || github.event.schedule == '0 6 * * *'
+
+    strategy:
+      matrix:
+        environment: [production, staging]
+
+    steps:
+    - name: Set environment URL
+      id: set-url
+      run: |
+        case "${{ matrix.environment }}" in
+          production) echo "url=${{ env.PRODUCTION_URL }}" >> $GITHUB_OUTPUT ;;
+          staging) echo "url=${{ env.STAGING_URL }}" >> $GITHUB_OUTPUT ;;
+        esac
+
+    - name: Audit log verification
+      run: |
+        URL="${{ steps.set-url.outputs.url }}"
+        
+        echo "📋 Checking audit log functionality"
+        
+        # Test that audit logs are being generated
+        AUDIT_STATUS=$(curl -s "${URL}/api/v1/admin/audit/status" \
+          -H "Authorization: Bearer ${{ secrets.MONITORING_API_TOKEN }}")
+        
+        LOG_COUNT=$(echo "${AUDIT_STATUS}" | jq -r '.total_logs_24h // 0')
+        
+        if [ "${LOG_COUNT}" -eq 0 ] && [ "${{ matrix.environment }}" = "production" ]; then
+          echo "::warning::No audit logs generated in the last 24 hours"
+        else
+          echo "✅ ${LOG_COUNT} audit log entries in last 24 hours"
+        fi
+
+    - name: Data retention policy check
+      run: |
+        URL="${{ steps.set-url.outputs.url }}"
+        
+        echo "🗄️ Checking data retention compliance"
+        
+        RETENTION_STATUS=$(curl -s "${URL}/api/v1/admin/retention/status" \
+          -H "Authorization: Bearer ${{ secrets.MONITORING_API_TOKEN }}")
+        
+        OVERDUE_DELETIONS=$(echo "${RETENTION_STATUS}" | jq -r '.overdue_deletions // 0')
+        
+        if [ "${OVERDUE_DELETIONS}" -gt 0 ]; then
+          echo "::warning::${OVERDUE_DELETIONS} records overdue for deletion"
+        else
+          echo "✅ Data retention policy compliance verified"
+        fi
+
+    - name: Privacy policy compliance
+      run: |
+        URL="${{ steps.set-url.outputs.url }}"
+        
+        echo "🔒 Checking privacy policy compliance"
+        
+        # Check that privacy policy is accessible
+        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${URL}/privacy")
+        
+        if [ "${HTTP_CODE}" != "200" ]; then
+          echo "::error::Privacy policy not accessible (HTTP ${HTTP_CODE})"
+          exit 1
+        fi
+        
+        # Check for cookie consent mechanism
+        PRIVACY_PAGE=$(curl -s "${URL}/privacy")
+        if ! echo "${PRIVACY_PAGE}" | grep -qi "cookie"; then
+          echo "::warning::Privacy policy may not include cookie information"
+        fi
+
+  # =============================================================================
+  # RESOURCE MONITORING
+  # =============================================================================
+  resource-monitoring:
+    name: 💽 Resource Monitoring
+    runs-on: ubuntu-latest
+    if: github.event.inputs.check_type == 'all' || github.event.inputs.check_type == 'resources' || github.event_name != 'workflow_dispatch'
+
+    strategy:
+      matrix:
+        environment: [production, staging]
+
+    steps:
+    - name: Set environment URL
+      id: set-url
+      run: |
+        case "${{ matrix.environment }}" in
+          production) echo "url=${{ env.PRODUCTION_URL }}" >> $GITHUB_OUTPUT ;;
+          staging) echo "url=${{ env.STAGING_URL }}" >> $GITHUB_OUTPUT ;;
+        esac
+
+    - name: Database performance monitoring
+      run: |
+        URL="${{ steps.set-url.outputs.url }}"
+        
+        echo "🗃️ Checking database performance metrics"
+        
+        DB_METRICS=$(curl -s "${URL}/api/v1/metrics/database" \
+          -H "Authorization: Bearer ${{ secrets.MONITORING_API_TOKEN }}")
+        
+        ACTIVE_CONNECTIONS=$(echo "${DB_METRICS}" | jq -r '.active_connections // 0')
+        MAX_CONNECTIONS=$(echo "${DB_METRICS}" | jq -r '.max_connections // 100')
+        CONNECTION_USAGE=$(echo "scale=2; ${ACTIVE_CONNECTIONS} * 100 / ${MAX_CONNECTIONS}" | bc)
+        
+        echo "Database connections: ${ACTIVE_CONNECTIONS}/${MAX_CONNECTIONS} (${CONNECTION_USAGE}%)"
+        
+        if (( $(echo "${CONNECTION_USAGE} > 80.0" | bc -l) )); then
+          echo "::warning::High database connection usage: ${CONNECTION_USAGE}%"
+        fi
+        
+        SLOW_QUERIES=$(echo "${DB_METRICS}" | jq -r '.slow_queries_1h // 0')
+        if [ "${SLOW_QUERIES}" -gt 10 ]; then
+          echo "::warning::${SLOW_QUERIES} slow queries detected in the last hour"
+        fi
+
+    - name: Queue monitoring
+      run: |
+        URL="${{ steps.set-url.outputs.url }}"
+        
+        echo "⚙️ Checking Celery queue status"
+        
+        QUEUE_METRICS=$(curl -s "${URL}/api/v1/metrics/queues" \
+          -H "Authorization: Bearer ${{ secrets.MONITORING_API_TOKEN }}")
+        
+        QUEUES=$(echo "${QUEUE_METRICS}" | jq -r '.queues | keys[]')
+        
+        for queue in ${QUEUES}; do
+          PENDING=$(echo "${QUEUE_METRICS}" | jq -r ".queues.${queue}.pending // 0")
+          PROCESSING=$(echo "${QUEUE_METRICS}" | jq -r ".queues.${queue}.processing // 0")
+          
+          echo "Queue ${queue}: ${PENDING} pending, ${PROCESSING} processing"
+          
+          if [ "${PENDING}" -gt 100 ]; then
+            echo "::warning::Queue ${queue} has high pending count: ${PENDING}"
+          fi
+        done
+
+    - name: Storage usage monitoring
+      run: |
+        URL="${{ steps.set-url.outputs.url }}"
+        
+        echo "💾 Checking storage usage"
+        
+        STORAGE_METRICS=$(curl -s "${URL}/api/v1/metrics/storage" \
+          -H "Authorization: Bearer ${{ secrets.MONITORING_API_TOKEN }}")
+        
+        USED_SPACE=$(echo "${STORAGE_METRICS}" | jq -r '.used_gb // 0')
+        TOTAL_SPACE=$(echo "${STORAGE_METRICS}" | jq -r '.total_gb // 100')
+        USAGE_PERCENT=$(echo "scale=2; ${USED_SPACE} * 100 / ${TOTAL_SPACE}" | bc)
+        
+        echo "Storage usage: ${USED_SPACE}GB/${TOTAL_SPACE}GB (${USAGE_PERCENT}%)"
+        
+        if (( $(echo "${USAGE_PERCENT} > 85.0" | bc -l) )); then
+          echo "::error::Critical storage usage: ${USAGE_PERCENT}%"
+          exit 1
+        elif (( $(echo "${USAGE_PERCENT} > 75.0" | bc -l) )); then
+          echo "::warning::High storage usage: ${USAGE_PERCENT}%"
+        fi
+
+  # =============================================================================
+  # MONITORING SUMMARY AND ALERTING
+  # =============================================================================
+  monitoring-summary:
+    name: 📈 Monitoring Summary & Alerts
+    runs-on: ubuntu-latest
+    needs: [health-monitoring, performance-monitoring, security-monitoring, compliance-monitoring, resource-monitoring]
+    if: always()
+
+    steps:
+    - name: Generate monitoring summary
+      run: |
+        echo "# 📊 Legal AI System - Monitoring Report" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Report Time**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## System Status" >> $GITHUB_STEP_SUMMARY
+        echo "- **Health Check**: ${{ needs.health-monitoring.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Performance**: ${{ needs.performance-monitoring.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Security**: ${{ needs.security-monitoring.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Compliance**: ${{ needs.compliance-monitoring.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Resources**: ${{ needs.resource-monitoring.result }}" >> $GITHUB_STEP_SUMMARY
+
+    - name: Determine overall system status
+      id: system-status
+      run: |
+        HEALTH="${{ needs.health-monitoring.result }}"
+        PERFORMANCE="${{ needs.performance-monitoring.result }}"
+        SECURITY="${{ needs.security-monitoring.result }}"
+        COMPLIANCE="${{ needs.compliance-monitoring.result }}"
+        RESOURCES="${{ needs.resource-monitoring.result }}"
+        
+        if [[ "$HEALTH" == "failure" || "$SECURITY" == "failure" || "$RESOURCES" == "failure" ]]; then
+          echo "status=critical" >> $GITHUB_OUTPUT
+          echo "message=Critical system issues detected" >> $GITHUB_OUTPUT
+        elif [[ "$PERFORMANCE" == "failure" || "$COMPLIANCE" == "failure" ]]; then
+          echo "status=warning" >> $GITHUB_OUTPUT
+          echo "message=System warnings detected" >> $GITHUB_OUTPUT
+        else
+          echo "status=healthy" >> $GITHUB_OUTPUT
+          echo "message=All systems operational" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Send critical alert
+      if: steps.system-status.outputs.status == 'critical'
+      uses: 8398a7/action-slack@v3
+      with:
+        status: failure
+        channel: '#legal-ai-alerts'
+        text: |
+          🚨 CRITICAL ALERT - Legal AI System
+          
+          ${{ steps.system-status.outputs.message }}
+          
+          **System Status**:
+          • Health: ${{ needs.health-monitoring.result }}
+          • Performance: ${{ needs.performance-monitoring.result }}
+          • Security: ${{ needs.security-monitoring.result }}
+          • Compliance: ${{ needs.compliance-monitoring.result }}
+          • Resources: ${{ needs.resource-monitoring.result }}
+          
+          **Action Required**: Immediate investigation needed
+          **Monitoring Dashboard**: https://legal-ai.example.com/grafana
+          **Run Details**: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        fields: repo,message,commit,author,eventName,ref,workflow
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+    - name: Send warning alert
+      if: steps.system-status.outputs.status == 'warning'
+      uses: 8398a7/action-slack@v3
+      with:
+        status: warning
+        channel: '#legal-ai-monitoring'
+        text: |
+          ⚠️ System Warning - Legal AI System
+          
+          ${{ steps.system-status.outputs.message }}
+          
+          Please review the monitoring report and take corrective action if needed.
+          
+          **Monitoring Dashboard**: https://legal-ai.example.com/grafana
+        fields: repo,eventName,workflow
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+    - name: Update system status badge
+      run: |
+        STATUS="${{ steps.system-status.outputs.status }}"
+        MESSAGE="${{ steps.system-status.outputs.message }}"
+        
+        case $STATUS in
+          "healthy")
+            BADGE_COLOR="brightgreen"
+            BADGE_MESSAGE="operational"
+            ;;
+          "warning")
+            BADGE_COLOR="yellow"
+            BADGE_MESSAGE="warnings"
+            ;;
+          "critical")
+            BADGE_COLOR="red"
+            BADGE_MESSAGE="critical"
+            ;;
+        esac
+        
+        echo "System status: ${MESSAGE}"
+        echo "Badge: https://img.shields.io/badge/system-${BADGE_MESSAGE}-${BADGE_COLOR}"

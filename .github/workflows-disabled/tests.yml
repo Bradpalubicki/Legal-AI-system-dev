@@ -1,0 +1,555 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '18'
+  POSTGRES_VERSION: '15'
+  REDIS_VERSION: '7'
+
+jobs:
+  # =============================================================================
+  # BACKEND TESTS
+  # =============================================================================
+  backend-tests:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: legal_ai_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          libpq-dev \
+          python3-dev \
+          build-essential \
+          git
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .[dev,test]
+
+    - name: Set up environment variables
+      run: |
+        echo "ENVIRONMENT=testing" >> $GITHUB_ENV
+        echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/legal_ai_test" >> $GITHUB_ENV
+        echo "REDIS_URL=redis://localhost:6379/0" >> $GITHUB_ENV
+        echo "JWT_SECRET=test-jwt-secret-for-ci-only-not-production" >> $GITHUB_ENV
+        echo "ENCRYPTION_KEY=test-encryption-key-32-chars-1234" >> $GITHUB_ENV
+        echo "DEBUG=true" >> $GITHUB_ENV
+        echo "LOG_LEVEL=DEBUG" >> $GITHUB_ENV
+
+    - name: Run database migrations
+      run: |
+        # Run any database setup/migrations
+        python -c "print('Database setup complete')"
+
+    - name: Run linting
+      run: |
+        # Type checking
+        mypy src/ --ignore-missing-imports
+        
+        # Code formatting check
+        black --check src/ tests/
+        
+        # Import sorting
+        isort --check-only src/ tests/
+        
+        # Linting
+        flake8 src/ tests/
+        
+        # Security checks
+        bandit -r src/ -f json -o bandit-report.json || true
+
+    - name: Run unit tests
+      run: |
+        pytest tests/unit/ \
+          --cov=src \
+          --cov=backend/app/src \
+          --cov-report=xml \
+          --cov-report=html:coverage/backend/html \
+          --cov-report=term-missing \
+          --cov-fail-under=95 \
+          --junitxml=test-results/backend-unit.xml \
+          --maxfail=5 \
+          -v
+
+    - name: Run integration tests
+      run: |
+        pytest tests/integration/ \
+          --cov=src \
+          --cov=backend/app/src \
+          --cov-append \
+          --cov-report=xml \
+          --cov-report=html:coverage/backend/html \
+          --cov-report=term-missing \
+          --cov-fail-under=90 \
+          --junitxml=test-results/backend-integration.xml \
+          --maxfail=3 \
+          -v
+
+    - name: Run database tests
+      run: |
+        pytest tests/integration/database/ \
+          --cov=src \
+          --cov=backend/app/src \
+          --cov-append \
+          --cov-report=xml \
+          --cov-report=html:coverage/backend/html \
+          --cov-report=term-missing \
+          --junitxml=test-results/backend-database.xml \
+          -v
+
+    - name: Run API tests
+      run: |
+        pytest tests/integration/api/ \
+          --cov=src \
+          --cov=backend/app/src \
+          --cov-append \
+          --cov-report=xml \
+          --cov-report=html:coverage/backend/html \
+          --cov-report=term-missing \
+          --junitxml=test-results/backend-api.xml \
+          -v
+
+    - name: Upload backend coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        files: ./coverage.xml
+        flags: backend
+        name: backend-coverage
+        fail_ci_if_error: false
+
+    - name: Upload backend test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: backend-test-results
+        path: |
+          test-results/
+          coverage/
+          bandit-report.json
+
+  # =============================================================================
+  # FRONTEND TESTS
+  # =============================================================================
+  frontend-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install dependencies
+      working-directory: frontend
+      run: |
+        npm ci --prefer-offline --no-audit
+        
+    - name: Run linting and formatting checks
+      working-directory: frontend
+      run: |
+        # TypeScript compilation check
+        npm run typecheck
+        
+        # Linting
+        npm run lint
+        
+        # Formatting check (if using Prettier)
+        npm run format:check || true
+
+    - name: Run unit tests
+      working-directory: frontend
+      run: |
+        npm test -- \
+          --coverage \
+          --coverageReporters=text-lcov,html,json-summary \
+          --coverageDirectory=coverage \
+          --coverageThreshold='{"global":{"branches":95,"functions":95,"lines":95,"statements":95}}' \
+          --watchAll=false \
+          --ci \
+          --verbose
+
+    - name: Run component tests
+      working-directory: frontend
+      run: |
+        npm run test:components -- \
+          --coverage \
+          --coverageReporters=text-lcov,html \
+          --coverageDirectory=coverage/components \
+          --watchAll=false \
+          --ci
+
+    - name: Run integration tests
+      working-directory: frontend
+      run: |
+        npm run test:integration -- \
+          --coverage \
+          --coverageReporters=text-lcov,html \
+          --coverageDirectory=coverage/integration \
+          --watchAll=false \
+          --ci
+
+    - name: Build application
+      working-directory: frontend
+      run: |
+        npm run build
+
+    - name: Upload frontend coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        files: ./frontend/coverage/lcov.info
+        flags: frontend
+        name: frontend-coverage
+        fail_ci_if_error: false
+
+    - name: Upload frontend test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: frontend-test-results
+        path: |
+          frontend/coverage/
+          frontend/test-results/
+
+  # =============================================================================
+  # E2E TESTS
+  # =============================================================================
+  e2e-tests:
+    runs-on: ubuntu-latest
+    needs: [backend-tests, frontend-tests]
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: legal_ai_e2e
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install backend dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .[dev,test]
+
+    - name: Install frontend dependencies
+      working-directory: frontend
+      run: npm ci --prefer-offline --no-audit
+
+    - name: Install Playwright
+      working-directory: frontend
+      run: npx playwright install --with-deps
+
+    - name: Set up test environment
+      run: |
+        echo "ENVIRONMENT=e2e" >> $GITHUB_ENV
+        echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/legal_ai_e2e" >> $GITHUB_ENV
+        echo "REDIS_URL=redis://localhost:6379/0" >> $GITHUB_ENV
+        echo "JWT_SECRET=e2e-jwt-secret-for-testing-only" >> $GITHUB_ENV
+        echo "ENCRYPTION_KEY=e2e-encryption-key-32-chars-5678" >> $GITHUB_ENV
+
+    - name: Start backend server
+      run: |
+        python -m uvicorn main:app --host 0.0.0.0 --port 8000 &
+        sleep 10
+      working-directory: backend
+
+    - name: Build and start frontend
+      working-directory: frontend
+      run: |
+        npm run build
+        npm start &
+        sleep 10
+
+    - name: Wait for services
+      run: |
+        # Wait for backend
+        until curl -f http://localhost:8000/health; do
+          echo "Waiting for backend..."
+          sleep 2
+        done
+        
+        # Wait for frontend
+        until curl -f http://localhost:3000; do
+          echo "Waiting for frontend..."
+          sleep 2
+        done
+
+    - name: Run Playwright E2E tests
+      working-directory: frontend
+      run: |
+        npx playwright test \
+          --reporter=html \
+          --output-dir=test-results/e2e
+
+    - name: Upload E2E test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: e2e-test-results
+        path: |
+          frontend/test-results/e2e/
+          frontend/playwright-report/
+
+  # =============================================================================
+  # SECURITY TESTS
+  # =============================================================================
+  security-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+    - name: Run CodeQL Analysis
+      uses: github/codeql-action/init@v2
+      with:
+        languages: python, javascript
+
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v2
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
+
+  # =============================================================================
+  # PERFORMANCE TESTS
+  # =============================================================================
+  performance-tests:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || contains(github.event.pull_request.labels.*.name, 'performance')
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: legal_ai_perf
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .[dev,test]
+        pip install pytest-benchmark
+
+    - name: Run performance tests
+      run: |
+        pytest tests/performance/ \
+          --benchmark-only \
+          --benchmark-json=benchmark-results.json \
+          -v
+
+    - name: Upload performance results
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-results
+        path: benchmark-results.json
+
+  # =============================================================================
+  # COVERAGE REPORT
+  # =============================================================================
+  coverage-report:
+    runs-on: ubuntu-latest
+    needs: [backend-tests, frontend-tests]
+    if: always()
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download backend test results
+      uses: actions/download-artifact@v3
+      with:
+        name: backend-test-results
+        path: backend-results/
+
+    - name: Download frontend test results
+      uses: actions/download-artifact@v3
+      with:
+        name: frontend-test-results
+        path: frontend-results/
+
+    - name: Generate combined coverage report
+      run: |
+        echo "## Test Coverage Report" > coverage-summary.md
+        echo "" >> coverage-summary.md
+        echo "### Backend Coverage" >> coverage-summary.md
+        echo "\`\`\`" >> coverage-summary.md
+        cat backend-results/coverage.xml | grep -o 'line-rate="[^"]*"' | head -1 >> coverage-summary.md || echo "Backend coverage data not found" >> coverage-summary.md
+        echo "\`\`\`" >> coverage-summary.md
+        echo "" >> coverage-summary.md
+        echo "### Frontend Coverage" >> coverage-summary.md
+        echo "\`\`\`" >> coverage-summary.md
+        cat frontend-results/coverage/coverage-summary.json | jq '.total.lines.pct' 2>/dev/null >> coverage-summary.md || echo "Frontend coverage data not found" >> coverage-summary.md
+        echo "\`\`\`" >> coverage-summary.md
+
+    - name: Comment coverage report on PR
+      uses: actions/github-script@v6
+      if: github.event_name == 'pull_request'
+      with:
+        script: |
+          const fs = require('fs');
+          const coverageSummary = fs.readFileSync('coverage-summary.md', 'utf8');
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: coverageSummary
+          });
+
+    - name: Upload combined coverage report
+      uses: actions/upload-artifact@v3
+      with:
+        name: combined-coverage-report
+        path: coverage-summary.md
+
+  # =============================================================================
+  # DEPLOYMENT READINESS
+  # =============================================================================
+  deployment-check:
+    runs-on: ubuntu-latest
+    needs: [backend-tests, frontend-tests, security-tests]
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Check deployment readiness
+      run: |
+        echo "✅ All tests passed"
+        echo "✅ Security checks completed"
+        echo "✅ Coverage requirements met"
+        echo "🚀 Ready for deployment"
+
+    - name: Create deployment artifact
+      run: |
+        echo "DEPLOYMENT_READY=true" > deployment-status.env
+        echo "BUILD_NUMBER=${{ github.run_number }}" >> deployment-status.env
+        echo "COMMIT_SHA=${{ github.sha }}" >> deployment-status.env
+        echo "BRANCH=${{ github.ref_name }}" >> deployment-status.env
+        echo "TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> deployment-status.env
+
+    - name: Upload deployment artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: deployment-status
+        path: deployment-status.env

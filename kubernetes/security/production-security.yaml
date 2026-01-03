@@ -1,0 +1,432 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: legal-ai-network-policy
+  namespace: legal-ai
+spec:
+  podSelector:
+    matchLabels:
+      app: legal-ai-backend
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: nginx
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 8000
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: postgres
+    ports:
+    - protocol: TCP
+      port: 5432
+  - to:
+    - podSelector:
+        matchLabels:
+          app: redis
+    ports:
+    - protocol: TCP
+      port: 6379
+  - to: []  # Allow outbound to external APIs (OpenAI, Anthropic)
+    ports:
+    - protocol: TCP
+      port: 443
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: waf-config
+  namespace: legal-ai
+data:
+  nginx.conf: |
+    # ModSecurity Web Application Firewall Configuration
+    load_module modules/ngx_http_modsecurity_module.so;
+
+    events {
+        worker_connections 1024;
+    }
+
+    http {
+        # Basic security headers
+        add_header X-Frame-Options DENY;
+        add_header X-Content-Type-Options nosniff;
+        add_header X-XSS-Protection "1; mode=block";
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains";
+        add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'";
+
+        # Rate limiting
+        limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
+        limit_req_zone $binary_remote_addr zone=auth:10m rate=5r/m;
+
+        # ModSecurity configuration
+        modsecurity on;
+        modsecurity_rules_file /etc/nginx/modsec/main.conf;
+
+        # IP whitelist for admin endpoints
+        geo $admin_allowed {
+            default 0;
+            # Add your admin IPs here
+            # 192.168.1.0/24 1;
+            # 10.0.0.0/8 1;
+        }
+
+        # DDoS protection
+        limit_conn_zone $binary_remote_addr zone=addr:10m;
+
+        upstream legal-ai-backend {
+            least_conn;
+            server legal-ai-backend-blue:8000 weight=1 max_fails=3 fail_timeout=30s;
+            server legal-ai-backend-green:8000 weight=1 max_fails=3 fail_timeout=30s backup;
+        }
+
+        server {
+            listen 80;
+            server_name _;
+            return 301 https://$host$request_uri;
+        }
+
+        server {
+            listen 443 ssl http2;
+            server_name legal-ai.production.com;
+
+            ssl_certificate /etc/ssl/certs/legal-ai.crt;
+            ssl_certificate_key /etc/ssl/private/legal-ai.key;
+            ssl_protocols TLSv1.2 TLSv1.3;
+            ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384;
+            ssl_prefer_server_ciphers off;
+
+            # Connection limits
+            limit_conn addr 20;
+            limit_req zone=api burst=20 nodelay;
+
+            # Block common attack patterns
+            location ~* \.(sql|bak|tar|gz|zip)$ {
+                return 403;
+            }
+
+            location ~* /\. {
+                return 403;
+            }
+
+            # Admin endpoints - require IP whitelist
+            location /admin {
+                if ($admin_allowed = 0) {
+                    return 403;
+                }
+                limit_req zone=auth burst=5 nodelay;
+                proxy_pass http://legal-ai-backend;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+
+            # Authentication endpoints - strict rate limiting
+            location ~* ^/(auth|login|register) {
+                limit_req zone=auth burst=5 nodelay;
+                proxy_pass http://legal-ai-backend;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+
+            # API endpoints
+            location /api/ {
+                proxy_pass http://legal-ai-backend;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_connect_timeout 30s;
+                proxy_send_timeout 30s;
+                proxy_read_timeout 30s;
+            }
+
+            # Static files
+            location /static/ {
+                expires 1y;
+                add_header Cache-Control "public, immutable";
+                proxy_pass http://legal-ai-backend;
+            }
+
+            # Health check endpoint
+            location /health {
+                access_log off;
+                proxy_pass http://legal-ai-backend;
+            }
+
+            # Root location
+            location / {
+                proxy_pass http://legal-ai-backend;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+        }
+
+        # Security monitoring
+        access_log /var/log/nginx/access.log combined;
+        error_log /var/log/nginx/error.log warn;
+    }
+
+  modsecurity.conf: |
+    # OWASP ModSecurity Core Rule Set
+    Include /etc/modsecurity/modsecurity.conf
+    Include /opt/modsecurity/owasp-modsecurity-crs/crs-setup.conf
+    Include /opt/modsecurity/owasp-modsecurity-crs/rules/*.conf
+
+    # Custom rules for legal AI system
+    SecRule ARGS "@detectSQLi" \
+        "id:1001,\
+         phase:2,\
+         block,\
+         msg:'SQL Injection Attack Detected',\
+         logdata:'Matched Data: %{MATCHED_VAR} found within %{MATCHED_VAR_NAME}',\
+         t:none,t:urlDecodeUni,t:htmlEntityDecode,t:normalisePathWin,t:lowercase"
+
+    SecRule ARGS "@detectXSS" \
+        "id:1002,\
+         phase:2,\
+         block,\
+         msg:'XSS Attack Detected',\
+         logdata:'Matched Data: %{MATCHED_VAR} found within %{MATCHED_VAR_NAME}',\
+         t:none,t:urlDecodeUni,t:htmlEntityDecode,t:jsDecode,t:lowercase"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: waf-nginx
+  namespace: legal-ai
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: waf-nginx
+  template:
+    metadata:
+      labels:
+        app: waf-nginx
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        fsGroup: 101
+      containers:
+      - name: nginx
+        image: nginx:1.21-alpine
+        ports:
+        - containerPort: 80
+        - containerPort: 443
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        volumeMounts:
+        - name: waf-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        - name: modsecurity-config
+          mountPath: /etc/nginx/modsec/main.conf
+          subPath: modsecurity.conf
+        - name: ssl-certs
+          mountPath: /etc/ssl/certs
+        - name: ssl-keys
+          mountPath: /etc/ssl/private
+      volumes:
+      - name: waf-config
+        configMap:
+          name: waf-config
+      - name: modsecurity-config
+        configMap:
+          name: waf-config
+      - name: ssl-certs
+        secret:
+          secretName: legal-ai-tls
+      - name: ssl-keys
+        secret:
+          secretName: legal-ai-tls
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: waf-nginx
+  namespace: legal-ai
+spec:
+  selector:
+    app: waf-nginx
+  ports:
+  - port: 80
+    targetPort: 80
+    name: http
+  - port: 443
+    targetPort: 443
+    name: https
+  type: LoadBalancer
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: security-monitor
+  namespace: legal-ai
+spec:
+  selector:
+    matchLabels:
+      app: security-monitor
+  template:
+    metadata:
+      labels:
+        app: security-monitor
+    spec:
+      hostNetwork: true
+      hostPID: true
+      containers:
+      - name: falco
+        image: falcosecurity/falco:0.35.0
+        args:
+          - /usr/bin/falco
+          - --cri
+          - /host/run/containerd/containerd.sock
+          - --k8s-api
+          - https://kubernetes.default:443
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        volumeMounts:
+        - name: host-root
+          mountPath: /host
+          readOnly: true
+        - name: host-proc
+          mountPath: /host/proc
+          readOnly: true
+        - name: host-etc
+          mountPath: /host/etc
+          readOnly: true
+        - name: falco-config
+          mountPath: /etc/falco
+        env:
+        - name: FALCO_K8S_API_URL
+          value: "https://kubernetes.default:443"
+        - name: FALCO_K8S_API_CERT
+          value: "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+        - name: FALCO_K8S_API_TOKEN
+          value: "/var/run/secrets/kubernetes.io/serviceaccount/token"
+      volumes:
+      - name: host-root
+        hostPath:
+          path: /
+      - name: host-proc
+        hostPath:
+          path: /proc
+      - name: host-etc
+        hostPath:
+          path: /etc
+      - name: falco-config
+        configMap:
+          name: falco-config
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: falco-config
+  namespace: legal-ai
+data:
+  falco.yaml: |
+    rules_file:
+      - /etc/falco/falco_rules.yaml
+      - /etc/falco/falco_rules.local.yaml
+      - /etc/falco/k8s_audit_rules.yaml
+
+    time_format_iso_8601: true
+    json_output: true
+    json_include_output_property: true
+
+    log_stderr: true
+    log_syslog: true
+    log_level: info
+
+    priority: debug
+
+    buffered_outputs: false
+
+    syscall_event_drops:
+      actions:
+        - log
+        - alert
+      rate: 0.03333
+      max_burst: 1000
+
+    outputs:
+      rate: 1
+      max_burst: 1000
+
+    syslog_output:
+      enabled: true
+
+    http_output:
+      enabled: true
+      url: "http://falco-webhook:8080/"
+
+  falco_rules.local.yaml: |
+    # Custom rules for Legal AI system
+    - rule: Legal AI Suspicious File Access
+      desc: Detect access to sensitive legal documents
+      condition: >
+        open_read and
+        container.name contains "legal-ai" and
+        (fd.name contains "/storage/documents" or
+         fd.name contains "/storage/uploads" or
+         fd.name contains "/storage/secure") and
+        not proc.name in (backend, nginx, celery)
+      output: >
+        Suspicious access to legal documents
+        (user=%user.name command=%proc.cmdline file=%fd.name container=%container.name)
+      priority: WARNING
+
+    - rule: Legal AI Database Access Anomaly
+      desc: Detect unusual database access patterns
+      condition: >
+        spawned_process and
+        container.name contains "legal-ai" and
+        proc.name contains "psql" and
+        not proc.pname in (backend, migrate)
+      output: >
+        Unusual database access detected
+        (user=%user.name command=%proc.cmdline container=%container.name)
+      priority: WARNING
+
+    - rule: Legal AI Privilege Escalation
+      desc: Detect privilege escalation attempts
+      condition: >
+        spawned_process and
+        container.name contains "legal-ai" and
+        proc.name in (su, sudo, setuid) and
+        user.uid != 0
+      output: >
+        Privilege escalation attempt in legal AI container
+        (user=%user.name command=%proc.cmdline container=%container.name)
+      priority: CRITICAL

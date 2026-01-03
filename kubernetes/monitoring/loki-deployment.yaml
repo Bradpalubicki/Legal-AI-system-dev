@@ -1,0 +1,554 @@
+# =============================================================================
+# Loki Deployment for Legal AI System Log Aggregation
+# =============================================================================
+# Production-ready Loki deployment with legal compliance retention policies
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loki-config
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/component: log-aggregation
+data:
+  loki.yaml: |
+    auth_enabled: false
+    
+    server:
+      http_listen_port: 3100
+      grpc_listen_port: 9096
+      log_level: info
+      graceful_shutdown_timeout: 5s
+    
+    common:
+      path_prefix: /loki
+      storage:
+        filesystem:
+          chunks_directory: /loki/chunks
+          rules_directory: /loki/rules
+      replication_factor: 1
+      ring:
+        instance_addr: 127.0.0.1
+        kvstore:
+          store: inmemory
+    
+    schema_config:
+      configs:
+        - from: 2023-01-01
+          store: boltdb-shipper
+          object_store: filesystem
+          schema: v11
+          index:
+            prefix: legal_ai_index_
+            period: 24h
+    
+    storage_config:
+      boltdb_shipper:
+        active_index_directory: /loki/boltdb-shipper-active
+        cache_location: /loki/boltdb-shipper-cache
+        cache_ttl: 24h
+        shared_store: filesystem
+      filesystem:
+        directory: /loki/chunks
+    
+    ingester:
+      lifecycler:
+        address: 127.0.0.1
+        ring:
+          kvstore:
+            store: inmemory
+          replication_factor: 1
+        final_sleep: 0s
+      chunk_idle_period: 1h
+      max_chunk_age: 1h
+      chunk_target_size: 1048576
+      chunk_retain_period: 30s
+      wal:
+        enabled: true
+        dir: /loki/wal
+    
+    limits_config:
+      ingestion_rate_mb: 8
+      ingestion_burst_size_mb: 16
+      max_line_size: 256000
+      max_query_series: 100000
+      max_query_parallelism: 32
+      max_streams_per_user: 10000
+      retention_period: 2555d  # 7 years for legal compliance
+      per_stream_rate_limit: 3MB
+      per_stream_rate_limit_burst: 15MB
+      reject_old_samples: true
+      reject_old_samples_max_age: 168h
+    
+    table_manager:
+      retention_deletes_enabled: true
+      retention_period: 2555d
+    
+    query_range:
+      align_queries_with_step: true
+      max_retries: 5
+      split_queries_by_interval: 15m
+      parallelise_shardable_queries: true
+      cache_results: true
+    
+    querier:
+      query_timeout: 1m
+      tail_max_duration: 1h
+      extra_query_delay: 0s
+      query_ingesters_within: 2h
+    
+    compactor:
+      working_directory: /loki/compactor
+      shared_store: filesystem
+      compaction_interval: 10m
+      retention_enabled: true
+      retention_delete_delay: 2h
+    
+    ruler:
+      storage:
+        type: local
+        local:
+          directory: /loki/rules
+      rule_path: /loki/rules
+      alertmanager_url: http://alertmanager:9093
+      enable_api: true
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: loki-storage
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/component: storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-ssd
+  resources:
+    requests:
+      storage: 100Gi
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: loki
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/component: log-aggregation
+    app.kubernetes.io/version: "2.9.0"
+spec:
+  serviceName: loki
+  replicas: 1
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: loki
+      app.kubernetes.io/component: log-aggregation
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: loki
+        app.kubernetes.io/component: log-aggregation
+        app.kubernetes.io/version: "2.9.0"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3100"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: loki
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: loki
+          image: grafana/loki:2.9.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10001
+            runAsGroup: 10001
+            capabilities:
+              drop:
+                - ALL
+          args:
+            - -config.file=/etc/loki/loki.yaml
+            - -target=all
+          ports:
+            - name: http
+              containerPort: 3100
+              protocol: TCP
+            - name: grpc
+              containerPort: 9096
+              protocol: TCP
+            - name: memberlist
+              containerPort: 7946
+              protocol: TCP
+          env:
+            - name: LOKI_INSTANCE_ADDR
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          resources:
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+              ephemeral-storage: 2Gi
+            requests:
+              cpu: 500m
+              memory: 1Gi
+              ephemeral-storage: 500Mi
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 45
+            periodSeconds: 30
+            timeoutSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          volumeMounts:
+            - name: config
+              mountPath: /etc/loki
+              readOnly: true
+            - name: storage
+              mountPath: /loki
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: config
+          configMap:
+            name: loki-config
+        - name: storage
+          persistentVolumeClaim:
+            claimName: loki-storage
+        - name: tmp
+          emptyDir:
+            sizeLimit: 1Gi
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      tolerations:
+        - key: node.kubernetes.io/disk-pressure
+          operator: Exists
+          effect: NoSchedule
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                        - loki
+                topologyKey: kubernetes.io/hostname
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: loki
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/component: log-aggregation
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: loki
+  labels:
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/component: log-aggregation
+rules:
+  - apiGroups: [""]
+    resources:
+      - nodes
+      - services
+      - pods
+    verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: loki
+  labels:
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/component: log-aggregation
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: loki
+subjects:
+  - kind: ServiceAccount
+    name: loki
+    namespace: legal-ai-system
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: loki
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/component: log-aggregation
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "3100"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 3100
+      targetPort: http
+      protocol: TCP
+    - name: grpc
+      port: 9096
+      targetPort: grpc
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/component: log-aggregation
+
+---
+# Promtail DaemonSet for log collection
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: promtail
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: promtail
+    app.kubernetes.io/component: log-collector
+    app.kubernetes.io/version: "2.9.0"
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: promtail
+      app.kubernetes.io/component: log-collector
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: promtail
+        app.kubernetes.io/component: log-collector
+        app.kubernetes.io/version: "2.9.0"
+    spec:
+      serviceAccountName: promtail
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+      containers:
+        - name: promtail
+          image: grafana/promtail:2.9.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          args:
+            - -config.file=/etc/promtail/config.yml
+            - -client.url=http://loki:3100/loki/api/v1/push
+          env:
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          resources:
+            limits:
+              cpu: 200m
+              memory: 256Mi
+              ephemeral-storage: 1Gi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+              ephemeral-storage: 100Mi
+          volumeMounts:
+            - name: config
+              mountPath: /etc/promtail
+              readOnly: true
+            - name: varlog
+              mountPath: /var/log
+              readOnly: true
+            - name: varlibdockercontainers
+              mountPath: /var/lib/docker/containers
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: config
+          configMap:
+            name: promtail-config
+        - name: varlog
+          hostPath:
+            path: /var/log
+        - name: varlibdockercontainers
+          hostPath:
+            path: /var/lib/docker/containers
+        - name: tmp
+          emptyDir:
+            sizeLimit: 1Gi
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: promtail
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: promtail
+    app.kubernetes.io/component: log-collector
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: promtail
+  labels:
+    app.kubernetes.io/name: promtail
+    app.kubernetes.io/component: log-collector
+rules:
+  - apiGroups: [""]
+    resources:
+      - nodes
+      - nodes/proxy
+      - services
+      - endpoints
+      - pods
+    verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: promtail
+  labels:
+    app.kubernetes.io/name: promtail
+    app.kubernetes.io/component: log-collector
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: promtail
+subjects:
+  - kind: ServiceAccount
+    name: promtail
+    namespace: legal-ai-system
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: promtail-config
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: promtail
+    app.kubernetes.io/component: log-collector
+data:
+  config.yml: |
+    server:
+      http_listen_port: 3101
+      grpc_listen_port: 0
+    
+    positions:
+      filename: /tmp/positions.yaml
+    
+    clients:
+      - url: http://loki:3100/loki/api/v1/push
+    
+    scrape_configs:
+      - job_name: kubernetes-pods-name
+        kubernetes_sd_configs:
+          - role: pod
+        pipeline_stages:
+          - docker: {}
+          - match:
+              selector: '{app="legal-ai-backend"}'
+              stages:
+                - json:
+                    expressions:
+                      timestamp: timestamp
+                      level: level
+                      message: message
+                      user_id: user_id
+                      client_id: client_id
+                      action: action
+                      resource: resource
+                - labels:
+                    level:
+                    user_id:
+                    client_id:
+                    action:
+                    resource:
+                - timestamp:
+                    format: RFC3339
+                    source: timestamp
+        relabel_configs:
+          - source_labels:
+              - __meta_kubernetes_pod_label_name
+            target_label: __service__
+          - source_labels:
+              - __meta_kubernetes_pod_node_name
+            target_label: __host__
+          - action: drop
+            regex: ""
+            source_labels:
+              - __service__
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+          - action: replace
+            replacement: $1
+            separator: /
+            source_labels:
+              - __meta_kubernetes_namespace
+              - __service__
+            target_label: job
+          - action: replace
+            source_labels:
+              - __meta_kubernetes_namespace
+            target_label: namespace
+          - action: replace
+            source_labels:
+              - __meta_kubernetes_pod_name
+            target_label: pod
+          - action: replace
+            source_labels:
+              - __meta_kubernetes_pod_container_name
+            target_label: container
+          - replacement: /var/log/pods/*$1/*.log
+            separator: /
+            source_labels:
+              - __meta_kubernetes_pod_uid
+              - __meta_kubernetes_pod_container_name
+            target_label: __path__

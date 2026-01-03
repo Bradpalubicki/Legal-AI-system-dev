@@ -1,0 +1,344 @@
+# =============================================================================
+# Service Discovery Configuration for Legal AI System Monitoring
+# =============================================================================
+# ServiceMonitor and PodMonitor CRDs for automatic Prometheus target discovery
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: legal-ai-backend
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: legal-ai-backend
+    app.kubernetes.io/component: monitoring
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: backend
+  endpoints:
+  - port: metrics
+    path: /api/v1/metrics
+    interval: 30s
+    scrapeTimeout: 10s
+    basicAuth:
+      username:
+        name: legal-ai-metrics-auth
+        key: username
+      password:
+        name: legal-ai-metrics-auth
+        key: password
+  namespaceSelector:
+    matchNames:
+    - legal-ai-system
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: legal-ai-frontend
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: legal-ai-frontend
+    app.kubernetes.io/component: monitoring
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: frontend
+  endpoints:
+  - port: metrics
+    path: /api/metrics
+    interval: 30s
+    scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+    - legal-ai-system
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: legal-ai-workers
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: legal-ai-workers
+    app.kubernetes.io/component: monitoring
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: worker
+  podMetricsEndpoints:
+  - port: metrics
+    path: /metrics
+    interval: 30s
+    scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+    - legal-ai-system
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: legal-ai-database
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: postgresql-exporter
+    app.kubernetes.io/component: monitoring
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: postgres-exporter
+  endpoints:
+  - port: metrics
+    path: /metrics
+    interval: 30s
+    scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+    - legal-ai-system
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: legal-ai-redis
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: redis-exporter
+    app.kubernetes.io/component: monitoring
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: redis-exporter
+  endpoints:
+  - port: metrics
+    path: /metrics
+    interval: 30s
+    scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+    - legal-ai-system
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: legal-ai-nginx
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: nginx
+    app.kubernetes.io/component: monitoring
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: nginx
+  endpoints:
+  - port: metrics
+    path: /metrics
+    interval: 30s
+    scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+    - legal-ai-system
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: legal-ai-minio
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: minio
+    app.kubernetes.io/component: monitoring
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: minio
+  endpoints:
+  - port: api
+    path: /minio/v2/metrics/cluster
+    interval: 60s
+    scrapeTimeout: 30s
+  namespaceSelector:
+    matchNames:
+    - legal-ai-system
+
+---
+# Blackbox Exporter for external service monitoring
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: blackbox-exporter
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: blackbox-exporter
+    app.kubernetes.io/component: monitoring
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: blackbox-exporter
+  endpoints:
+  - port: http
+    path: /probe
+    params:
+      module:
+      - http_2xx
+      target:
+      - https://legal-ai.example.com/health
+      - https://legal-ai.example.com/api/health
+    interval: 60s
+    scrapeTimeout: 30s
+    metricRelabelings:
+    - sourceLabels: [__param_target]
+      targetLabel: instance
+    - targetLabel: __address__
+      replacement: blackbox-exporter:9115
+  namespaceSelector:
+    matchNames:
+    - legal-ai-system
+
+---
+# Custom exporters for legal-specific monitoring
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: legal-ai-compliance-exporter
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: compliance-exporter
+    app.kubernetes.io/component: monitoring
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: compliance-exporter
+  endpoints:
+  - port: metrics
+    path: /metrics
+    interval: 300s  # 5 minutes for compliance checks
+    scrapeTimeout: 60s
+  namespaceSelector:
+    matchNames:
+    - legal-ai-system
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: legal-ai-audit-exporter
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: audit-exporter
+    app.kubernetes.io/component: monitoring
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: audit-exporter
+  endpoints:
+  - port: metrics
+    path: /metrics
+    interval: 60s
+    scrapeTimeout: 30s
+  namespaceSelector:
+    matchNames:
+    - legal-ai-system
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: legal-ai-ai-usage-exporter
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: ai-usage-exporter
+    app.kubernetes.io/component: monitoring
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ai-usage-exporter
+  endpoints:
+  - port: metrics
+    path: /metrics
+    interval: 300s  # 5 minutes for AI usage metrics
+    scrapeTimeout: 60s
+  namespaceSelector:
+    matchNames:
+    - legal-ai-system
+
+---
+# Authentication Secret for Metrics
+apiVersion: v1
+kind: Secret
+metadata:
+  name: legal-ai-metrics-auth
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: legal-ai-system
+    app.kubernetes.io/component: monitoring
+type: Opaque
+stringData:
+  username: legal-ai-monitoring
+  password: CHANGEME_METRICS_PASSWORD
+
+---
+# PrometheusRule for custom recording rules
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: legal-ai-recording-rules
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: legal-ai-system
+    app.kubernetes.io/component: monitoring
+spec:
+  groups:
+  - name: legal-ai-recording-rules
+    interval: 30s
+    rules:
+    # SLI: Request Success Rate
+    - record: legal_ai:request_success_rate_5m
+      expr: |
+        rate(http_requests_total{job="legal-ai-backend",status!~"[45].."}[5m])
+        /
+        rate(http_requests_total{job="legal-ai-backend"}[5m])
+    
+    # SLI: Request Latency P95
+    - record: legal_ai:request_latency_p95_5m
+      expr: |
+        histogram_quantile(0.95,
+          rate(http_request_duration_seconds_bucket{job="legal-ai-backend"}[5m])
+        )
+    
+    # SLI: Document Processing Success Rate
+    - record: legal_ai:document_processing_success_rate_10m
+      expr: |
+        rate(document_processing_total{status="success"}[10m])
+        /
+        rate(document_processing_total[10m])
+    
+    # Business Metric: Active Legal Workflows
+    - record: legal_ai:active_legal_workflows
+      expr: |
+        sum(legal_workflow_total) by (workflow_type)
+    
+    # Compliance Metric: Audit Log Health
+    - record: legal_ai:audit_log_health_1h
+      expr: |
+        1 - (
+          rate(audit_log_errors_total[1h])
+          /
+          rate(audit_log_entries_total[1h])
+        )
+    
+    # Resource Utilization
+    - record: legal_ai:cpu_utilization_avg_5m
+      expr: |
+        avg(rate(container_cpu_usage_seconds_total{namespace="legal-ai-system"}[5m])) by (container, pod)
+    
+    - record: legal_ai:memory_utilization_avg
+      expr: |
+        avg(
+          container_memory_usage_bytes{namespace="legal-ai-system"}
+          /
+          container_spec_memory_limit_bytes{namespace="legal-ai-system"}
+        ) by (container, pod)

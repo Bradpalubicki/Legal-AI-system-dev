@@ -1,0 +1,128 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-beat
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: celery-beat
+    app.kubernetes.io/component: scheduler
+    app.kubernetes.io/part-of: legal-ai-system
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: celery-beat
+      app.kubernetes.io/component: scheduler
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: celery-beat
+        app.kubernetes.io/component: scheduler
+        app.kubernetes.io/part-of: legal-ai-system
+    spec:
+      serviceAccountName: legal-ai-service-account
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+      containers:
+      - name: celery-beat
+        image: legal-ai-backend:1.0.0
+        command:
+          - celery
+          - -A
+          - app.celery
+          - beat
+          - --loglevel=info
+          - --scheduler=django_celery_beat.schedulers:DatabaseScheduler
+          - --pidfile=/tmp/celerybeat.pid
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: database-secret
+              key: DATABASE_URL
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: REDIS_URL
+        - name: CELERY_BROKER_URL
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: CELERY_BROKER_URL
+        - name: CELERY_RESULT_BACKEND
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: CELERY_RESULT_BACKEND
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-keys-secret
+              key: SECRET_KEY
+        - name: PYTHONPATH
+          value: "/app"
+        - name: PYTHONDONTWRITEBYTECODE
+          value: "1"
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        - name: C_FORCE_ROOT
+          value: "1"
+        volumeMounts:
+        - name: temp-storage
+          mountPath: /tmp
+        - name: logs
+          mountPath: /app/logs
+        - name: beat-schedule
+          mountPath: /app/beat-schedule
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+          requests:
+            memory: "128Mi"
+            cpu: "50m"
+        livenessProbe:
+          exec:
+            command:
+              - /bin/sh
+              - -c
+              - "ps aux | grep celery | grep beat | grep -v grep"
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+              - /bin/sh
+              - -c
+              - "ps aux | grep celery | grep beat | grep -v grep"
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          timeoutSeconds: 5
+          failureThreshold: 3
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+              - ALL
+      volumes:
+      - name: temp-storage
+        emptyDir: {}
+      - name: logs
+        emptyDir: {}
+      - name: beat-schedule
+        emptyDir: {}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 60
+      nodeSelector:
+        kubernetes.io/arch: amd64

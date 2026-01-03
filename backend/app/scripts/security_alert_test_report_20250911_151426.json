@@ -1,0 +1,103 @@
+{
+  "test_execution_summary": {
+    "total_tests": 18,
+    "passed_tests": 18,
+    "failed_tests": 0,
+    "success_rate_percentage": 100.0,
+    "total_duration_seconds": 0.0,
+    "services_available": false
+  },
+  "performance_metrics": {
+    "average_processing_time_ms": 0.0,
+    "max_processing_time_ms": 0.01,
+    "min_processing_time_ms": 0.0,
+    "tests_per_second": 54947.21
+  },
+  "category_breakdown": {
+    "AUTH": {
+      "total": 3,
+      "passed": 3,
+      "failed": 0,
+      "avg_processing_time": 0.0019073486328125,
+      "success_rate": 100.0
+    },
+    "AUTHZ": {
+      "total": 2,
+      "passed": 2,
+      "failed": 0,
+      "avg_processing_time": 0.0019073486328125,
+      "success_rate": 100.0
+    },
+    "DATA": {
+      "total": 3,
+      "passed": 3,
+      "failed": 0,
+      "avg_processing_time": 0.0019073486328125,
+      "success_rate": 100.0
+    },
+    "SYS": {
+      "total": 2,
+      "passed": 2,
+      "failed": 0,
+      "avg_processing_time": 0.0019073486328125,
+      "success_rate": 100.0
+    },
+    "INSIDER": {
+      "total": 2,
+      "passed": 2,
+      "failed": 0,
+      "avg_processing_time": 0.0019073486328125,
+      "success_rate": 100.0
+    },
+    "COMP": {
+      "total": 2,
+      "passed": 2,
+      "failed": 0,
+      "avg_processing_time": 0.0019073486328125,
+      "success_rate": 100.0
+    },
+    "API": {
+      "total": 2,
+      "passed": 2,
+      "failed": 0,
+      "avg_processing_time": 0.0019073486328125,
+      "success_rate": 100.0
+    },
+    "EMERG": {
+      "total": 2,
+      "passed": 2,
+      "failed": 0,
+      "avg_processing_time": 0.0019073486328125,
+      "success_rate": 100.0
+    }
+  },
+  "security_alert_coverage": {
+    "authentication_alerts": 5,
+    "authorization_alerts": 2,
+    "data_protection_alerts": 3,
+    "system_security_alerts": 2,
+    "insider_threat_alerts": 2,
+    "compliance_alerts": 2,
+    "api_security_alerts": 2,
+    "emergency_alerts": 2
+  },
+  "validation_results": {
+    "alert_creation_success": 18,
+    "severity_validation_success": 18,
+    "risk_score_validation_success": 18,
+    "response_action_validation_success": 18,
+    "immediate_response_validation_success": 18,
+    "legal_review_validation_success": 18,
+    "client_notification_validation_success": 18
+  },
+  "failure_analysis": {
+    "failed_test_count": 0,
+    "common_failure_reasons": {},
+    "failed_test_details": []
+  },
+  "recommendations": [
+    "Excellent success rate achieved - security alert system is highly reliable"
+  ],
+  "timestamp": "2025-09-11T22:14:26.835826+00:00",
+  "test_environment": "legal-ai-security-alerts"
+}

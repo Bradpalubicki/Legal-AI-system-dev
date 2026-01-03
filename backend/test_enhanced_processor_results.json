@@ -1,0 +1,270 @@
+{
+  "financial": {
+    "monetary_amounts": [
+      {
+        "raw": "$5,033,301.46",
+        "amount": 5033301.46,
+        "context": "CASE NO. 23-12345\n\n    OBJECTION TO DISCLOSURE STATEMENT\n\n    The Debtor proposes to pay creditors $5,033,301.46 to satisfy claims totaling\n    $3,500,000.00, representing a premium of 1.44x over face value.",
+        "position": 115
+      },
+      {
+        "raw": "$3,500,000.00",
+        "amount": 3500000.0,
+        "context": "RE STATEMENT\n\n    The Debtor proposes to pay creditors $5,033,301.46 to satisfy claims totaling\n    $3,500,000.00, representing a premium of 1.44x over face value.\n\n    OWNERSHIP STRUCTURE:\n\n    Dr. Smith holds 51",
+        "position": 160
+      },
+      {
+        "raw": "$1,500,000.00",
+        "amount": 1500000.0,
+        "context": "\u00a7 363(b) to approve this settlement\n    without Court approval.\n\n    CLAIMS:\n\n    Secured claim #1: $1,500,000.00\n    Unsecured claim #2: $2,000,000.00\n    Priority claim #3: $500,000.00\n\n    The plan provides for",
+        "position": 788
+      },
+      {
+        "raw": "$2,000,000.00",
+        "amount": 2000000.0,
+        "context": "without Court approval.\n\n    CLAIMS:\n\n    Secured claim #1: $1,500,000.00\n    Unsecured claim #2: $2,000,000.00\n    Priority claim #3: $500,000.00\n\n    The plan provides for distribution of 100,000 shares (votin",
+        "position": 826
+      },
+      {
+        "raw": "$500,000.00",
+        "amount": 500000.0,
+        "context": ":\n\n    Secured claim #1: $1,500,000.00\n    Unsecured claim #2: $2,000,000.00\n    Priority claim #3: $500,000.00\n\n    The plan provides for distribution of 100,000 shares (voting) to Class A creditors\n    and 50,",
+        "position": 863
+      },
+      {
+        "raw": "$750,000.00",
+        "amount": 750000.0,
+        "context": "(non-voting) to Class B creditors.\n\n    INSIDER PAYMENT:\n\n    The plan also provides for payment of $750,000.00 to the CEO within 90 days of\n    the effective date, despite the CEO being a 20% shareholder.",
+        "position": 1085
+      }
+    ],
+    "percentages": [
+      {
+        "value": 51.0,
+        "type": "voting_control",
+        "entity": "\n\n    Dr",
+        "context": ",301.46 to satisfy claims totaling\n    $3,500,000.00, representing a premium of 1.44x over face value.\n\n    OWNERSHIP STRUCTURE:\n\n    Dr. Smith holds 51% voting control but only 15% economic ownership of the\n    reorganized entity. This creates a control disparity of 36%.\n\n    Jane Doe owns 49% voting"
+      },
+      {
+        "value": 15.0,
+        "type": "voting_control",
+        "entity": "\n\n    Dr",
+        "context": "taling\n    $3,500,000.00, representing a premium of 1.44x over face value.\n\n    OWNERSHIP STRUCTURE:\n\n    Dr. Smith holds 51% voting control but only 15% economic ownership of the\n    reorganized entity. This creates a control disparity of 36%.\n\n    Jane Doe owns 49% voting shares and 85% economic owne"
+      },
+      {
+        "value": 36.0,
+        "type": "voting_control",
+        "entity": "\n\n    Dr",
+        "context": "STRUCTURE:\n\n    Dr. Smith holds 51% voting control but only 15% economic ownership of the\n    reorganized entity. This creates a control disparity of 36%.\n\n    Jane Doe owns 49% voting shares and 85% economic ownership.\n\n    LEGAL ISSUES:\n\n    The plan violates Purdue Pharma L.P. v. United States, 144"
+      },
+      {
+        "value": 49.0,
+        "type": "voting_control",
+        "entity": " This",
+        "context": "h holds 51% voting control but only 15% economic ownership of the\n    reorganized entity. This creates a control disparity of 36%.\n\n    Jane Doe owns 49% voting shares and 85% economic ownership.\n\n    LEGAL ISSUES:\n\n    The plan violates Purdue Pharma L.P. v. United States, 144 S. Ct. 2079 (2024),"
+      },
+      {
+        "value": 85.0,
+        "type": "voting_control",
+        "entity": " This",
+        "context": "trol but only 15% economic ownership of the\n    reorganized entity. This creates a control disparity of 36%.\n\n    Jane Doe owns 49% voting shares and 85% economic ownership.\n\n    LEGAL ISSUES:\n\n    The plan violates Purdue Pharma L.P. v. United States, 144 S. Ct. 2079 (2024),\n    which prohibits non-co"
+      }
+    ],
+    "shares": [
+      {
+        "count": 100000,
+        "type": "non-voting",
+        "owner": "\n    Priority",
+        "context": "aim #2: $2,000,000.00\n    Priority claim #3: $500,000.00\n\n    The plan provides for distribution of 100,000 shares (voting) to Class A creditors\n    and 50,000 shares (non-voting) to Class B creditors.\n\n    INSIDER PAYMENT"
+      },
+      {
+        "count": 50000,
+        "type": "non-voting",
+        "owner": "\n\n    The",
+        "context": ".00\n\n    The plan provides for distribution of 100,000 shares (voting) to Class A creditors\n    and 50,000 shares (non-voting) to Class B creditors.\n\n    INSIDER PAYMENT:\n\n    The plan also provides for payment of $750,000.00"
+      }
+    ],
+    "claims": [
+      {
+        "amount": 3500000.0,
+        "type": "general",
+        "context": "claims totaling\n    $3,500,000.00"
+      },
+      {
+        "amount": 1500000.0,
+        "type": "secured",
+        "context": "CLAIMS:\n\n    Secured claim #1: $1,500,000.00"
+      },
+      {
+        "amount": 2000000.0,
+        "type": "secured",
+        "context": "Unsecured claim #2: $2,000,000.00"
+      },
+      {
+        "amount": 500000.0,
+        "type": "general",
+        "context": "claim #3: $500,000.00"
+      }
+    ],
+    "settlements": [
+      {
+        "payment_amount": 5033301.46,
+        "original_amount": 3500000.0,
+        "premium_multiple": 1.44,
+        "context": "proposes to pay creditors $5,033,301.46 to satisfy claims totaling\n    $3,500,000.00"
+      }
+    ],
+    "extraction_metadata": {
+      "extracted_at": "2025-10-26T22:20:55.954410",
+      "total_monetary_amounts": 6,
+      "total_percentages": 5,
+      "total_shares": 2,
+      "total_claims": 4,
+      "total_settlements": 1
+    }
+  },
+  "ownership": {
+    "voting_control": {
+      "Smith": 51.0,
+      "Jane Doe": 49.0
+    },
+    "economic_ownership": {},
+    "control_disparities": []
+  },
+  "legal": {
+    "case_citations": [],
+    "statutory_references": [
+      {
+        "title": "11",
+        "section": "363(b)",
+        "citation": "11 U.S.C. \u00a7 363(b)"
+      }
+    ],
+    "precedent_violations": [
+      {
+        "case": "The plan violates Purdue Pharma L.P. v. United States,",
+        "citation": "The plan violates Purdue Pharma L.P. v. United States, 144 S. Ct. 2079 (2024)",
+        "violation_type": "non-consensual_third_party_release",
+        "context": "ontrol but only 15% economic ownership of the\n    reorganized entity. This creates a control disparity of 36%.\n\n    Jane Doe owns 49% voting shares and 85% economic ownership.\n\n    LEGAL ISSUES:\n\n    The plan violates Purdue Pharma L.P. v. United States, 144 S. Ct. 2079 (2024),\n    which prohibits non-consensual third-party releases in bankruptcy cases.\n\n    The Trustee lacks authority under 11 U.S.C. \u00a7 363(b) to approve this settlement\n    without Court approval.\n\n    CLA"
+      }
+    ],
+    "authority_limitations": [
+      {
+        "limitation": "Trustee lacks authority",
+        "context": "es Purdue Pharma L.P. v. United States, 144 S. Ct. 2079 (2024),\n    which prohibits non-consensual third-party releases in bankruptcy cases.\n\n    The Trustee lacks authority under 11 U.S.C. \u00a7 363(b) to approve this settlement\n    without Court approval.\n\n    CLAIMS:\n\n    Secured claim #1: $1,500,000.00\n    Unsecured claim"
+      }
+    ]
+  },
+  "metrics": {
+    "settlement_inequities": [],
+    "preferential_treatments": [],
+    "suspicious_payments": [],
+    "recovery_analysis": {
+      "total_claims": 7500000.0,
+      "total_payments": 5033301.46,
+      "overall_recovery_rate": 0.671,
+      "expected_bankruptcy_recovery": 0.3,
+      "excess_recovery": 0.3711068613333333,
+      "suspicious": false
+    },
+    "overall_statistics": {
+      "total_settlements": 1,
+      "preferential_treatments_found": 0,
+      "settlement_inequities_found": 0,
+      "suspicious_payments_found": 0,
+      "highest_premium": 1.44,
+      "average_premium": 1.44,
+      "fraud_indicators": 0
+    }
+  },
+  "creditor_recovery": {
+    "by_class": {
+      "general": {
+        "total_claims": 4000000.0,
+        "claim_count": 2,
+        "estimated_recovery": 2684427.445333333,
+        "recovery_rate": 0.671,
+        "expected_rate": 0.25
+      },
+      "secured": {
+        "total_claims": 3500000.0,
+        "claim_count": 2,
+        "estimated_recovery": 2348874.0146666667,
+        "recovery_rate": 0.671,
+        "expected_rate": 0.8
+      }
+    },
+    "inequities": [
+      {
+        "creditor_class": "general",
+        "actual_rate": 0.6711068613333333,
+        "expected_rate": 0.25,
+        "difference": 0.4211068613333333,
+        "favored": true
+      }
+    ]
+  },
+  "fraudulent_conveyances": [
+    {
+      "amount": 3500000.0,
+      "red_flags": [
+        "large_payment",
+        null,
+        null,
+        "controlled_entity"
+      ],
+      "context": "RE STATEMENT\n\n    The Debtor proposes to pay creditors $5,033,301.46 to satisfy claims totaling\n    $3,500,000.00, representing a premium of 1.44x over face value.\n\n    OWNERSHIP STRUCTURE:\n\n    Dr. S",
+      "risk_level": "HIGH"
+    },
+    {
+      "amount": 750000.0,
+      "red_flags": [
+        "large_payment",
+        "insider_payment",
+        "suspicious_timing",
+        null
+      ],
+      "context": "(non-voting) to Class B creditors.\n\n    INSIDER PAYMENT:\n\n    The plan also provides for payment of $750,000.00 to the CEO within 90 days of\n    the effective date, despite the CEO being a 20% shareho",
+      "risk_level": "HIGH"
+    }
+  ],
+  "alerts": [
+    {
+      "level": "CRITICAL",
+      "type": "LEGAL_VIOLATION",
+      "message": "Violates The plan violates Purdue Pharma L.P. v. United States, - non-consensual_third_party_release"
+    },
+    {
+      "level": "CRITICAL",
+      "type": "FRAUDULENT_CONVEYANCE",
+      "message": "Suspicious $3,500,000.00 transfer to insider/controlled entity"
+    },
+    {
+      "level": "CRITICAL",
+      "type": "FRAUDULENT_CONVEYANCE",
+      "message": "Suspicious $750,000.00 transfer to insider/controlled entity"
+    }
+  ],
+  "summary": {
+    "Financial Data": {
+      "Monetary Amounts": 6,
+      "Claims": 4,
+      "Settlements": 1,
+      "Percentages": 5
+    },
+    "Ownership Structure": {
+      "Voting Control Entities": 2,
+      "Control Disparities": 0
+    },
+    "Legal Issues": {
+      "Case Citations": 0,
+      "Precedent Violations": 1,
+      "Statutory References": 1
+    },
+    "Risk Assessment": {
+      "Preferential Treatments": 0,
+      "Fraudulent Conveyances": 2,
+      "Total Fraud Indicators": 0
+    }
+  }
+}

@@ -1,0 +1,224 @@
+global:
+  smtp_smarthost: 'mailhog:1025'
+  smtp_from: 'legal-ai-compliance@legalai.com'
+  smtp_auth_username: ''
+  smtp_auth_password: ''
+  slack_api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+
+route:
+  group_by: ['alertname', 'severity', 'component']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 12h
+  receiver: 'legal-team'
+  routes:
+    # Critical UPL violations - immediate escalation
+    - match:
+        violation_type: upl
+        severity: critical
+      receiver: 'emergency-legal-team'
+      group_wait: 0s
+      repeat_interval: 5m
+
+    # Attorney review flag alerts
+    - match_re:
+        alertname: '.*Attorney.*'
+      receiver: 'attorney-review-team'
+      group_interval: 2m
+      repeat_interval: 30m
+
+    # Disclaimer issues
+    - match:
+        component: disclaimer
+      receiver: 'compliance-team'
+      group_interval: 5m
+      repeat_interval: 1h
+
+    # Service downtime alerts
+    - match_re:
+        alertname: '.*ServiceDown.*'
+      receiver: 'ops-team'
+      group_wait: 1m
+      repeat_interval: 15m
+
+    # SLA breach alerts
+    - match:
+        component: sla
+      receiver: 'management-team'
+      group_interval: 10m
+      repeat_interval: 2h
+
+receivers:
+  - name: 'legal-team'
+    email_configs:
+      - to: 'legal-team@legalai.com'
+        subject: '⚖️ Legal AI Compliance Alert: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        body: |
+          {{ range .Alerts }}
+          **Alert:** {{ .Annotations.summary }}
+          **Description:** {{ .Annotations.description }}
+          **Severity:** {{ .Labels.severity }}
+          **Component:** {{ .Labels.component }}
+          **Time:** {{ .StartsAt.Format "2006-01-02 15:04:05 UTC" }}
+
+          **Runbook:** {{ .Annotations.runbook_url }}
+          {{ end }}
+
+  - name: 'emergency-legal-team'
+    email_configs:
+      - to: 'emergency-legal@legalai.com,ceo@legalai.com,cto@legalai.com'
+        subject: '🚨 CRITICAL LEGAL COMPLIANCE ALERT: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        body: |
+          **CRITICAL LEGAL COMPLIANCE INCIDENT**
+
+          This is an urgent notification requiring immediate attention.
+
+          {{ range .Alerts }}
+          **Alert:** {{ .Annotations.summary }}
+          **Description:** {{ .Annotations.description }}
+          **Severity:** {{ .Labels.severity }}
+          **Component:** {{ .Labels.component }}
+          **Violation Type:** {{ .Labels.violation_type }}
+          **Time:** {{ .StartsAt.Format "2006-01-02 15:04:05 UTC" }}
+
+          **Immediate Actions Required:**
+          1. Investigate the compliance violation immediately
+          2. Consider temporary service suspension if necessary
+          3. Contact legal counsel if UPL violation confirmed
+          4. Document all actions taken
+
+          **Runbook:** {{ .Annotations.runbook_url }}
+          {{ end }}
+
+          **Escalation Protocol:**
+          If not resolved within 15 minutes, contact external legal counsel.
+
+    slack_configs:
+      - api_url: 'https://hooks.slack.com/services/YOUR/EMERGENCY/WEBHOOK'
+        channel: '#legal-ai-emergency'
+        title: '🚨 CRITICAL LEGAL COMPLIANCE ALERT'
+        text: |
+          {{ range .Alerts }}
+          **URGENT: {{ .Annotations.summary }}**
+
+          {{ .Annotations.description }}
+
+          **Severity:** {{ .Labels.severity }}
+          **Component:** {{ .Labels.component }}
+          **Started:** {{ .StartsAt.Format "15:04:05 UTC" }}
+
+          <{{ .Annotations.runbook_url }}|View Runbook>
+          {{ end }}
+        send_resolved: true
+
+  - name: 'attorney-review-team'
+    email_configs:
+      - to: 'attorney-review@legalai.com'
+        subject: '⚖️ Attorney Review Alert: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        body: |
+          {{ range .Alerts }}
+          **Attorney Review Alert**
+
+          **Alert:** {{ .Annotations.summary }}
+          **Description:** {{ .Annotations.description }}
+          **Risk Level:** {{ .Labels.risk_level }}
+          **Time:** {{ .StartsAt.Format "2006-01-02 15:04:05 UTC" }}
+
+          Please review the flagged content and determine if attorney intervention is required.
+
+          **Runbook:** {{ .Annotations.runbook_url }}
+          {{ end }}
+
+    slack_configs:
+      - channel: '#attorney-review'
+        title: '⚖️ Attorney Review Required'
+        text: |
+          {{ range .Alerts }}
+          {{ .Annotations.summary }}
+
+          **Risk Level:** {{ .Labels.risk_level }}
+          **Description:** {{ .Annotations.description }}
+          {{ end }}
+
+  - name: 'compliance-team'
+    email_configs:
+      - to: 'compliance@legalai.com'
+        subject: '📋 Compliance Issue: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        body: |
+          {{ range .Alerts }}
+          **Compliance Issue Detected**
+
+          **Issue:** {{ .Annotations.summary }}
+          **Details:** {{ .Annotations.description }}
+          **Component:** {{ .Labels.component }}
+          **Time:** {{ .StartsAt.Format "2006-01-02 15:04:05 UTC" }}
+
+          **Action Required:**
+          Please investigate and resolve this compliance issue.
+
+          **Runbook:** {{ .Annotations.runbook_url }}
+          {{ end }}
+
+  - name: 'ops-team'
+    email_configs:
+      - to: 'ops@legalai.com'
+        subject: '🔧 Legal AI Service Alert: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        body: |
+          {{ range .Alerts }}
+          **Service Alert**
+
+          **Service:** {{ .Labels.job }}
+          **Issue:** {{ .Annotations.summary }}
+          **Description:** {{ .Annotations.description }}
+          **Time:** {{ .StartsAt.Format "2006-01-02 15:04:05 UTC" }}
+
+          **Impact:** Legal compliance protections may be compromised while service is down.
+
+          **Runbook:** {{ .Annotations.runbook_url }}
+          {{ end }}
+
+    slack_configs:
+      - channel: '#ops-alerts'
+        title: '🔧 Service Down Alert'
+        text: |
+          {{ range .Alerts }}
+          **{{ .Labels.job }}** service is down
+
+          {{ .Annotations.description }}
+
+          **Impact:** Legal compliance may be affected
+          {{ end }}
+
+  - name: 'management-team'
+    email_configs:
+      - to: 'management@legalai.com'
+        subject: '📊 Legal AI SLA Breach: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        body: |
+          {{ range .Alerts }}
+          **SLA Breach Notification**
+
+          **SLA:** {{ .Annotations.summary }}
+          **Impact:** {{ .Annotations.description }}
+          **Component:** {{ .Labels.component }}
+          **Time:** {{ .StartsAt.Format "2006-01-02 15:04:05 UTC" }}
+
+          **Business Impact:**
+          This SLA breach may affect customer experience and legal compliance guarantees.
+
+          **Runbook:** {{ .Annotations.runbook_url }}
+          {{ end }}
+
+inhibit_rules:
+  # Inhibit lower severity alerts when higher severity alerts are active
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'component']
+
+  # Inhibit service down alerts when compliance service is down
+  - source_match:
+      alertname: 'ComplianceServiceDown'
+    target_match_re:
+      alertname: '.*Compliance.*'
+    equal: ['component']

@@ -1,0 +1,218 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: legal-ai-ingress
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: legal-ai-system
+    app.kubernetes.io/component: ingress
+  annotations:
+    # Ingress Controller Specific Annotations (NGINX Ingress Controller)
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "10"
+    
+    # Rate Limiting
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    
+    # Security Headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+      more_set_headers "Strict-Transport-Security: max-age=31536000; includeSubDomains";
+      
+    # WebSocket Support
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    
+    # Certificate Management (cert-manager)
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    cert-manager.io/acme-challenge-type: "http01"
+    
+    # External DNS (if using external-dns)
+    external-dns.alpha.kubernetes.io/hostname: "legal-ai.example.com"
+    
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - legal-ai.example.com
+    - api.legal-ai.example.com
+    - storage.legal-ai.example.com
+    secretName: legal-ai-tls-secret
+  
+  rules:
+  # Main Application
+  - host: legal-ai.example.com
+    http:
+      paths:
+      # Frontend Application
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-service
+            port:
+              number: 80
+      
+      # API Routes
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-service
+            port:
+              number: 80
+      
+      # WebSocket Routes
+      - path: /ws
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-service
+            port:
+              number: 80
+      
+      # Storage Routes
+      - path: /storage
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-service
+            port:
+              number: 80
+      
+      # Monitoring (Flower)
+      - path: /flower
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-service
+            port:
+              number: 80
+
+  # API Subdomain (optional, for direct API access)
+  - host: api.legal-ai.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: backend-service
+            port:
+              number: 8000
+
+  # Storage Subdomain (optional, for direct MinIO access)
+  - host: storage.legal-ai.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: minio-service
+            port:
+              number: 9000
+
+---
+# Ingress for development/staging environments
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: legal-ai-ingress-dev
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: legal-ai-system
+    app.kubernetes.io/component: ingress-dev
+    app.kubernetes.io/environment: development
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Environment: development";
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: legal-ai-dev.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-service
+            port:
+              number: 80
+
+---
+# Network Policy for Ingress
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: legal-ai-ingress-netpol
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: legal-ai-system
+    app.kubernetes.io/component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: nginx
+      app.kubernetes.io/component: reverse-proxy
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 8080
+    - protocol: TCP
+      port: 8443
+  egress:
+  # Allow communication to backend services
+  - to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: backend
+    ports:
+    - protocol: TCP
+      port: 8000
+    - protocol: TCP
+      port: 8001
+  - to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: frontend
+    ports:
+    - protocol: TCP
+      port: 3000
+  - to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: minio
+    ports:
+    - protocol: TCP
+      port: 9000
+  - to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: celery-flower
+    ports:
+    - protocol: TCP
+      port: 5555
+  # Allow DNS resolution
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53

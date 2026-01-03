@@ -1,0 +1,186 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: legal-ai-development
+  namespace: legal-ai-dev
+
+# Base configuration
+bases:
+  - ../../base
+
+# Development namespace
+namespace: legal-ai-dev
+
+# Common labels for development
+commonLabels:
+  environment: development
+  deployment: development
+  app.kubernetes.io/environment: development
+
+# Development-specific annotations
+commonAnnotations:
+  app.kubernetes.io/managed-by: kustomize
+  environment: development
+  deployment-type: development
+
+# Development images (can use latest or development tags)
+images:
+  - name: legal-ai-backend
+    newTag: "dev-latest"
+  - name: legal-ai-frontend
+    newTag: "dev-latest"
+  - name: legal-ai-nginx
+    newTag: "dev-latest"
+  - name: postgres
+    newTag: "16-alpine"
+  - name: redis
+    newTag: "7-alpine"
+  - name: minio/minio
+    newTag: "RELEASE.2024-01-31T20-20-33Z"
+
+# Development-specific resources
+resources:
+  - namespace-dev.yaml
+  - ingress-development.yaml
+  - debug-tools.yaml
+
+# ConfigMap generators for development
+configMapGenerator:
+  - name: development-env-config
+    literals:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - LOG_LEVEL=debug
+      - SECURE_SSL_REDIRECT=false
+      - SECURE_HSTS_SECONDS=0
+      - AUDIT_LOG_ENABLED=false
+      - GDPR_COMPLIANCE_MODE=false
+      - CCPA_COMPLIANCE_MODE=false
+      - DOCUMENT_ENCRYPTION_ENABLED=false
+      - RATE_LIMIT_ENABLED=false
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:8000,https://legal-ai-dev.example.com
+      - NEXT_PUBLIC_API_URL=https://legal-ai-dev.example.com/api
+      - PYTHONPATH=/app
+
+# Development patches for reduced resource usage
+patchesStrategicMerge:
+  - backend-development-patch.yaml
+  - frontend-development-patch.yaml
+  - celery-development-patch.yaml
+
+# JSON patches for development-specific configurations
+patches:
+  # Reduce replica counts for development
+  - target:
+      kind: Deployment
+      name: backend
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+  
+  - target:
+      kind: Deployment
+      name: frontend
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+  
+  - target:
+      kind: Deployment
+      name: celery-worker
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+
+  - target:
+      kind: Deployment
+      name: nginx
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+
+  # Development resource limits (reduced)
+  - target:
+      kind: Deployment
+      name: backend
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "1Gi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "500m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: "256Mi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: "100m"
+
+  - target:
+      kind: Deployment
+      name: frontend
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "512Mi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "250m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: "128Mi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: "50m"
+
+  # Enable development features
+  - target:
+      kind: Deployment
+      name: backend
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
+          name: ENABLE_SWAGGER_UI
+          value: "true"
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
+          name: ENABLE_PROFILING
+          value: "true"
+
+  # Development database with smaller resource allocation
+  - target:
+      kind: Deployment
+      name: postgres
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "1Gi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "500m"
+
+# Replacements for development values
+replacements:
+  - source:
+      kind: ConfigMap
+      name: development-env-config
+      fieldPath: data.ENVIRONMENT
+    targets:
+      - select:
+          kind: ConfigMap
+          name: backend-config
+        fieldPaths:
+          - data.ENVIRONMENT
+      - select:
+          kind: ConfigMap
+          name: frontend-config
+        fieldPaths:
+          - data.NODE_ENV

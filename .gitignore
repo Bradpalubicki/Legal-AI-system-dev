@@ -1,0 +1,139 @@
+# Environment files - NEVER commit these
+.env
+.env.local
+.env.backup
+.env.development
+.env.production
+*.env
+
+# API Keys and secrets
+*_key.txt
+*_secret.txt
+credentials/
+secrets/
+
+# Python
+__pycache__/
+*.pyc
+venv/
+*.log
+
+# Databases - contain user data, never commit!
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# PACER Integration - Sensitive Files
+keys/
+.pacer_config/
+pacer_credentials.json
+*.key
+.env
+.env.local
+.env.*.local
+
+# Test coverage files
+.coverage
+.coverage.*
+*.coverage
+htmlcov/
+.pytest_cache/
+
+# Frontend build artifacts and dependencies
+frontend/.next/
+frontend/node_modules/
+frontend/.vercel/
+frontend/tsconfig.tsbuildinfo
+.vercel/
+.next/
+node_modules/
+
+# Backend artifacts
+backend/.coverage
+backend/__pycache__/
+backend/alembic/versions/__pycache__/
+
+# Logs and storage
+logs/
+storage/
+uploads/
+
+# Temporary and cache files
+*.tmp
+*.temp
+*.cache
+nul
+
+# Documentation summaries - archived in docs/
+# Root-level doc files get messy; keep important docs in docs/ folder
+*_COMPLETE.md
+*_SUMMARY.md
+*_GUIDE.md
+*_FIX.md
+*_IMPLEMENTATION.md
+*_ROADMAP.md
+*_REPORT.md
+*_STATUS.md
+*_ANALYSIS.md
+
+# Test files in root - should be in tests/ or backend/tests/
+/test_*.py
+/test_*.html
+/test_*.json
+
+# Utility scripts (keep specific ones versioned)
+/*_port_*.py
+/cleanup_*.py
+/stop_*.py
+/final_*.py
+/install_*.py
+/setup_*.py
+/reset_*.py
+
+# Archived documentation
+docs/archive-*/
+archive/
+
+# Legacy and test data directories
+backend/scripts/legacy/
+encrypted_documents/
+encryption_metadata/
+audit/
+audit_reports/
+audit_retention/
+backup/
+backups/
+emergency_backup/
+enhanced_advice_detection/
+privilege/
+retention/
+secure_vault/
+security_backups/
+test-reports/
+testing/
+load-tests/
+
+# App data directories (contain user data, not code)
+data/
+legal/
+compliance/
+config/
+shared/
+!backend/shared/
+static/
+templates/
+mobile/
+examples/
+tools/
+
+# Script directories
+scripts/windows/
+scripts/*.bat
+scripts/*.sh
+
+# Deployment and infrastructure (often auto-generated)
+terraform/.terraform/
+ansible/roles/
+ci/cache/
+temp/

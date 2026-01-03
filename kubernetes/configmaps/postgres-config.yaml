@@ -1,0 +1,138 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: legal-ai-system
+    app.kubernetes.io/component: postgres-config
+data:
+  POSTGRES_DB: "legal_ai_system"
+  POSTGRES_MULTIPLE_DATABASES: "legal_ai_system,legal_ai_analytics,legal_ai_test"
+  postgresql.conf: |
+    # =============================================================================
+    # PostgreSQL Configuration for Legal AI System
+    # Optimized for legal document processing and AI workloads
+    # =============================================================================
+    
+    # Connection Settings
+    listen_addresses = '*'
+    port = 5432
+    max_connections = 200
+    
+    # Memory Settings
+    shared_buffers = 1GB
+    effective_cache_size = 3GB
+    work_mem = 16MB
+    maintenance_work_mem = 512MB
+    
+    # Write-Ahead Logging (WAL)
+    wal_level = replica
+    max_wal_size = 2GB
+    min_wal_size = 100MB
+    checkpoint_completion_target = 0.9
+    
+    # Query Planning
+    random_page_cost = 1.1
+    effective_io_concurrency = 200
+    
+    # Background Writer
+    bgwriter_delay = 200ms
+    bgwriter_lru_maxpages = 100
+    bgwriter_lru_multiplier = 2.0
+    
+    # Autovacuum
+    autovacuum = on
+    autovacuum_max_workers = 3
+    autovacuum_naptime = 1min
+    
+    # Logging
+    log_destination = 'stderr'
+    logging_collector = on
+    log_directory = '/var/log/postgresql'
+    log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
+    log_min_duration_statement = 1000
+    log_checkpoints = on
+    log_connections = on
+    log_disconnections = on
+    log_lock_waits = on
+    
+    # Legal Document Specific Optimizations
+    # Full-text search configuration
+    default_text_search_config = 'english'
+    
+    # For large document processing
+    temp_buffers = 128MB
+    
+    # Lock management for concurrent access
+    deadlock_timeout = 1s
+    
+    # Statistics
+    track_activities = on
+    track_counts = on
+    track_functions = all
+    
+    # SSL (enable in production)
+    # ssl = on
+    # ssl_cert_file = '/etc/ssl/certs/postgres.crt'
+    # ssl_key_file = '/etc/ssl/private/postgres.key'
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-scripts
+  namespace: legal-ai-system
+  labels:
+    app.kubernetes.io/name: legal-ai-system
+    app.kubernetes.io/component: postgres-init
+data:
+  01-create-extensions.sql: |
+    -- Enable required PostgreSQL extensions for legal document processing
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+    CREATE EXTENSION IF NOT EXISTS "fuzzystrmatch";
+    CREATE EXTENSION IF NOT EXISTS "unaccent";
+    CREATE EXTENSION IF NOT EXISTS "btree_gin";
+    CREATE EXTENSION IF NOT EXISTS "btree_gist";
+    CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+    CREATE EXTENSION IF NOT EXISTS "hstore";
+    
+    -- Create custom functions for legal document processing
+    CREATE OR REPLACE FUNCTION legal_document_search(query_text TEXT)
+    RETURNS TABLE(id UUID, title TEXT, similarity REAL) AS $$
+    BEGIN
+        RETURN QUERY
+        SELECT 
+            d.id,
+            d.title,
+            similarity(d.content_vector::text, query_text) as sim
+        FROM documents d
+        WHERE d.content_vector @@ plainto_tsquery('english', query_text)
+        ORDER BY sim DESC
+        LIMIT 100;
+    END;
+    $$ LANGUAGE plpgsql;
+  
+  02-create-users.sql: |
+    -- Create additional database users for different services
+    DO $$
+    BEGIN
+        IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'legal_ai_readonly') THEN
+            CREATE ROLE legal_ai_readonly WITH LOGIN PASSWORD 'readonly_password';
+        END IF;
+        
+        IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'legal_ai_analytics') THEN
+            CREATE ROLE legal_ai_analytics WITH LOGIN PASSWORD 'analytics_password';
+        END IF;
+    END
+    $$;
+    
+    -- Grant appropriate permissions
+    GRANT CONNECT ON DATABASE legal_ai_system TO legal_ai_readonly;
+    GRANT USAGE ON SCHEMA public TO legal_ai_readonly;
+    GRANT SELECT ON ALL TABLES IN SCHEMA public TO legal_ai_readonly;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO legal_ai_readonly;
+    
+    -- Analytics user permissions
+    GRANT CONNECT ON DATABASE legal_ai_analytics TO legal_ai_analytics;
+    GRANT ALL PRIVILEGES ON DATABASE legal_ai_analytics TO legal_ai_analytics;

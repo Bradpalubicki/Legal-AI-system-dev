@@ -1,0 +1,105 @@
+# =============================================================================
+# LEGAL AI SYSTEM - DEVELOPMENT DATABASE SERVICES
+# =============================================================================
+# Lightweight setup for local development - just databases and storage
+# Run: docker-compose -f docker-compose.dev.yml up -d
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # =============================================================================
+  # PostgreSQL Database
+  # =============================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: legal-ai-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: legal_ai_system
+      POSTGRES_USER: legalai_user
+      POSTGRES_PASSWORD: secure_dev_password_2024
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U legalai_user -d legal_ai_system"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # =============================================================================
+  # Redis Cache
+  # =============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: legal-ai-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # =============================================================================
+  # MinIO Object Storage (S3-compatible)
+  # =============================================================================
+  minio:
+    image: minio/minio:latest
+    container_name: legal-ai-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    ports:
+      - "9000:9000"    # API port
+      - "9001:9001"    # Console port
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # =============================================================================
+  # MinIO Setup (creates buckets on first run)
+  # =============================================================================
+  minio-setup:
+    image: minio/mc:latest
+    container_name: legal-ai-minio-setup
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      mc alias set myminio http://minio:9000 minioadmin minioadmin123;
+      mc mb --ignore-existing myminio/legal-documents;
+      mc mb --ignore-existing myminio/document-uploads;
+      mc mb --ignore-existing myminio/analysis-results;
+      mc mb --ignore-existing myminio/backups;
+      mc anonymous set download myminio/legal-documents;
+      echo 'MinIO buckets created successfully';
+      exit 0;
+      "
+
+# =============================================================================
+# VOLUMES
+# =============================================================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  minio_data:
+    driver: local

@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: legal-ai-dev
+  labels:
+    name: legal-ai-dev
+    app.kubernetes.io/name: legal-ai-system
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: namespace
+    app.kubernetes.io/part-of: legal-ai-platform
+    environment: development
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: legal-ai-dev-resource-quota
+  namespace: legal-ai-dev
+spec:
+  hard:
+    requests.cpu: "2"
+    requests.memory: 4Gi
+    limits.cpu: "4"
+    limits.memory: 8Gi
+    persistentvolumeclaims: "5"
+    services: "10"
+    secrets: "10"
+    configmaps: "10"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: legal-ai-dev-limit-range
+  namespace: legal-ai-dev
+spec:
+  limits:
+  - default:
+      memory: "512Mi"
+      cpu: "250m"
+    defaultRequest:
+      memory: "128Mi"
+      cpu: "50m"
+    type: Container
+  - default:
+      storage: "5Gi"
+    type: PersistentVolumeClaim

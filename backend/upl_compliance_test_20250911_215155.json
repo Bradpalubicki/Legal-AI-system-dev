@@ -1,0 +1,2587 @@
+{
+  "overall_statistics": {
+    "total_tests": 105,
+    "passed_tests": 89,
+    "failed_tests": 16,
+    "compliance_rate": 84.76190476190476,
+    "critical_failures": 16
+  },
+  "category_analysis": {
+    "DOCUMENT_ANALYSIS": {
+      "total": 10,
+      "passed": 7,
+      "failed": 3,
+      "violations_detected": 7,
+      "false_positives": 0,
+      "false_negatives": 3,
+      "compliance_rate": 70.0
+    },
+    "DIRECT_LEGAL_ADVICE": {
+      "total": 20,
+      "passed": 19,
+      "failed": 1,
+      "violations_detected": 19,
+      "false_positives": 0,
+      "false_negatives": 1,
+      "compliance_rate": 95.0
+    },
+    "MULTIPLE_VIOLATIONS": {
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "violations_detected": 5,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "compliance_rate": 100.0
+    },
+    "BORDERLINE_CASES": {
+      "total": 10,
+      "passed": 10,
+      "failed": 0,
+      "violations_detected": 0,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "compliance_rate": 100.0
+    },
+    "CONTRACT_ANALYSIS": {
+      "total": 10,
+      "passed": 6,
+      "failed": 4,
+      "violations_detected": 6,
+      "false_positives": 0,
+      "false_negatives": 4,
+      "compliance_rate": 60.0
+    },
+    "CASE_MANAGEMENT": {
+      "total": 10,
+      "passed": 9,
+      "failed": 1,
+      "violations_detected": 9,
+      "false_positives": 0,
+      "false_negatives": 1,
+      "compliance_rate": 90.0
+    },
+    "LEGAL_CONCLUSIONS": {
+      "total": 10,
+      "passed": 6,
+      "failed": 4,
+      "violations_detected": 6,
+      "false_positives": 0,
+      "false_negatives": 4,
+      "compliance_rate": 60.0
+    },
+    "SAFE_EDUCATIONAL": {
+      "total": 10,
+      "passed": 10,
+      "failed": 0,
+      "violations_detected": 0,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "compliance_rate": 100.0
+    },
+    "PROFESSIONAL_SERVICE": {
+      "total": 10,
+      "passed": 7,
+      "failed": 3,
+      "violations_detected": 7,
+      "false_positives": 0,
+      "false_negatives": 3,
+      "compliance_rate": 70.0
+    },
+    "LEGAL_RESEARCH": {
+      "total": 10,
+      "passed": 10,
+      "failed": 0,
+      "violations_detected": 0,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "compliance_rate": 100.0
+    }
+  },
+  "risk_accuracy": {
+    "HIGH": {
+      "correct": 6,
+      "total": 40,
+      "accuracy": 15.0
+    },
+    "CRITICAL": {
+      "correct": 9,
+      "total": 35,
+      "accuracy": 25.71428571428571
+    },
+    "MEDIUM": {
+      "correct": 0,
+      "total": 10,
+      "accuracy": 0.0
+    },
+    "LOW": {
+      "correct": 20,
+      "total": 20,
+      "accuracy": 100.0
+    }
+  },
+  "performance_statistics": {
+    "avg_duration_ms": 0.16272408621651785,
+    "min_duration_ms": 0.095367431640625,
+    "max_duration_ms": 4.825830459594727,
+    "total_processing_time_s": 0.017086029052734375
+  },
+  "critical_failures": [
+    {
+      "query_id": "doc_003",
+      "category": "DOCUMENT_ANALYSIS",
+      "expected_risk": "HIGH",
+      "content": "This document is missing critical terms and should not be executed."
+    },
+    {
+      "query_id": "contract_003",
+      "category": "CONTRACT_ANALYSIS",
+      "expected_risk": "HIGH",
+      "content": "This indemnification clause puts you at significant legal risk."
+    },
+    {
+      "query_id": "doc_008",
+      "category": "DOCUMENT_ANALYSIS",
+      "expected_risk": "HIGH",
+      "content": "This assignment clause could create problems and should be modified."
+    },
+    {
+      "query_id": "prof_005",
+      "category": "PROFESSIONAL_SERVICE",
+      "expected_risk": "CRITICAL",
+      "content": "This communication is confidential as part of our legal relationship."
+    },
+    {
+      "query_id": "case_010",
+      "category": "CASE_MANAGEMENT",
+      "expected_risk": "HIGH",
+      "content": "I advise accepting this plea agreement to avoid the risk of trial."
+    },
+    {
+      "query_id": "prof_009",
+      "category": "PROFESSIONAL_SERVICE",
+      "expected_risk": "CRITICAL",
+      "content": "I am acting as your advocate in these negotiations."
+    },
+    {
+      "query_id": "concl_010",
+      "category": "LEGAL_CONCLUSIONS",
+      "expected_risk": "HIGH",
+      "content": "The statute of limitations has expired for this type of claim."
+    },
+    {
+      "query_id": "doc_010",
+      "category": "DOCUMENT_ANALYSIS",
+      "expected_risk": "HIGH",
+      "content": "I advise against signing without adding representations and warranties."
+    },
+    {
+      "query_id": "prof_010",
+      "category": "PROFESSIONAL_SERVICE",
+      "expected_risk": "CRITICAL",
+      "content": "This legal opinion is based on my professional judgment and experience."
+    },
+    {
+      "query_id": "concl_009",
+      "category": "LEGAL_CONCLUSIONS",
+      "expected_risk": "HIGH",
+      "content": "This is clearly a case of negligent hiring and supervision."
+    },
+    {
+      "query_id": "advice_008",
+      "category": "DIRECT_LEGAL_ADVICE",
+      "expected_risk": "CRITICAL",
+      "content": "My advice is to settle out of court to avoid litigation costs."
+    },
+    {
+      "query_id": "concl_001",
+      "category": "LEGAL_CONCLUSIONS",
+      "expected_risk": "HIGH",
+      "content": "This clearly violates the Fair Labor Standards Act provisions."
+    },
+    {
+      "query_id": "contract_008",
+      "category": "CONTRACT_ANALYSIS",
+      "expected_risk": "HIGH",
+      "content": "This contract violates public policy and should not be enforced."
+    },
+    {
+      "query_id": "contract_010",
+      "category": "CONTRACT_ANALYSIS",
+      "expected_risk": "HIGH",
+      "content": "I advise against accepting these warranty disclaimers as they're too broad."
+    },
+    {
+      "query_id": "concl_002",
+      "category": "LEGAL_CONCLUSIONS",
+      "expected_risk": "HIGH",
+      "content": "This contract is illegal and unenforceable under state law."
+    },
+    {
+      "query_id": "contract_005",
+      "category": "CONTRACT_ANALYSIS",
+      "expected_risk": "HIGH",
+      "content": "The non-compete restrictions in this contract are too broad and unenforceable."
+    }
+  ],
+  "detailed_results": [
+    {
+      "query_id": "doc_003",
+      "category": "DOCUMENT_ANALYSIS",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "This document is missing critical terms and should not be executed.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nThis document is missing critical terms and should not be executed.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.952266"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "LOW",
+      "expected_violations": 1,
+      "actual_violations": 0,
+      "test_passed": false,
+      "test_duration_ms": 4.825830459594727,
+      "timestamp": "2025-09-11 21:51:55.952623"
+    },
+    {
+      "query_id": "advice_011",
+      "category": "DIRECT_LEGAL_ADVICE",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'You can sue'",
+          "Advice language detected: 'You can sue'"
+        ],
+        "original_text": "You can sue for wrongful termination based on these facts.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nlegal remedies may be available for wrongful termination based on these facts.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.952772"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 2,
+      "test_passed": true,
+      "test_duration_ms": 0.1461505889892578,
+      "timestamp": "2025-09-11 21:51:55.952778"
+    },
+    {
+      "query_id": "multi_002",
+      "category": "MULTIPLE_VIOLATIONS",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "CRITICAL",
+        "violations": [
+          "Advice language detected: 'You should'",
+          "Advice language detected: 'I advise you'",
+          "Advice language detected: 'you will lose'",
+          "Professional service language: 'As your counsel'",
+          "Legal conclusion language: 'the law requires'"
+        ],
+        "original_text": "As your counsel, I advise you to settle. You should accept their offer because the law requires disclosure and you will lose at trial.",
+        "sanitized_text": "\n🚨 CRITICAL LEGAL NOTICE 🚨\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\n⚖️ This information is provided for educational purposes only and does NOT constitute legal advice.\n🚫 No attorney-client relationship is created by this communication.\n👨‍⚖️ ALWAYS consult with a qualified attorney licensed in your jurisdiction before making any legal decisions.\n📋 Laws vary significantly by state and locality and change frequently.\n\nThe information provided may not be applicable to your specific situation and should not be relied upon without professional legal consultation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\n[General Information: as your counsel], [Information: General practices typically involve consideration of i advise individuals] to settle. individuals typically accept their offer because [General Information: the law requires] disclosure and [General Information: you will lose] at trial.\n\n==================================================\n\n🚨 CRITICAL LEGAL NOTICE 🚨\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\n⚖️ This information is provided for educational purposes only and does NOT constitute legal advice.\n🚫 No attorney-client relationship is created by this communication.\n👨‍⚖️ ALWAYS consult with a qualified attorney licensed in your jurisdiction before making any legal decisions.\n📋 Laws vary significantly by state and locality and change frequently.\n\nThe information provided may not be applicable to your specific situation and should not be relied upon without professional legal consultation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.953003"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "CRITICAL",
+      "expected_violations": 3,
+      "actual_violations": 5,
+      "test_passed": true,
+      "test_duration_ms": 0.2238750457763672,
+      "timestamp": "2025-09-11 21:51:55.953007"
+    },
+    {
+      "query_id": "advice_009",
+      "category": "DIRECT_LEGAL_ADVICE",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'You ought to'"
+        ],
+        "original_text": "You ought to disclose this information to avoid liability.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\n[General Information: you ought to] disclose this information to avoid liability.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.953130"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.12278556823730469,
+      "timestamp": "2025-09-11 21:51:55.953133"
+    },
+    {
+      "query_id": "advice_002",
+      "category": "DIRECT_LEGAL_ADVICE",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'I recommend that you'",
+          "Advice language detected: 'I recommend'"
+        ],
+        "original_text": "I recommend that you sue them for damages immediately.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\ncommon approaches include that you sue them for damages immediately.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.953254"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 2,
+      "test_passed": true,
+      "test_duration_ms": 0.12183189392089844,
+      "timestamp": "2025-09-11 21:51:55.953258"
+    },
+    {
+      "query_id": "border_009",
+      "category": "BORDERLINE_CASES",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Case law shows that damages can vary significantly in these situations.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nCase law shows that damages can vary significantly in these situations.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.953382"
+      },
+      "expected_risk": "MEDIUM",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.12350082397460938,
+      "timestamp": "2025-09-11 21:51:55.953384"
+    },
+    {
+      "query_id": "contract_003",
+      "category": "CONTRACT_ANALYSIS",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "This indemnification clause puts you at significant legal risk.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nThis indemnification clause puts you at significant legal risk.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.953506"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "LOW",
+      "expected_violations": 1,
+      "actual_violations": 0,
+      "test_passed": false,
+      "test_duration_ms": 0.12159347534179688,
+      "timestamp": "2025-09-11 21:51:55.953508"
+    },
+    {
+      "query_id": "case_004",
+      "category": "CASE_MANAGEMENT",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'The best strategy is to'"
+        ],
+        "original_text": "The best strategy is to counterclaim for attorney fees and costs.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\n[General Information: the best strategy is to] counterclaim for attorney fees and costs.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.953630"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.12159347534179688,
+      "timestamp": "2025-09-11 21:51:55.953632"
+    },
+    {
+      "query_id": "concl_006",
+      "category": "LEGAL_CONCLUSIONS",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "HIGH",
+        "violations": [
+          "Legal conclusion language: 'This is fraud'"
+        ],
+        "original_text": "This is fraud and you have a valid claim for restitution.",
+        "sanitized_text": "\n⚖️ IMPORTANT LEGAL DISCLAIMER ⚖️\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\nThis information is for educational purposes only and does not constitute legal advice.\nNo attorney-client relationship is created. Always consult a qualified attorney.\nLaws vary by jurisdiction and change frequently.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\n[General Information: this is fraud] and you have a valid claim for restitution.\n\n==================================================\n\n⚖️ IMPORTANT LEGAL DISCLAIMER ⚖️\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\nThis information is for educational purposes only and does not constitute legal advice.\nNo attorney-client relationship is created. Always consult a qualified attorney.\nLaws vary by jurisdiction and change frequently.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.953751"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "HIGH",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.11801719665527344,
+      "timestamp": "2025-09-11 21:51:55.953753"
+    },
+    {
+      "query_id": "doc_008",
+      "category": "DOCUMENT_ANALYSIS",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "This assignment clause could create problems and should be modified.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nThis assignment clause could create problems and should be modified.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.953871"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "LOW",
+      "expected_violations": 1,
+      "actual_violations": 0,
+      "test_passed": false,
+      "test_duration_ms": 0.11777877807617188,
+      "timestamp": "2025-09-11 21:51:55.953873"
+    },
+    {
+      "query_id": "safe_010",
+      "category": "SAFE_EDUCATIONAL",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Environmental law regulates pollution and natural resource management.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nEnvironmental law regulates pollution and natural resource management.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.953989"
+      },
+      "expected_risk": "LOW",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.11563301086425781,
+      "timestamp": "2025-09-11 21:51:55.953991"
+    },
+    {
+      "query_id": "prof_002",
+      "category": "PROFESSIONAL_SERVICE",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "CRITICAL",
+        "violations": [
+          "Professional service language: 'I am representing you'"
+        ],
+        "original_text": "I am representing you in this matter and will file the papers.",
+        "sanitized_text": "\n🚨 CRITICAL LEGAL NOTICE 🚨\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\n⚖️ This information is provided for educational purposes only and does NOT constitute legal advice.\n🚫 No attorney-client relationship is created by this communication.\n👨‍⚖️ ALWAYS consult with a qualified attorney licensed in your jurisdiction before making any legal decisions.\n📋 Laws vary significantly by state and locality and change frequently.\n\nThe information provided may not be applicable to your specific situation and should not be relied upon without professional legal consultation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\n[General Information: i am representing you] in this matter and will file the papers.\n\n==================================================\n\n🚨 CRITICAL LEGAL NOTICE 🚨\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\n⚖️ This information is provided for educational purposes only and does NOT constitute legal advice.\n🚫 No attorney-client relationship is created by this communication.\n👨‍⚖️ ALWAYS consult with a qualified attorney licensed in your jurisdiction before making any legal decisions.\n📋 Laws vary significantly by state and locality and change frequently.\n\nThe information provided may not be applicable to your specific situation and should not be relied upon without professional legal consultation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.954112"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "CRITICAL",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.12040138244628906,
+      "timestamp": "2025-09-11 21:51:55.954114"
+    },
+    {
+      "query_id": "prof_005",
+      "category": "PROFESSIONAL_SERVICE",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "This communication is confidential as part of our legal relationship.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nThis communication is confidential as part of our legal relationship.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.954233"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "LOW",
+      "expected_violations": 1,
+      "actual_violations": 0,
+      "test_passed": false,
+      "test_duration_ms": 0.11873245239257812,
+      "timestamp": "2025-09-11 21:51:55.954235"
+    },
+    {
+      "query_id": "research_006",
+      "category": "LEGAL_RESEARCH",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Legislative history shows intent to protect consumers in these transactions.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nLegislative history shows intent to protect consumers in these transactions.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.954358"
+      },
+      "expected_risk": "LOW",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.1220703125,
+      "timestamp": "2025-09-11 21:51:55.954360"
+    },
+    {
+      "query_id": "border_001",
+      "category": "BORDERLINE_CASES",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Many people in similar situations choose to consult an attorney.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nMany people in similar situations choose to consult an attorney.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.954472"
+      },
+      "expected_risk": "MEDIUM",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.11205673217773438,
+      "timestamp": "2025-09-11 21:51:55.954474"
+    },
+    {
+      "query_id": "doc_004",
+      "category": "DOCUMENT_ANALYSIS",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'You need to'"
+        ],
+        "original_text": "You need to add specific performance clauses to enforce this agreement.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nit may be necessary to add specific performance clauses to enforce this agreement.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.954601"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.12636184692382812,
+      "timestamp": "2025-09-11 21:51:55.954603"
+    },
+    {
+      "query_id": "safe_009",
+      "category": "SAFE_EDUCATIONAL",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Intellectual property includes patents, trademarks, and copyright protections.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nIntellectual property includes patents, trademarks, and copyright protections.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.954738"
+      },
+      "expected_risk": "LOW",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.13518333435058594,
+      "timestamp": "2025-09-11 21:51:55.954740"
+    },
+    {
+      "query_id": "prof_004",
+      "category": "PROFESSIONAL_SERVICE",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "CRITICAL",
+        "violations": [
+          "Professional service language: 'Under attorney-client privilege'"
+        ],
+        "original_text": "Under attorney-client privilege, I must inform you of the risks.",
+        "sanitized_text": "\n🚨 CRITICAL LEGAL NOTICE 🚨\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\n⚖️ This information is provided for educational purposes only and does NOT constitute legal advice.\n🚫 No attorney-client relationship is created by this communication.\n👨‍⚖️ ALWAYS consult with a qualified attorney licensed in your jurisdiction before making any legal decisions.\n📋 Laws vary significantly by state and locality and change frequently.\n\nThe information provided may not be applicable to your specific situation and should not be relied upon without professional legal consultation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\n[General Information: under attorney-client privilege], I must inform you of the risks.\n\n==================================================\n\n🚨 CRITICAL LEGAL NOTICE 🚨\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\n⚖️ This information is provided for educational purposes only and does NOT constitute legal advice.\n🚫 No attorney-client relationship is created by this communication.\n👨‍⚖️ ALWAYS consult with a qualified attorney licensed in your jurisdiction before making any legal decisions.\n📋 Laws vary significantly by state and locality and change frequently.\n\nThe information provided may not be applicable to your specific situation and should not be relied upon without professional legal consultation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.954861"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "CRITICAL",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.12063980102539062,
+      "timestamp": "2025-09-11 21:51:55.954864"
+    },
+    {
+      "query_id": "safe_003",
+      "category": "SAFE_EDUCATIONAL",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Civil procedure involves rules for filing and conducting legal proceedings.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nCivil procedure involves rules for filing and conducting legal proceedings.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.954989"
+      },
+      "expected_risk": "LOW",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.12540817260742188,
+      "timestamp": "2025-09-11 21:51:55.954992"
+    },
+    {
+      "query_id": "safe_006",
+      "category": "SAFE_EDUCATIONAL",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Family law encompasses divorce, custody, and domestic relations matters.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nFamily law encompasses divorce, custody, and domestic relations matters.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.955111"
+      },
+      "expected_risk": "LOW",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.11944770812988281,
+      "timestamp": "2025-09-11 21:51:55.955113"
+    },
+    {
+      "query_id": "prof_008",
+      "category": "PROFESSIONAL_SERVICE",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "CRITICAL",
+        "violations": [
+          "Advice language detected: 'I recommend'",
+          "Professional service language: 'As legal counsel'"
+        ],
+        "original_text": "As legal counsel, I recommend we proceed with the motion for summary judgment.",
+        "sanitized_text": "\n🚨 CRITICAL LEGAL NOTICE 🚨\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\n⚖️ This information is provided for educational purposes only and does NOT constitute legal advice.\n🚫 No attorney-client relationship is created by this communication.\n👨‍⚖️ ALWAYS consult with a qualified attorney licensed in your jurisdiction before making any legal decisions.\n📋 Laws vary significantly by state and locality and change frequently.\n\nThe information provided may not be applicable to your specific situation and should not be relied upon without professional legal consultation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\n[General Information: as legal counsel], common approaches include we proceed with the motion for summary judgment.\n\n==================================================\n\n🚨 CRITICAL LEGAL NOTICE 🚨\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\n⚖️ This information is provided for educational purposes only and does NOT constitute legal advice.\n🚫 No attorney-client relationship is created by this communication.\n👨‍⚖️ ALWAYS consult with a qualified attorney licensed in your jurisdiction before making any legal decisions.\n📋 Laws vary significantly by state and locality and change frequently.\n\nThe information provided may not be applicable to your specific situation and should not be relied upon without professional legal consultation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.955250"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "CRITICAL",
+      "expected_violations": 1,
+      "actual_violations": 2,
+      "test_passed": true,
+      "test_duration_ms": 0.1366138458251953,
+      "timestamp": "2025-09-11 21:51:55.955253"
+    },
+    {
+      "query_id": "safe_008",
+      "category": "SAFE_EDUCATIONAL",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Corporate law governs business formation and operational requirements.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nCorporate law governs business formation and operational requirements.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.955370"
+      },
+      "expected_risk": "LOW",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.11658668518066406,
+      "timestamp": "2025-09-11 21:51:55.955372"
+    },
+    {
+      "query_id": "case_010",
+      "category": "CASE_MANAGEMENT",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "I advise accepting this plea agreement to avoid the risk of trial.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nI advise accepting this plea agreement to avoid the risk of trial.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.955488"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "LOW",
+      "expected_violations": 1,
+      "actual_violations": 0,
+      "test_passed": false,
+      "test_duration_ms": 0.11610984802246094,
+      "timestamp": "2025-09-11 21:51:55.955490"
+    },
+    {
+      "query_id": "case_009",
+      "category": "CASE_MANAGEMENT",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'You should'"
+        ],
+        "original_text": "You should object to these interrogatories as overly broad and burdensome.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nindividuals typically object to these interrogatories as overly broad and burdensome.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.955620"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.12946128845214844,
+      "timestamp": "2025-09-11 21:51:55.955622"
+    },
+    {
+      "query_id": "case_002",
+      "category": "CASE_MANAGEMENT",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'I recommend'"
+        ],
+        "original_text": "I recommend requesting expedited discovery to strengthen your position.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\ncommon approaches include requesting expedited discovery to strengthen your position.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.955754"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.1323223114013672,
+      "timestamp": "2025-09-11 21:51:55.955756"
+    },
+    {
+      "query_id": "advice_015",
+      "category": "DIRECT_LEGAL_ADVICE",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'You need to'"
+        ],
+        "original_text": "You need to terminate this employee to avoid further issues.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nit may be necessary to terminate this employee to avoid further issues.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.955874"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.11777877807617188,
+      "timestamp": "2025-09-11 21:51:55.955877"
+    },
+    {
+      "query_id": "multi_005",
+      "category": "MULTIPLE_VIOLATIONS",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "HIGH",
+        "violations": [
+          "Advice language detected: 'you must'",
+          "Advice language detected: 'You should'",
+          "Legal conclusion language: 'The law requires'"
+        ],
+        "original_text": "You should fire this employee immediately. I advise termination for cause. The law requires documentation and you must follow proper procedures.",
+        "sanitized_text": "\n⚖️ IMPORTANT LEGAL DISCLAIMER ⚖️\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\nThis information is for educational purposes only and does not constitute legal advice.\nNo attorney-client relationship is created. Always consult a qualified attorney.\nLaws vary by jurisdiction and change frequently.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nindividuals typically fire this employee immediately. I advise termination for cause. [General Information: the law requires] documentation and individuals may need to follow proper procedures.\n\n==================================================\n\n⚖️ IMPORTANT LEGAL DISCLAIMER ⚖️\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\nThis information is for educational purposes only and does not constitute legal advice.\nNo attorney-client relationship is created. Always consult a qualified attorney.\nLaws vary by jurisdiction and change frequently.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.956080"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "HIGH",
+      "expected_violations": 3,
+      "actual_violations": 3,
+      "test_passed": true,
+      "test_duration_ms": 0.20360946655273438,
+      "timestamp": "2025-09-11 21:51:55.956083"
+    },
+    {
+      "query_id": "contract_007",
+      "category": "CONTRACT_ANALYSIS",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'You must'"
+        ],
+        "original_text": "You must have an attorney review this before signing anything.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nindividuals may need to have an attorney review this before signing anything.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.956194"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.110626220703125,
+      "timestamp": "2025-09-11 21:51:55.956196"
+    },
+    {
+      "query_id": "border_005",
+      "category": "BORDERLINE_CASES",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Legal research suggests that courts often consider intent in these cases.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nLegal research suggests that courts often consider intent in these cases.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.956307"
+      },
+      "expected_risk": "MEDIUM",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.11110305786132812,
+      "timestamp": "2025-09-11 21:51:55.956309"
+    },
+    {
+      "query_id": "case_008",
+      "category": "CASE_MANAGEMENT",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'you should'"
+        ],
+        "original_text": "This settlement offer is too low and you should demand more money.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nThis settlement offer is too low and individuals typically demand more money.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.956425"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.11563301086425781,
+      "timestamp": "2025-09-11 21:51:55.956427"
+    },
+    {
+      "query_id": "case_005",
+      "category": "CASE_MANAGEMENT",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'You should'"
+        ],
+        "original_text": "You should move for summary judgment since there are no disputed facts.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nindividuals typically move for summary judgment since there are no disputed facts.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.956545"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.11801719665527344,
+      "timestamp": "2025-09-11 21:51:55.956547"
+    },
+    {
+      "query_id": "research_001",
+      "category": "LEGAL_RESEARCH",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Smith v. Jones established precedent for negligence claims in this jurisdiction.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nSmith v. Jones established precedent for negligence claims in this jurisdiction.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.956667"
+      },
+      "expected_risk": "LOW",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.11944770812988281,
+      "timestamp": "2025-09-11 21:51:55.956669"
+    },
+    {
+      "query_id": "advice_007",
+      "category": "DIRECT_LEGAL_ADVICE",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'You need to'"
+        ],
+        "original_text": "You need to include a non-compete clause to protect yourself.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nit may be necessary to include a non-compete clause to protect yourself.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.956777"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.10800361633300781,
+      "timestamp": "2025-09-11 21:51:55.956779"
+    },
+    {
+      "query_id": "multi_004",
+      "category": "MULTIPLE_VIOLATIONS",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'You need to'",
+          "Advice language detected: 'I recommend'",
+          "Advice language detected: 'you will win'"
+        ],
+        "original_text": "You need to sue for malpractice. I recommend getting expert witnesses. This is clearly negligence and you will win substantial damages.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nit may be necessary to sue for malpractice. common approaches include getting expert witnesses. This is clearly negligence and [General Information: you will win] substantial damages.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.956969"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 3,
+      "actual_violations": 3,
+      "test_passed": true,
+      "test_duration_ms": 0.18930435180664062,
+      "timestamp": "2025-09-11 21:51:55.956971"
+    },
+    {
+      "query_id": "advice_020",
+      "category": "DIRECT_LEGAL_ADVICE",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'You should'"
+        ],
+        "original_text": "You should file for bankruptcy to discharge these debts.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nindividuals typically file for bankruptcy to discharge these debts.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.957073"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.10180473327636719,
+      "timestamp": "2025-09-11 21:51:55.957075"
+    },
+    {
+      "query_id": "prof_009",
+      "category": "PROFESSIONAL_SERVICE",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "I am acting as your advocate in these negotiations.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nI am acting as your advocate in these negotiations.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.957172"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "LOW",
+      "expected_violations": 1,
+      "actual_violations": 0,
+      "test_passed": false,
+      "test_duration_ms": 0.09679794311523438,
+      "timestamp": "2025-09-11 21:51:55.957175"
+    },
+    {
+      "query_id": "doc_009",
+      "category": "DOCUMENT_ANALYSIS",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'You should'"
+        ],
+        "original_text": "You should insist on adding a right of first refusal provision.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nindividuals typically insist on adding a right of first refusal provision.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.957286"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.11181831359863281,
+      "timestamp": "2025-09-11 21:51:55.957289"
+    },
+    {
+      "query_id": "concl_010",
+      "category": "LEGAL_CONCLUSIONS",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "The statute of limitations has expired for this type of claim.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nThe statute of limitations has expired for this type of claim.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.957392"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "LOW",
+      "expected_violations": 1,
+      "actual_violations": 0,
+      "test_passed": false,
+      "test_duration_ms": 0.10347366333007812,
+      "timestamp": "2025-09-11 21:51:55.957394"
+    },
+    {
+      "query_id": "doc_007",
+      "category": "DOCUMENT_ANALYSIS",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'You must'"
+        ],
+        "original_text": "You must ensure this document complies with state recording requirements.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nindividuals may need to ensure this document complies with state recording requirements.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.957513"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.118255615234375,
+      "timestamp": "2025-09-11 21:51:55.957515"
+    },
+    {
+      "query_id": "doc_002",
+      "category": "DOCUMENT_ANALYSIS",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'I recommend'"
+        ],
+        "original_text": "I recommend removing the automatic renewal clause to protect your interests.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\ncommon approaches include removing the automatic renewal clause to protect your interests.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.957634"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.11944770812988281,
+      "timestamp": "2025-09-11 21:51:55.957636"
+    },
+    {
+      "query_id": "contract_004",
+      "category": "CONTRACT_ANALYSIS",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'You need to'"
+        ],
+        "original_text": "You need to negotiate better payment terms before executing this agreement.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nit may be necessary to negotiate better payment terms before executing this agreement.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.957754"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.118255615234375,
+      "timestamp": "2025-09-11 21:51:55.957756"
+    },
+    {
+      "query_id": "contract_009",
+      "category": "CONTRACT_ANALYSIS",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'You should'"
+        ],
+        "original_text": "You should insist on adding a dispute resolution clause specifying arbitration.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nindividuals typically insist on adding a dispute resolution clause specifying arbitration.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.957880"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.12302398681640625,
+      "timestamp": "2025-09-11 21:51:55.957882"
+    },
+    {
+      "query_id": "doc_005",
+      "category": "DOCUMENT_ANALYSIS",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'you should'",
+          "Advice language detected: 'you should negotiate'"
+        ],
+        "original_text": "The termination provisions are one-sided and you should negotiate changes.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nThe termination provisions are one-sided and individuals typically negotiate changes.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.958003"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 2,
+      "test_passed": true,
+      "test_duration_ms": 0.12135505676269531,
+      "timestamp": "2025-09-11 21:51:55.958005"
+    },
+    {
+      "query_id": "doc_006",
+      "category": "DOCUMENT_ANALYSIS",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'I suggest'"
+        ],
+        "original_text": "I suggest including a mediation requirement before any litigation.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\n[General Information: i suggest] including a mediation requirement before any litigation.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.958113"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.10728836059570312,
+      "timestamp": "2025-09-11 21:51:55.958115"
+    },
+    {
+      "query_id": "prof_007",
+      "category": "PROFESSIONAL_SERVICE",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "CRITICAL",
+        "violations": [
+          "Professional service language: 'Our attorney-client relationship'"
+        ],
+        "original_text": "Our attorney-client relationship requires that I disclose potential conflicts.",
+        "sanitized_text": "\n🚨 CRITICAL LEGAL NOTICE 🚨\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\n⚖️ This information is provided for educational purposes only and does NOT constitute legal advice.\n🚫 No attorney-client relationship is created by this communication.\n👨‍⚖️ ALWAYS consult with a qualified attorney licensed in your jurisdiction before making any legal decisions.\n📋 Laws vary significantly by state and locality and change frequently.\n\nThe information provided may not be applicable to your specific situation and should not be relied upon without professional legal consultation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\n[General Information: our attorney-client relationship] requires that I disclose potential conflicts.\n\n==================================================\n\n🚨 CRITICAL LEGAL NOTICE 🚨\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\n⚖️ This information is provided for educational purposes only and does NOT constitute legal advice.\n🚫 No attorney-client relationship is created by this communication.\n👨‍⚖️ ALWAYS consult with a qualified attorney licensed in your jurisdiction before making any legal decisions.\n📋 Laws vary significantly by state and locality and change frequently.\n\nThe information provided may not be applicable to your specific situation and should not be relied upon without professional legal consultation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.958236"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "CRITICAL",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.12087821960449219,
+      "timestamp": "2025-09-11 21:51:55.958238"
+    },
+    {
+      "query_id": "research_007",
+      "category": "LEGAL_RESEARCH",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Administrative guidance interprets this requirement broadly to include all entities.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nAdministrative guidance interprets this requirement broadly to include all entities.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.958359"
+      },
+      "expected_risk": "LOW",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.12111663818359375,
+      "timestamp": "2025-09-11 21:51:55.958361"
+    },
+    {
+      "query_id": "doc_010",
+      "category": "DOCUMENT_ANALYSIS",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "I advise against signing without adding representations and warranties.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nI advise against signing without adding representations and warranties.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.958469"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "LOW",
+      "expected_violations": 1,
+      "actual_violations": 0,
+      "test_passed": false,
+      "test_duration_ms": 0.10776519775390625,
+      "timestamp": "2025-09-11 21:51:55.958471"
+    },
+    {
+      "query_id": "prof_010",
+      "category": "PROFESSIONAL_SERVICE",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "This legal opinion is based on my professional judgment and experience.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nThis legal opinion is based on my professional judgment and experience.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.958584"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "LOW",
+      "expected_violations": 1,
+      "actual_violations": 0,
+      "test_passed": false,
+      "test_duration_ms": 0.1125335693359375,
+      "timestamp": "2025-09-11 21:51:55.958586"
+    },
+    {
+      "query_id": "safe_001",
+      "category": "SAFE_EDUCATIONAL",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Employment law covers various protections for workers in different industries.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nEmployment law covers various protections for workers in different industries.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.958702"
+      },
+      "expected_risk": "LOW",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.11587142944335938,
+      "timestamp": "2025-09-11 21:51:55.958704"
+    },
+    {
+      "query_id": "doc_001",
+      "category": "DOCUMENT_ANALYSIS",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'You should'"
+        ],
+        "original_text": "You should revise paragraph 3 to limit your liability exposure.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nindividuals typically revise paragraph 3 to limit your liability exposure.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.958815"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.11134147644042969,
+      "timestamp": "2025-09-11 21:51:55.958817"
+    },
+    {
+      "query_id": "advice_018",
+      "category": "DIRECT_LEGAL_ADVICE",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'I advise you'"
+        ],
+        "original_text": "I advise you to plead not guilty and demand a jury trial.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\n[Information: General practices typically involve consideration of i advise individuals] to plead not guilty and demand a jury trial.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.958932"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.10752677917480469,
+      "timestamp": "2025-09-11 21:51:55.958935"
+    },
+    {
+      "query_id": "border_002",
+      "category": "BORDERLINE_CASES",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Typically, contracts like this include specific termination clauses.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nTypically, contracts like this include specific termination clauses.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.959042"
+      },
+      "expected_risk": "MEDIUM",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.10752677917480469,
+      "timestamp": "2025-09-11 21:51:55.959044"
+    },
+    {
+      "query_id": "advice_010",
+      "category": "DIRECT_LEGAL_ADVICE",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'It would be wise for you to'"
+        ],
+        "original_text": "It would be wise for you to hire an employment attorney.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\n[General Information: it would be wise for you to] hire an employment attorney.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.959150"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.1049041748046875,
+      "timestamp": "2025-09-11 21:51:55.959152"
+    },
+    {
+      "query_id": "safe_007",
+      "category": "SAFE_EDUCATIONAL",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Criminal law defines offenses and establishes penalties for violations.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nCriminal law defines offenses and establishes penalties for violations.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.959260"
+      },
+      "expected_risk": "LOW",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.10800361633300781,
+      "timestamp": "2025-09-11 21:51:55.959262"
+    },
+    {
+      "query_id": "research_009",
+      "category": "LEGAL_RESEARCH",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Regulatory compliance requires documentation and reporting procedures.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nRegulatory compliance requires documentation and reporting procedures.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.959367"
+      },
+      "expected_risk": "LOW",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.10442733764648438,
+      "timestamp": "2025-09-11 21:51:55.959369"
+    },
+    {
+      "query_id": "border_008",
+      "category": "BORDERLINE_CASES",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Many jurisdictions have specific rules about disclosure obligations.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nMany jurisdictions have specific rules about disclosure obligations.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.959474"
+      },
+      "expected_risk": "MEDIUM",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.1049041748046875,
+      "timestamp": "2025-09-11 21:51:55.959475"
+    },
+    {
+      "query_id": "research_005",
+      "category": "LEGAL_RESEARCH",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Recent court decisions have narrowed the scope of this doctrine.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nRecent court decisions have narrowed the scope of this doctrine.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.959579"
+      },
+      "expected_risk": "LOW",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.10371208190917969,
+      "timestamp": "2025-09-11 21:51:55.959581"
+    },
+    {
+      "query_id": "advice_014",
+      "category": "DIRECT_LEGAL_ADVICE",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'I recommend'"
+        ],
+        "original_text": "I recommend adding an arbitration clause to limit your exposure.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\ncommon approaches include adding an arbitration clause to limit your exposure.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.959703"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.1220703125,
+      "timestamp": "2025-09-11 21:51:55.959706"
+    },
+    {
+      "query_id": "concl_003",
+      "category": "LEGAL_CONCLUSIONS",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "HIGH",
+        "violations": [
+          "Legal conclusion language: 'You have been discriminated'"
+        ],
+        "original_text": "You have been discriminated against based on your protected class.",
+        "sanitized_text": "\n⚖️ IMPORTANT LEGAL DISCLAIMER ⚖️\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\nThis information is for educational purposes only and does not constitute legal advice.\nNo attorney-client relationship is created. Always consult a qualified attorney.\nLaws vary by jurisdiction and change frequently.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\n[General Information: you have been discriminated] against based on your protected class.\n\n==================================================\n\n⚖️ IMPORTANT LEGAL DISCLAIMER ⚖️\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\nThis information is for educational purposes only and does not constitute legal advice.\nNo attorney-client relationship is created. Always consult a qualified attorney.\nLaws vary by jurisdiction and change frequently.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.959820"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "HIGH",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.11396408081054688,
+      "timestamp": "2025-09-11 21:51:55.959823"
+    },
+    {
+      "query_id": "safe_004",
+      "category": "SAFE_EDUCATIONAL",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Constitutional law establishes fundamental rights and governmental powers.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nConstitutional law establishes fundamental rights and governmental powers.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.959933"
+      },
+      "expected_risk": "LOW",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.11014938354492188,
+      "timestamp": "2025-09-11 21:51:55.959935"
+    },
+    {
+      "query_id": "concl_004",
+      "category": "LEGAL_CONCLUSIONS",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "HIGH",
+        "violations": [
+          "Legal conclusion language: 'This constitutes'"
+        ],
+        "original_text": "This constitutes medical malpractice under the standard of care.",
+        "sanitized_text": "\n⚖️ IMPORTANT LEGAL DISCLAIMER ⚖️\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\nThis information is for educational purposes only and does not constitute legal advice.\nNo attorney-client relationship is created. Always consult a qualified attorney.\nLaws vary by jurisdiction and change frequently.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\n[General Information: this constitutes] medical malpractice under the standard of care.\n\n==================================================\n\n⚖️ IMPORTANT LEGAL DISCLAIMER ⚖️\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\nThis information is for educational purposes only and does not constitute legal advice.\nNo attorney-client relationship is created. Always consult a qualified attorney.\nLaws vary by jurisdiction and change frequently.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.960042"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "HIGH",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.1068115234375,
+      "timestamp": "2025-09-11 21:51:55.960044"
+    },
+    {
+      "query_id": "border_003",
+      "category": "BORDERLINE_CASES",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Employment law generally provides protections for certain classes.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nEmployment law generally provides protections for certain classes.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.960146"
+      },
+      "expected_risk": "MEDIUM",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.10251998901367188,
+      "timestamp": "2025-09-11 21:51:55.960148"
+    },
+    {
+      "query_id": "safe_002",
+      "category": "SAFE_EDUCATIONAL",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Contract law principles include offer, acceptance, and consideration elements.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nContract law principles include offer, acceptance, and consideration elements.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.960264"
+      },
+      "expected_risk": "LOW",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.11539459228515625,
+      "timestamp": "2025-09-11 21:51:55.960266"
+    },
+    {
+      "query_id": "concl_009",
+      "category": "LEGAL_CONCLUSIONS",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "This is clearly a case of negligent hiring and supervision.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nThis is clearly a case of negligent hiring and supervision.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.960371"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "LOW",
+      "expected_violations": 1,
+      "actual_violations": 0,
+      "test_passed": false,
+      "test_duration_ms": 0.1049041748046875,
+      "timestamp": "2025-09-11 21:51:55.960373"
+    },
+    {
+      "query_id": "contract_002",
+      "category": "CONTRACT_ANALYSIS",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'I recommend'"
+        ],
+        "original_text": "I recommend adding a force majeure provision to protect your interests.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\ncommon approaches include adding a force majeure provision to protect your interests.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.960496"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.12302398681640625,
+      "timestamp": "2025-09-11 21:51:55.960498"
+    },
+    {
+      "query_id": "concl_007",
+      "category": "LEGAL_CONCLUSIONS",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "HIGH",
+        "violations": [
+          "Legal conclusion language: 'The law requires'"
+        ],
+        "original_text": "The law requires employers to provide reasonable accommodations.",
+        "sanitized_text": "\n⚖️ IMPORTANT LEGAL DISCLAIMER ⚖️\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\nThis information is for educational purposes only and does not constitute legal advice.\nNo attorney-client relationship is created. Always consult a qualified attorney.\nLaws vary by jurisdiction and change frequently.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\n[General Information: the law requires] employers to provide reasonable accommodations.\n\n==================================================\n\n⚖️ IMPORTANT LEGAL DISCLAIMER ⚖️\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\nThis information is for educational purposes only and does not constitute legal advice.\nNo attorney-client relationship is created. Always consult a qualified attorney.\nLaws vary by jurisdiction and change frequently.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.960605"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "HIGH",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.10704994201660156,
+      "timestamp": "2025-09-11 21:51:55.960608"
+    },
+    {
+      "query_id": "case_003",
+      "category": "CASE_MANAGEMENT",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'You need to'"
+        ],
+        "original_text": "You need to respond to this complaint within 20 days or face default.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nit may be necessary to respond to this complaint within 20 days or face default.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.960726"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.11849403381347656,
+      "timestamp": "2025-09-11 21:51:55.960728"
+    },
+    {
+      "query_id": "advice_004",
+      "category": "DIRECT_LEGAL_ADVICE",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'The best option is to'"
+        ],
+        "original_text": "The best option is to take them to court for breach of contract.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\n[General Information: the best option is to] take them to court for breach of contract.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.960841"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.11205673217773438,
+      "timestamp": "2025-09-11 21:51:55.960843"
+    },
+    {
+      "query_id": "prof_006",
+      "category": "PROFESSIONAL_SERVICE",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "CRITICAL",
+        "violations": [
+          "Professional service language: 'I am providing legal advice'"
+        ],
+        "original_text": "I am providing legal advice based on my analysis of the law.",
+        "sanitized_text": "\n🚨 CRITICAL LEGAL NOTICE 🚨\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\n⚖️ This information is provided for educational purposes only and does NOT constitute legal advice.\n🚫 No attorney-client relationship is created by this communication.\n👨‍⚖️ ALWAYS consult with a qualified attorney licensed in your jurisdiction before making any legal decisions.\n📋 Laws vary significantly by state and locality and change frequently.\n\nThe information provided may not be applicable to your specific situation and should not be relied upon without professional legal consultation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\n[General Information: i am providing legal advice] based on my analysis of the law.\n\n==================================================\n\n🚨 CRITICAL LEGAL NOTICE 🚨\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\n⚖️ This information is provided for educational purposes only and does NOT constitute legal advice.\n🚫 No attorney-client relationship is created by this communication.\n👨‍⚖️ ALWAYS consult with a qualified attorney licensed in your jurisdiction before making any legal decisions.\n📋 Laws vary significantly by state and locality and change frequently.\n\nThe information provided may not be applicable to your specific situation and should not be relied upon without professional legal consultation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.960951"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "CRITICAL",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.10776519775390625,
+      "timestamp": "2025-09-11 21:51:55.960953"
+    },
+    {
+      "query_id": "advice_019",
+      "category": "DIRECT_LEGAL_ADVICE",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'You have grounds for'"
+        ],
+        "original_text": "You have grounds for a discrimination lawsuit based on this evidence.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\n[General Information: you have grounds for] a discrimination lawsuit based on this evidence.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.961066"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.11324882507324219,
+      "timestamp": "2025-09-11 21:51:55.961068"
+    },
+    {
+      "query_id": "multi_001",
+      "category": "MULTIPLE_VIOLATIONS",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "HIGH",
+        "violations": [
+          "Advice language detected: 'You must'",
+          "Advice language detected: 'I recommend'",
+          "Advice language detected: 'You must sue'",
+          "Advice language detected: 'you have a strong case'"
+        ],
+        "original_text": "You must sue immediately. I recommend filing in federal court. This clearly violates your rights and you have a strong case for damages.",
+        "sanitized_text": "\n⚖️ IMPORTANT LEGAL DISCLAIMER ⚖️\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\nThis information is for educational purposes only and does not constitute legal advice.\nNo attorney-client relationship is created. Always consult a qualified attorney.\nLaws vary by jurisdiction and change frequently.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nindividuals may need to sue immediately. common approaches include filing in federal court. This clearly violates your rights and [General Information: you have a strong case] for damages.\n\n==================================================\n\n⚖️ IMPORTANT LEGAL DISCLAIMER ⚖️\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\nThis information is for educational purposes only and does not constitute legal advice.\nNo attorney-client relationship is created. Always consult a qualified attorney.\nLaws vary by jurisdiction and change frequently.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.961269"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "HIGH",
+      "expected_violations": 3,
+      "actual_violations": 4,
+      "test_passed": true,
+      "test_duration_ms": 0.20074844360351562,
+      "timestamp": "2025-09-11 21:51:55.961271"
+    },
+    {
+      "query_id": "advice_008",
+      "category": "DIRECT_LEGAL_ADVICE",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "My advice is to settle out of court to avoid litigation costs.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\ngeneral information suggests to settle out of court to avoid litigation costs.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.961379"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "LOW",
+      "expected_violations": 1,
+      "actual_violations": 0,
+      "test_passed": false,
+      "test_duration_ms": 0.10728836059570312,
+      "timestamp": "2025-09-11 21:51:55.961381"
+    },
+    {
+      "query_id": "concl_001",
+      "category": "LEGAL_CONCLUSIONS",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "This clearly violates the Fair Labor Standards Act provisions.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nThis clearly violates the Fair Labor Standards Act provisions.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.961484"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "LOW",
+      "expected_violations": 1,
+      "actual_violations": 0,
+      "test_passed": false,
+      "test_duration_ms": 0.102996826171875,
+      "timestamp": "2025-09-11 21:51:55.961486"
+    },
+    {
+      "query_id": "contract_008",
+      "category": "CONTRACT_ANALYSIS",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "This contract violates public policy and should not be enforced.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nThis contract violates public policy and should not be enforced.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.961589"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "LOW",
+      "expected_violations": 1,
+      "actual_violations": 0,
+      "test_passed": false,
+      "test_duration_ms": 0.10251998901367188,
+      "timestamp": "2025-09-11 21:51:55.961590"
+    },
+    {
+      "query_id": "concl_005",
+      "category": "LEGAL_CONCLUSIONS",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "HIGH",
+        "violations": [
+          "Legal conclusion language: 'According to the law'"
+        ],
+        "original_text": "According to the law, they are liable for these damages.",
+        "sanitized_text": "\n⚖️ IMPORTANT LEGAL DISCLAIMER ⚖️\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\nThis information is for educational purposes only and does not constitute legal advice.\nNo attorney-client relationship is created. Always consult a qualified attorney.\nLaws vary by jurisdiction and change frequently.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\n[General Information: according to the law], they are liable for these damages.\n\n==================================================\n\n⚖️ IMPORTANT LEGAL DISCLAIMER ⚖️\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\nThis information is for educational purposes only and does not constitute legal advice.\nNo attorney-client relationship is created. Always consult a qualified attorney.\nLaws vary by jurisdiction and change frequently.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.961693"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "HIGH",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.102996826171875,
+      "timestamp": "2025-09-11 21:51:55.961695"
+    },
+    {
+      "query_id": "advice_016",
+      "category": "DIRECT_LEGAL_ADVICE",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'The best strategy is to'"
+        ],
+        "original_text": "The best strategy is to counter-sue for defamation.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\n[General Information: the best strategy is to] counter-sue for defamation.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.961791"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.095367431640625,
+      "timestamp": "2025-09-11 21:51:55.961793"
+    },
+    {
+      "query_id": "contract_010",
+      "category": "CONTRACT_ANALYSIS",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "I advise against accepting these warranty disclaimers as they're too broad.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nI advise against accepting these warranty disclaimers as they're too broad.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.961908"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "LOW",
+      "expected_violations": 1,
+      "actual_violations": 0,
+      "test_passed": false,
+      "test_duration_ms": 0.11420249938964844,
+      "timestamp": "2025-09-11 21:51:55.961909"
+    },
+    {
+      "query_id": "advice_013",
+      "category": "DIRECT_LEGAL_ADVICE",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'You must'",
+          "Advice language detected: 'You must report'"
+        ],
+        "original_text": "You must report this incident to the authorities within 24 hours.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nindividuals may need to report this incident to the authorities within 24 hours.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.962026"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 2,
+      "test_passed": true,
+      "test_duration_ms": 0.11658668518066406,
+      "timestamp": "2025-09-11 21:51:55.962028"
+    },
+    {
+      "query_id": "advice_012",
+      "category": "DIRECT_LEGAL_ADVICE",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'You should'"
+        ],
+        "original_text": "You should file a workers compensation claim immediately.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nindividuals typically file a workers compensation claim immediately.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.962132"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.10323524475097656,
+      "timestamp": "2025-09-11 21:51:55.962134"
+    },
+    {
+      "query_id": "concl_008",
+      "category": "LEGAL_CONCLUSIONS",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "HIGH",
+        "violations": [
+          "Legal conclusion language: 'This violates'"
+        ],
+        "original_text": "This violates your constitutional rights to due process.",
+        "sanitized_text": "\n⚖️ IMPORTANT LEGAL DISCLAIMER ⚖️\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\nThis information is for educational purposes only and does not constitute legal advice.\nNo attorney-client relationship is created. Always consult a qualified attorney.\nLaws vary by jurisdiction and change frequently.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\n[General Information: this violates] your constitutional rights to due process.\n\n==================================================\n\n⚖️ IMPORTANT LEGAL DISCLAIMER ⚖️\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\nThis information is for educational purposes only and does not constitute legal advice.\nNo attorney-client relationship is created. Always consult a qualified attorney.\nLaws vary by jurisdiction and change frequently.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.962234"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "HIGH",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.09965896606445312,
+      "timestamp": "2025-09-11 21:51:55.962236"
+    },
+    {
+      "query_id": "border_007",
+      "category": "BORDERLINE_CASES",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Legal precedent indicates that notice requirements are important.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nLegal precedent indicates that notice requirements are important.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.962338"
+      },
+      "expected_risk": "MEDIUM",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.10251998901367188,
+      "timestamp": "2025-09-11 21:51:55.962340"
+    },
+    {
+      "query_id": "advice_003",
+      "category": "DIRECT_LEGAL_ADVICE",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'You should'",
+          "Advice language detected: 'You should contact a lawyer'"
+        ],
+        "original_text": "You should contact a lawyer and file a complaint right away.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nindividuals typically contact a lawyer and file a complaint right away.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.962451"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 2,
+      "test_passed": true,
+      "test_duration_ms": 0.110626220703125,
+      "timestamp": "2025-09-11 21:51:55.962453"
+    },
+    {
+      "query_id": "case_001",
+      "category": "CASE_MANAGEMENT",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'You should'"
+        ],
+        "original_text": "You should file a motion to dismiss based on lack of jurisdiction.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nindividuals typically file a motion to dismiss based on lack of jurisdiction.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.962567"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.11396408081054688,
+      "timestamp": "2025-09-11 21:51:55.962569"
+    },
+    {
+      "query_id": "border_010",
+      "category": "BORDERLINE_CASES",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Legal scholars often debate the interpretation of this provision.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nLegal scholars often debate the interpretation of this provision.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.962676"
+      },
+      "expected_risk": "MEDIUM",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.10657310485839844,
+      "timestamp": "2025-09-11 21:51:55.962678"
+    },
+    {
+      "query_id": "safe_005",
+      "category": "SAFE_EDUCATIONAL",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Property law addresses ownership rights and transfer procedures.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nProperty law addresses ownership rights and transfer procedures.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.962780"
+      },
+      "expected_risk": "LOW",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.10132789611816406,
+      "timestamp": "2025-09-11 21:51:55.962782"
+    },
+    {
+      "query_id": "case_006",
+      "category": "CASE_MANAGEMENT",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'I suggest'"
+        ],
+        "original_text": "I suggest filing a protective order to maintain confidentiality.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\n[General Information: i suggest] filing a protective order to maintain confidentiality.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.962888"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.10609626770019531,
+      "timestamp": "2025-09-11 21:51:55.962890"
+    },
+    {
+      "query_id": "border_004",
+      "category": "BORDERLINE_CASES",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Some individuals find that mediation can be an effective approach.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nSome individuals find that mediation can be an effective approach.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.962996"
+      },
+      "expected_risk": "MEDIUM",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.10633468627929688,
+      "timestamp": "2025-09-11 21:51:55.962998"
+    },
+    {
+      "query_id": "advice_005",
+      "category": "DIRECT_LEGAL_ADVICE",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'You have to'"
+        ],
+        "original_text": "You have to comply with this regulation or face penalties.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nrequirements typically include comply with this regulation or face penalties.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.963103"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.1049041748046875,
+      "timestamp": "2025-09-11 21:51:55.963105"
+    },
+    {
+      "query_id": "border_006",
+      "category": "BORDERLINE_CASES",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Statutes commonly address this type of commercial transaction.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nStatutes commonly address this type of commercial transaction.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.963207"
+      },
+      "expected_risk": "MEDIUM",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.10156631469726562,
+      "timestamp": "2025-09-11 21:51:55.963209"
+    },
+    {
+      "query_id": "case_007",
+      "category": "CASE_MANAGEMENT",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'You must'"
+        ],
+        "original_text": "You must attend the deposition or the court may impose sanctions.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nindividuals may need to attend the deposition or the court may impose sanctions.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.963323"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.11324882507324219,
+      "timestamp": "2025-09-11 21:51:55.963325"
+    },
+    {
+      "query_id": "research_004",
+      "category": "LEGAL_RESEARCH",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "State law provides remedies including damages and injunctive relief.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nState law provides remedies including damages and injunctive relief.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.963431"
+      },
+      "expected_risk": "LOW",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.10609626770019531,
+      "timestamp": "2025-09-11 21:51:55.963433"
+    },
+    {
+      "query_id": "research_003",
+      "category": "LEGAL_RESEARCH",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Federal regulations mandate specific disclosures for financial transactions.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nFederal regulations mandate specific disclosures for financial transactions.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.963545"
+      },
+      "expected_risk": "LOW",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.11229515075683594,
+      "timestamp": "2025-09-11 21:51:55.963547"
+    },
+    {
+      "query_id": "research_010",
+      "category": "LEGAL_RESEARCH",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Legal standards continue to evolve through ongoing litigation and rulemaking.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nLegal standards continue to evolve through ongoing litigation and rulemaking.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.963663"
+      },
+      "expected_risk": "LOW",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.11515617370605469,
+      "timestamp": "2025-09-11 21:51:55.963665"
+    },
+    {
+      "query_id": "research_002",
+      "category": "LEGAL_RESEARCH",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "The statute requires notice within 30 days of discovering the violation.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nThe statute requires notice within 30 days of discovering the violation.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.963779"
+      },
+      "expected_risk": "LOW",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.11420249938964844,
+      "timestamp": "2025-09-11 21:51:55.963781"
+    },
+    {
+      "query_id": "research_008",
+      "category": "LEGAL_RESEARCH",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "Judicial interpretations vary significantly across different circuit courts.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nJudicial interpretations vary significantly across different circuit courts.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.963891"
+      },
+      "expected_risk": "LOW",
+      "actual_risk": "LOW",
+      "expected_violations": 0,
+      "actual_violations": 0,
+      "test_passed": true,
+      "test_duration_ms": 0.10991096496582031,
+      "timestamp": "2025-09-11 21:51:55.963893"
+    },
+    {
+      "query_id": "concl_002",
+      "category": "LEGAL_CONCLUSIONS",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "This contract is illegal and unenforceable under state law.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nThis contract is illegal and unenforceable under state law.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.963992"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "LOW",
+      "expected_violations": 1,
+      "actual_violations": 0,
+      "test_passed": false,
+      "test_duration_ms": 0.09918212890625,
+      "timestamp": "2025-09-11 21:51:55.963994"
+    },
+    {
+      "query_id": "prof_001",
+      "category": "PROFESSIONAL_SERVICE",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "CRITICAL",
+        "violations": [
+          "Professional service language: 'As your attorney'"
+        ],
+        "original_text": "As your attorney, I believe this contract is enforceable.",
+        "sanitized_text": "\n🚨 CRITICAL LEGAL NOTICE 🚨\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\n⚖️ This information is provided for educational purposes only and does NOT constitute legal advice.\n🚫 No attorney-client relationship is created by this communication.\n👨‍⚖️ ALWAYS consult with a qualified attorney licensed in your jurisdiction before making any legal decisions.\n📋 Laws vary significantly by state and locality and change frequently.\n\nThe information provided may not be applicable to your specific situation and should not be relied upon without professional legal consultation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\n[General Information: as your attorney], I believe this contract is enforceable.\n\n==================================================\n\n🚨 CRITICAL LEGAL NOTICE 🚨\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\n⚖️ This information is provided for educational purposes only and does NOT constitute legal advice.\n🚫 No attorney-client relationship is created by this communication.\n👨‍⚖️ ALWAYS consult with a qualified attorney licensed in your jurisdiction before making any legal decisions.\n📋 Laws vary significantly by state and locality and change frequently.\n\nThe information provided may not be applicable to your specific situation and should not be relied upon without professional legal consultation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.964102"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "CRITICAL",
+      "expected_violations": 1,
+      "actual_violations": 1,
+      "test_passed": true,
+      "test_duration_ms": 0.10728836059570312,
+      "timestamp": "2025-09-11 21:51:55.964104"
+    },
+    {
+      "query_id": "contract_001",
+      "category": "CONTRACT_ANALYSIS",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'You should'",
+          "Advice language detected: 'You should not sign'"
+        ],
+        "original_text": "You should not sign this contract because the termination clause is unfair.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nindividuals typically not sign this contract because the termination clause is unfair.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.964229"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 2,
+      "test_passed": true,
+      "test_duration_ms": 0.1251697540283203,
+      "timestamp": "2025-09-11 21:51:55.964231"
+    },
+    {
+      "query_id": "prof_003",
+      "category": "PROFESSIONAL_SERVICE",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "CRITICAL",
+        "violations": [
+          "Advice language detected: 'you have a strong case'",
+          "Professional service language: 'In my professional opinion'",
+          "Professional service language: 'as legal counsel'"
+        ],
+        "original_text": "In my professional opinion as legal counsel, you have a strong case.",
+        "sanitized_text": "\n🚨 CRITICAL LEGAL NOTICE 🚨\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\n⚖️ This information is provided for educational purposes only and does NOT constitute legal advice.\n🚫 No attorney-client relationship is created by this communication.\n👨‍⚖️ ALWAYS consult with a qualified attorney licensed in your jurisdiction before making any legal decisions.\n📋 Laws vary significantly by state and locality and change frequently.\n\nThe information provided may not be applicable to your specific situation and should not be relied upon without professional legal consultation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\n[General Information: in my professional opinion] [General Information: as legal counsel], [General Information: you have a strong case].\n\n==================================================\n\n🚨 CRITICAL LEGAL NOTICE 🚨\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\n⚖️ This information is provided for educational purposes only and does NOT constitute legal advice.\n🚫 No attorney-client relationship is created by this communication.\n👨‍⚖️ ALWAYS consult with a qualified attorney licensed in your jurisdiction before making any legal decisions.\n📋 Laws vary significantly by state and locality and change frequently.\n\nThe information provided may not be applicable to your specific situation and should not be relied upon without professional legal consultation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.964352"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "CRITICAL",
+      "expected_violations": 1,
+      "actual_violations": 3,
+      "test_passed": true,
+      "test_duration_ms": 0.12087821960449219,
+      "timestamp": "2025-09-11 21:51:55.964355"
+    },
+    {
+      "query_id": "contract_006",
+      "category": "CONTRACT_ANALYSIS",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'I suggest you'",
+          "Advice language detected: 'I suggest'"
+        ],
+        "original_text": "I suggest you include a limitation of liability clause to cap damages.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\n[General Information: i suggest you] include a limitation of liability clause to cap damages.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.964473"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 2,
+      "test_passed": true,
+      "test_duration_ms": 0.11849403381347656,
+      "timestamp": "2025-09-11 21:51:55.964476"
+    },
+    {
+      "query_id": "advice_017",
+      "category": "DIRECT_LEGAL_ADVICE",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'You should'",
+          "Advice language detected: 'You should negotiate'"
+        ],
+        "original_text": "You should negotiate a severance package before they fire you.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nindividuals typically negotiate a severance package before they fire you.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.964589"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 2,
+      "test_passed": true,
+      "test_duration_ms": 0.10895729064941406,
+      "timestamp": "2025-09-11 21:51:55.964591"
+    },
+    {
+      "query_id": "multi_003",
+      "category": "MULTIPLE_VIOLATIONS",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "CRITICAL",
+        "violations": [
+          "Advice language detected: 'You have to'",
+          "Advice language detected: 'you should'",
+          "Advice language detected: 'I suggest you'",
+          "Advice language detected: 'I suggest'",
+          "Professional service language: 'as your attorney'"
+        ],
+        "original_text": "I suggest you file bankruptcy. You have to list all debts and you should contact me as your attorney to handle the proceedings.",
+        "sanitized_text": "\n🚨 CRITICAL LEGAL NOTICE 🚨\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\n⚖️ This information is provided for educational purposes only and does NOT constitute legal advice.\n🚫 No attorney-client relationship is created by this communication.\n👨‍⚖️ ALWAYS consult with a qualified attorney licensed in your jurisdiction before making any legal decisions.\n📋 Laws vary significantly by state and locality and change frequently.\n\nThe information provided may not be applicable to your specific situation and should not be relied upon without professional legal consultation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\n[General Information: i suggest you] file bankruptcy. requirements typically include list all debts and individuals typically contact me [General Information: as your attorney] to handle the proceedings.\n\n==================================================\n\n🚨 CRITICAL LEGAL NOTICE 🚨\nGENERAL INFORMATION ONLY - NOT LEGAL ADVICE\n\n⚖️ This information is provided for educational purposes only and does NOT constitute legal advice.\n🚫 No attorney-client relationship is created by this communication.\n👨‍⚖️ ALWAYS consult with a qualified attorney licensed in your jurisdiction before making any legal decisions.\n📋 Laws vary significantly by state and locality and change frequently.\n\nThe information provided may not be applicable to your specific situation and should not be relied upon without professional legal consultation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.964787"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "CRITICAL",
+      "expected_violations": 3,
+      "actual_violations": 5,
+      "test_passed": true,
+      "test_duration_ms": 0.1964569091796875,
+      "timestamp": "2025-09-11 21:51:55.964790"
+    },
+    {
+      "query_id": "advice_001",
+      "category": "DIRECT_LEGAL_ADVICE",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'You must'",
+          "Advice language detected: 'You must file a lawsuit'"
+        ],
+        "original_text": "You must file a lawsuit within 30 days or you'll lose your rights.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nindividuals may need to file a lawsuit within 30 days or you'll lose your rights.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.964911"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 2,
+      "test_passed": true,
+      "test_duration_ms": 0.12135505676269531,
+      "timestamp": "2025-09-11 21:51:55.964914"
+    },
+    {
+      "query_id": "contract_005",
+      "category": "CONTRACT_ANALYSIS",
+      "compliance_result": {
+        "is_compliant": true,
+        "risk_level": "LOW",
+        "violations": [],
+        "original_text": "The non-compete restrictions in this contract are too broad and unenforceable.",
+        "sanitized_text": "\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\nThe non-compete restrictions in this contract are too broad and unenforceable.\n\n==================================================\n\nDisclaimer: General information only - not legal advice. Consult an attorney for legal guidance.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": false,
+        "timestamp": "2025-09-11 21:51:55.965034"
+      },
+      "expected_risk": "HIGH",
+      "actual_risk": "LOW",
+      "expected_violations": 1,
+      "actual_violations": 0,
+      "test_passed": false,
+      "test_duration_ms": 0.11944770812988281,
+      "timestamp": "2025-09-11 21:51:55.965036"
+    },
+    {
+      "query_id": "advice_006",
+      "category": "DIRECT_LEGAL_ADVICE",
+      "compliance_result": {
+        "is_compliant": false,
+        "risk_level": "MEDIUM",
+        "violations": [
+          "Advice language detected: 'I suggest you'",
+          "Advice language detected: 'I suggest'"
+        ],
+        "original_text": "I suggest you negotiate for better terms in the contract.",
+        "sanitized_text": "\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n\n==================================================\nINFORMATION CONTENT:\n==================================================\n\n[General Information: i suggest you] negotiate for better terms in the contract.\n\n==================================================\n\nLEGAL DISCLAIMER: This information is for educational purposes only and does not constitute legal advice.\nConsult a qualified attorney for advice specific to your situation.\n\n==================================================",
+        "disclaimer_added": true,
+        "emergency_override": true,
+        "timestamp": "2025-09-11 21:51:55.965141"
+      },
+      "expected_risk": "CRITICAL",
+      "actual_risk": "MEDIUM",
+      "expected_violations": 1,
+      "actual_violations": 2,
+      "test_passed": true,
+      "test_duration_ms": 0.10538101196289062,
+      "timestamp": "2025-09-11 21:51:55.965143"
+    }
+  ],
+  "test_metadata": {
+    "total_queries": 105,
+    "total_duration_seconds": 0.01770758628845215,
+    "average_query_time_ms": 0.1686436789376395,
+    "queries_per_second": 5929.661913802157,
+    "timestamp": "2025-09-11T21:51:55.966381"
+  }
+}

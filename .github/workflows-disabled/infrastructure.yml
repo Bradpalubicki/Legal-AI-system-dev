@@ -1,0 +1,626 @@
+name: 🏗️ Infrastructure as Code
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths: 
+      - 'terraform/**'
+      - 'kubernetes/**'
+      - 'ansible/**'
+      - '.github/workflows/infrastructure.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'terraform/**'
+      - 'kubernetes/**' 
+      - 'ansible/**'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Infrastructure action'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+        - plan
+        - apply
+        - destroy
+        - validate
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - development
+        - staging
+        - production
+      component:
+        description: 'Infrastructure component'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - kubernetes
+        - terraform
+        - ansible
+        - monitoring
+
+env:
+  TERRAFORM_VERSION: '1.6.0'
+  KUBECTL_VERSION: '1.28.0'
+  ANSIBLE_VERSION: '8.0.0'
+  KUSTOMIZE_VERSION: '5.0.0'
+
+jobs:
+  # =============================================================================
+  # TERRAFORM INFRASTRUCTURE MANAGEMENT
+  # =============================================================================
+  terraform-plan:
+    name: 📋 Terraform Plan
+    runs-on: ubuntu-latest
+    if: github.event.inputs.component == 'all' || github.event.inputs.component == 'terraform' || github.event_name != 'workflow_dispatch'
+    
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+
+    strategy:
+      matrix:
+        environment: [development, staging, production]
+        exclude:
+          # Only run production on main branch or manual trigger
+          - environment: production
+        include:
+          - environment: production
+            if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+        aws-region: ${{ vars.AWS_REGION }}
+
+    - name: Terraform Format Check
+      working-directory: ./terraform
+      run: |
+        terraform fmt -check -recursive
+        echo "✅ Terraform formatting verified"
+
+    - name: Terraform Init
+      working-directory: ./terraform
+      run: |
+        terraform init \
+          -backend-config="bucket=${{ vars.TERRAFORM_STATE_BUCKET }}" \
+          -backend-config="key=legal-ai-${{ matrix.environment }}/terraform.tfstate" \
+          -backend-config="region=${{ vars.AWS_REGION }}"
+
+    - name: Terraform Validate
+      working-directory: ./terraform
+      run: |
+        terraform validate
+        echo "✅ Terraform configuration validated"
+
+    - name: Terraform Plan
+      id: plan
+      working-directory: ./terraform
+      run: |
+        terraform plan \
+          -var="environment=${{ matrix.environment }}" \
+          -var="aws_region=${{ vars.AWS_REGION }}" \
+          -var="project_name=legal-ai-system" \
+          -out="${{ matrix.environment }}.tfplan" \
+          -detailed-exitcode
+      continue-on-error: true
+
+    - name: Save Terraform Plan
+      if: steps.plan.outcome == 'success'
+      uses: actions/upload-artifact@v3
+      with:
+        name: terraform-plan-${{ matrix.environment }}
+        path: terraform/${{ matrix.environment }}.tfplan
+        retention-days: 5
+
+    - name: Comment Terraform Plan on PR
+      if: github.event_name == 'pull_request' && steps.plan.outcome == 'success'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const plan = fs.readFileSync('terraform/${{ matrix.environment }}.tfplan.txt', 'utf8');
+          
+          const output = `## Terraform Plan - ${{ matrix.environment }}
+          
+          <details>
+          <summary>Show Plan</summary>
+          
+          \`\`\`
+          ${plan}
+          \`\`\`
+          
+          </details>
+          
+          **Environment**: ${{ matrix.environment }}
+          **Plan Status**: ${{ steps.plan.outcome }}`;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: output
+          });
+
+    - name: Terraform Plan Summary
+      run: |
+        echo "# 📋 Terraform Plan Summary - ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Status**: ${{ steps.plan.outcome }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Environment**: ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "${{ steps.plan.outcome }}" == "success" ]; then
+          echo "✅ Terraform plan completed successfully" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Terraform plan failed" >> $GITHUB_STEP_SUMMARY
+        fi
+
+  terraform-apply:
+    name: 🚀 Terraform Apply
+    runs-on: ubuntu-latest
+    needs: [terraform-plan]
+    if: |
+      (github.event.inputs.action == 'apply' && github.event_name == 'workflow_dispatch') ||
+      (github.ref == 'refs/heads/main' && github.event_name == 'push')
+    
+    environment: 
+      name: ${{ github.event.inputs.environment || 'staging' }}
+      url: https://legal-ai-${{ github.event.inputs.environment || 'staging' }}.example.com
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+        aws-region: ${{ vars.AWS_REGION }}
+
+    - name: Download Terraform Plan
+      uses: actions/download-artifact@v3
+      with:
+        name: terraform-plan-${{ github.event.inputs.environment || 'staging' }}
+        path: terraform/
+
+    - name: Terraform Init
+      working-directory: ./terraform
+      run: |
+        terraform init \
+          -backend-config="bucket=${{ vars.TERRAFORM_STATE_BUCKET }}" \
+          -backend-config="key=legal-ai-${{ github.event.inputs.environment || 'staging' }}/terraform.tfstate" \
+          -backend-config="region=${{ vars.AWS_REGION }}"
+
+    - name: Terraform Apply
+      working-directory: ./terraform
+      run: |
+        terraform apply -auto-approve "${{ github.event.inputs.environment || 'staging' }}.tfplan"
+        echo "✅ Infrastructure deployed successfully"
+
+    - name: Extract Terraform Outputs
+      id: outputs
+      working-directory: ./terraform
+      run: |
+        VPC_ID=$(terraform output -raw vpc_id)
+        EKS_CLUSTER_NAME=$(terraform output -raw eks_cluster_name)
+        RDS_ENDPOINT=$(terraform output -raw rds_endpoint)
+        
+        echo "vpc_id=${VPC_ID}" >> $GITHUB_OUTPUT
+        echo "eks_cluster_name=${EKS_CLUSTER_NAME}" >> $GITHUB_OUTPUT
+        echo "rds_endpoint=${RDS_ENDPOINT}" >> $GITHUB_OUTPUT
+
+    - name: Update infrastructure inventory
+      run: |
+        cat > infrastructure-inventory.json << EOF
+        {
+          "environment": "${{ github.event.inputs.environment || 'staging' }}",
+          "vpc_id": "${{ steps.outputs.outputs.vpc_id }}",
+          "eks_cluster": "${{ steps.outputs.outputs.eks_cluster_name }}",
+          "rds_endpoint": "${{ steps.outputs.outputs.rds_endpoint }}",
+          "deployed_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+          "deployed_by": "${{ github.actor }}",
+          "commit": "${{ github.sha }}"
+        }
+        EOF
+
+    - name: Store infrastructure inventory
+      uses: actions/upload-artifact@v3
+      with:
+        name: infrastructure-inventory-${{ github.event.inputs.environment || 'staging' }}
+        path: infrastructure-inventory.json
+
+  # =============================================================================
+  # KUBERNETES INFRASTRUCTURE VALIDATION
+  # =============================================================================
+  kubernetes-validation:
+    name: ☸️ Kubernetes Validation
+    runs-on: ubuntu-latest
+    if: github.event.inputs.component == 'all' || github.event.inputs.component == 'kubernetes' || github.event_name != 'workflow_dispatch'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: ${{ env.KUBECTL_VERSION }}
+
+    - name: Setup Kustomize
+      run: |
+        curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+        sudo mv kustomize /usr/local/bin/
+
+    - name: Validate Kubernetes manifests
+      run: |
+        echo "🔍 Validating Kubernetes manifests..."
+        
+        ENVIRONMENTS=("development" "staging" "production")
+        
+        for env in "${ENVIRONMENTS[@]}"; do
+          echo "Validating ${env} environment..."
+          
+          if [ -d "kubernetes/overlays/${env}" ]; then
+            # Generate manifests
+            kustomize build "kubernetes/overlays/${env}" > "${env}-manifests.yaml"
+            
+            # Validate syntax
+            kubectl apply --dry-run=client -f "${env}-manifests.yaml"
+            
+            echo "✅ ${env} manifests validated"
+          else
+            echo "⚠️ ${env} overlay not found"
+          fi
+        done
+
+    - name: Kubernetes security policy validation
+      run: |
+        echo "🛡️ Validating Kubernetes security policies..."
+        
+        # Install Polaris for security validation
+        curl -L https://github.com/FairwindsOps/polaris/releases/latest/download/polaris_linux_amd64.tar.gz | tar -xz
+        sudo mv polaris /usr/local/bin/
+        
+        # Run Polaris audit
+        for env in development staging production; do
+          if [ -f "${env}-manifests.yaml" ]; then
+            echo "Auditing ${env} security policies..."
+            polaris audit --audit-path "${env}-manifests.yaml" --format=json > "polaris-${env}.json" || true
+          fi
+        done
+
+    - name: Kubernetes resource validation
+      run: |
+        echo "💰 Validating resource requests and limits..."
+        
+        for env in development staging production; do
+          if [ -f "${env}-manifests.yaml" ]; then
+            echo "Checking ${env} resources..."
+            
+            # Check for missing resource requests
+            MISSING_REQUESTS=$(kubectl --dry-run=client -o json apply -f "${env}-manifests.yaml" | \
+              jq '[.items[] | select(.kind=="Deployment") | select(.spec.template.spec.containers[].resources.requests == null)] | length')
+            
+            if [ "${MISSING_REQUESTS}" -gt 0 ]; then
+              echo "⚠️ ${MISSING_REQUESTS} deployments missing resource requests in ${env}"
+            else
+              echo "✅ All deployments have resource requests in ${env}"
+            fi
+          fi
+        done
+
+    - name: Upload Kubernetes validation results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: kubernetes-validation-results
+        path: |
+          *-manifests.yaml
+          polaris-*.json
+
+  # =============================================================================
+  # ANSIBLE CONFIGURATION MANAGEMENT
+  # =============================================================================
+  ansible-validation:
+    name: 🎭 Ansible Validation
+    runs-on: ubuntu-latest
+    if: github.event.inputs.component == 'all' || github.event.inputs.component == 'ansible' || github.event_name != 'workflow_dispatch'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install Ansible
+      run: |
+        pip install ansible==${{ env.ANSIBLE_VERSION }}
+        pip install ansible-lint
+        pip install yamllint
+
+    - name: Validate Ansible playbooks
+      working-directory: ./ansible
+      run: |
+        echo "🔍 Validating Ansible playbooks..."
+        
+        # YAML syntax validation
+        yamllint . || true
+        
+        # Ansible syntax validation
+        find . -name "*.yml" -o -name "*.yaml" | while read playbook; do
+          echo "Checking ${playbook}..."
+          ansible-playbook --syntax-check "${playbook}" || true
+        done
+        
+        echo "✅ Ansible validation completed"
+
+    - name: Ansible security scanning
+      working-directory: ./ansible
+      run: |
+        echo "🛡️ Running Ansible security scans..."
+        
+        # Run ansible-lint for best practices
+        ansible-lint . || true
+        
+        echo "✅ Ansible security scan completed"
+
+    - name: Generate Ansible inventory
+      working-directory: ./ansible
+      run: |
+        echo "📋 Generating dynamic inventory..."
+        
+        # This would typically connect to cloud providers to generate inventory
+        cat > inventory.ini << EOF
+        [legal-ai-production]
+        # Production servers would be dynamically populated
+        
+        [legal-ai-staging]
+        # Staging servers would be dynamically populated
+        
+        [legal-ai-development]
+        # Development servers would be dynamically populated
+        EOF
+        
+        echo "✅ Inventory generated"
+
+  # =============================================================================
+  # MONITORING INFRASTRUCTURE VALIDATION
+  # =============================================================================
+  monitoring-validation:
+    name: 📊 Monitoring Infrastructure
+    runs-on: ubuntu-latest
+    if: github.event.inputs.component == 'all' || github.event.inputs.component == 'monitoring' || github.event_name != 'workflow_dispatch'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Validate Prometheus configuration
+      run: |
+        echo "📊 Validating Prometheus configuration..."
+        
+        # Install promtool
+        wget https://github.com/prometheus/prometheus/releases/latest/download/prometheus-*.linux-amd64.tar.gz
+        tar -xzf prometheus-*.linux-amd64.tar.gz
+        sudo mv prometheus-*/promtool /usr/local/bin/
+        
+        # Validate Prometheus config
+        if [ -f "kubernetes/monitoring/prometheus-config.yaml" ]; then
+          # Extract prometheus.yml from ConfigMap
+          kubectl --dry-run=client -o yaml apply -f kubernetes/monitoring/prometheus-config.yaml | \
+            yq '.data."prometheus.yml"' > prometheus.yml
+          
+          promtool check config prometheus.yml
+          echo "✅ Prometheus configuration valid"
+        fi
+
+    - name: Validate Grafana dashboards
+      run: |
+        echo "📈 Validating Grafana dashboards..."
+        
+        # Install grafana-cli
+        pip install grafana-client
+        
+        # Validate dashboard JSON files
+        find . -name "*-dashboard.json" | while read dashboard; do
+          echo "Validating ${dashboard}..."
+          python -m json.tool "${dashboard}" > /dev/null
+          echo "✅ ${dashboard} is valid JSON"
+        done
+
+    - name: Validate alerting rules
+      run: |
+        echo "🚨 Validating alerting rules..."
+        
+        # Validate alert rule syntax
+        if [ -f "kubernetes/monitoring/alert-rules.yaml" ]; then
+          promtool check rules kubernetes/monitoring/alert-rules.yaml
+          echo "✅ Alert rules validated"
+        fi
+
+  # =============================================================================
+  # INFRASTRUCTURE DRIFT DETECTION
+  # =============================================================================
+  drift-detection:
+    name: 🔍 Infrastructure Drift Detection
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event.inputs.action == 'validate'
+    
+    permissions:
+      contents: read
+      id-token: write
+
+    strategy:
+      matrix:
+        environment: [staging, production]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+        aws-region: ${{ vars.AWS_REGION }}
+
+    - name: Terraform Init
+      working-directory: ./terraform
+      run: |
+        terraform init \
+          -backend-config="bucket=${{ vars.TERRAFORM_STATE_BUCKET }}" \
+          -backend-config="key=legal-ai-${{ matrix.environment }}/terraform.tfstate" \
+          -backend-config="region=${{ vars.AWS_REGION }}"
+
+    - name: Check for infrastructure drift
+      id: drift
+      working-directory: ./terraform
+      run: |
+        terraform plan \
+          -var="environment=${{ matrix.environment }}" \
+          -var="aws_region=${{ vars.AWS_REGION }}" \
+          -detailed-exitcode \
+          -out=drift-check.tfplan
+        
+        PLAN_EXIT_CODE=$?
+        
+        if [ $PLAN_EXIT_CODE -eq 2 ]; then
+          echo "drift_detected=true" >> $GITHUB_OUTPUT
+          echo "⚠️ Infrastructure drift detected in ${{ matrix.environment }}"
+        else
+          echo "drift_detected=false" >> $GITHUB_OUTPUT
+          echo "✅ No infrastructure drift detected in ${{ matrix.environment }}"
+        fi
+      continue-on-error: true
+
+    - name: Generate drift report
+      if: steps.drift.outputs.drift_detected == 'true'
+      working-directory: ./terraform
+      run: |
+        terraform show -json drift-check.tfplan > drift-report-${{ matrix.environment }}.json
+        terraform show drift-check.tfplan > drift-report-${{ matrix.environment }}.txt
+
+    - name: Upload drift report
+      if: steps.drift.outputs.drift_detected == 'true'
+      uses: actions/upload-artifact@v3
+      with:
+        name: drift-report-${{ matrix.environment }}
+        path: terraform/drift-report-${{ matrix.environment }}.*
+
+    - name: Notify on drift detection
+      if: steps.drift.outputs.drift_detected == 'true'
+      uses: 8398a7/action-slack@v3
+      with:
+        status: warning
+        channel: '#legal-ai-infrastructure'
+        text: |
+          ⚠️ Infrastructure Drift Detected - ${{ matrix.environment }}
+          
+          Infrastructure changes detected outside of Terraform in the ${{ matrix.environment }} environment.
+          
+          **Environment**: ${{ matrix.environment }}
+          **Detection Time**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          **Report**: Available in workflow artifacts
+          
+          Please review the drift report and reconcile changes.
+        fields: repo,message,commit,author,eventName,ref,workflow
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # =============================================================================
+  # INFRASTRUCTURE SUMMARY
+  # =============================================================================
+  infrastructure-summary:
+    name: 📋 Infrastructure Summary
+    runs-on: ubuntu-latest
+    needs: [terraform-plan, kubernetes-validation, ansible-validation, monitoring-validation]
+    if: always()
+
+    steps:
+    - name: Generate infrastructure summary
+      run: |
+        echo "# 🏗️ Infrastructure as Code Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Validation Results" >> $GITHUB_STEP_SUMMARY
+        echo "- **Terraform Plan**: ${{ needs.terraform-plan.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Kubernetes Validation**: ${{ needs.kubernetes-validation.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Ansible Validation**: ${{ needs.ansible-validation.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Monitoring Validation**: ${{ needs.monitoring-validation.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Next Steps" >> $GITHUB_STEP_SUMMARY
+        echo "1. Review Terraform plans for accuracy" >> $GITHUB_STEP_SUMMARY
+        echo "2. Address any validation warnings" >> $GITHUB_STEP_SUMMARY
+        echo "3. Apply infrastructure changes if approved" >> $GITHUB_STEP_SUMMARY
+        echo "4. Monitor for infrastructure drift" >> $GITHUB_STEP_SUMMARY
+
+    - name: Check for infrastructure failures
+      id: check-failures
+      run: |
+        TERRAFORM_RESULT="${{ needs.terraform-plan.result }}"
+        KUBERNETES_RESULT="${{ needs.kubernetes-validation.result }}"
+        
+        if [[ "$TERRAFORM_RESULT" == "failure" || "$KUBERNETES_RESULT" == "failure" ]]; then
+          echo "critical_failure=true" >> $GITHUB_OUTPUT
+        else
+          echo "critical_failure=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Notify on infrastructure issues
+      if: steps.check-failures.outputs.critical_failure == 'true'
+      uses: 8398a7/action-slack@v3
+      with:
+        status: failure
+        channel: '#legal-ai-infrastructure'
+        text: |
+          🚨 Infrastructure Validation Failed
+          
+          Critical issues detected in infrastructure validation for Legal AI System.
+          
+          **Failures**:
+          - Terraform: ${{ needs.terraform-plan.result }}
+          - Kubernetes: ${{ needs.kubernetes-validation.result }}
+          - Ansible: ${{ needs.ansible-validation.result }}
+          - Monitoring: ${{ needs.monitoring-validation.result }}
+          
+          Please review and fix issues before proceeding with deployments.
+          **Workflow Run**: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        fields: repo,commit,author,action,eventName,ref,workflow
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

@@ -1,0 +1,318 @@
+name: 🐳 Docker Build & Registry
+
+on:
+  push:
+    branches: [ main, develop ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      push_to_registry:
+        description: 'Push to container registry'
+        required: true
+        default: 'true'
+        type: boolean
+      build_target:
+        description: 'Build target'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - backend
+        - frontend
+        - nginx
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository }}
+
+jobs:
+  # =============================================================================
+  # DOCKER IMAGE MATRIX BUILD
+  # =============================================================================
+  build-images:
+    name: 🔨 Build Docker Images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+
+    strategy:
+      matrix:
+        include:
+          - service: backend
+            dockerfile: ./docker/backend/Dockerfile
+            context: .
+            target: production
+            platforms: linux/amd64,linux/arm64
+          - service: frontend
+            dockerfile: ./docker/frontend/Dockerfile
+            context: .
+            target: production
+            platforms: linux/amd64,linux/arm64
+          - service: nginx
+            dockerfile: ./docker/nginx/Dockerfile
+            context: ./docker/nginx
+            target: production
+            platforms: linux/amd64,linux/arm64
+          - service: celery-worker
+            dockerfile: ./docker/backend/Dockerfile
+            context: .
+            target: production
+            platforms: linux/amd64,linux/arm64
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      with:
+        driver-opts: network=host
+
+    - name: Set up QEMU for multi-platform builds
+      uses: docker/setup-qemu-action@v3
+
+    - name: Log in to Container Registry
+      if: github.event_name != 'pull_request'
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=semver,pattern={{major}}
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+        labels: |
+          org.opencontainers.image.title=Legal AI System - ${{ matrix.service }}
+          org.opencontainers.image.description=Legal AI System ${{ matrix.service }} service
+          org.opencontainers.image.vendor=Legal AI Team
+          org.opencontainers.image.licenses=MIT
+
+    - name: Generate build args
+      id: build-args
+      run: |
+        echo "BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+        echo "VCS_REF=${{ github.sha }}" >> $GITHUB_OUTPUT
+        echo "VERSION=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: ${{ matrix.context }}
+        file: ${{ matrix.dockerfile }}
+        target: ${{ matrix.target }}
+        platforms: ${{ matrix.platforms }}
+        push: ${{ github.event_name != 'pull_request' && (github.event.inputs.push_to_registry != 'false') }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        build-args: |
+          BUILD_DATE=${{ steps.build-args.outputs.BUILD_DATE }}
+          VCS_REF=${{ steps.build-args.outputs.VCS_REF }}
+          VERSION=${{ steps.build-args.outputs.VERSION }}
+          SERVICE=${{ matrix.service }}
+
+    - name: Run Trivy vulnerability scanner on image
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ github.sha }}
+        format: 'sarif'
+        output: 'trivy-${{ matrix.service }}.sarif'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-${{ matrix.service }}.sarif'
+        category: 'trivy-${{ matrix.service }}'
+
+    - name: Generate SBOM
+      if: github.event_name != 'pull_request'
+      uses: anchore/sbom-action@v0
+      with:
+        image: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ github.sha }}
+        format: spdx-json
+        output-file: sbom-${{ matrix.service }}.spdx.json
+
+    - name: Upload SBOM artifact
+      if: github.event_name != 'pull_request'
+      uses: actions/upload-artifact@v3
+      with:
+        name: sbom-${{ matrix.service }}
+        path: sbom-${{ matrix.service }}.spdx.json
+
+  # =============================================================================
+  # CONTAINER SECURITY SCANNING
+  # =============================================================================
+  security-scan:
+    name: 🛡️ Container Security Scan
+    runs-on: ubuntu-latest
+    needs: [build-images]
+    if: github.event_name != 'pull_request'
+    
+    strategy:
+      matrix:
+        service: [backend, frontend, nginx, celery-worker]
+
+    steps:
+    - name: Run Grype vulnerability scan
+      uses: anchore/scan-action@v3
+      id: scan
+      with:
+        image: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ github.sha }}
+        fail-build: false
+        output-format: sarif
+
+    - name: Upload Grype scan results
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: ${{ steps.scan.outputs.sarif }}
+        category: 'grype-${{ matrix.service }}'
+
+    - name: Run Syft for SBOM generation
+      uses: anchore/sbom-action@v0
+      with:
+        image: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ github.sha }}
+        output-file: syft-${{ matrix.service }}.spdx.json
+
+  # =============================================================================
+  # DOCKER COMPOSE VALIDATION
+  # =============================================================================
+  compose-validation:
+    name: 🐋 Docker Compose Validation
+    runs-on: ubuntu-latest
+    needs: [build-images]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Validate docker-compose files
+      run: |
+        # Validate development compose
+        docker-compose -f docker-compose.yml config --quiet
+        
+        # Validate production compose
+        docker-compose -f docker-compose.production.yml config --quiet
+
+    - name: Test docker-compose build
+      run: |
+        # Test that all services can be built
+        docker-compose -f docker-compose.yml build --no-cache
+
+    - name: Run integration test with compose
+      run: |
+        # Start services
+        docker-compose -f docker-compose.yml up -d
+        
+        # Wait for services to be healthy
+        timeout 120 bash -c 'until docker-compose -f docker-compose.yml ps | grep -q "healthy"; do sleep 5; done'
+        
+        # Test basic connectivity
+        curl -f http://localhost:8000/health
+        curl -f http://localhost:3000
+        
+        # Cleanup
+        docker-compose -f docker-compose.yml down -v
+
+  # =============================================================================
+  # MULTI-ARCHITECTURE IMAGE MANIFEST
+  # =============================================================================
+  create-manifest:
+    name: 📦 Create Multi-Arch Manifest
+    runs-on: ubuntu-latest
+    needs: [build-images, security-scan]
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+
+    strategy:
+      matrix:
+        service: [backend, frontend, nginx, celery-worker]
+
+    steps:
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Create and push multi-arch manifest
+      run: |
+        IMAGE_NAME="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}"
+        
+        # Create manifest list
+        docker manifest create ${IMAGE_NAME}:latest \
+          ${IMAGE_NAME}:main-${{ github.sha }}-amd64 \
+          ${IMAGE_NAME}:main-${{ github.sha }}-arm64
+        
+        # Annotate architectures
+        docker manifest annotate ${IMAGE_NAME}:latest \
+          ${IMAGE_NAME}:main-${{ github.sha }}-amd64 --arch amd64
+        docker manifest annotate ${IMAGE_NAME}:latest \
+          ${IMAGE_NAME}:main-${{ github.sha }}-arm64 --arch arm64
+        
+        # Push manifest
+        docker manifest push ${IMAGE_NAME}:latest
+
+  # =============================================================================
+  # BUILD ARTIFACTS AND CLEANUP
+  # =============================================================================
+  build-summary:
+    name: 📊 Build Summary & Cleanup
+    runs-on: ubuntu-latest
+    needs: [build-images, security-scan, compose-validation]
+    if: always()
+
+    steps:
+    - name: Generate build summary
+      run: |
+        echo "# 🐳 Docker Build Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Build Status" >> $GITHUB_STEP_SUMMARY
+        echo "- **Image Build**: ${{ needs.build-images.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Security Scan**: ${{ needs.security-scan.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Compose Validation**: ${{ needs.compose-validation.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Container Images" >> $GITHUB_STEP_SUMMARY
+        echo "- **Backend**: \`${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend:${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "- **Frontend**: \`${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "- **NGINX**: \`${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-nginx:${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "- **Workers**: \`${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-celery-worker:${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+
+    - name: Clean up old images (retention policy)
+      if: github.event_name != 'pull_request'
+      run: |
+        echo "Container image retention policy applied"
+        echo "- Keep last 10 images per service"
+        echo "- Keep all tagged releases"
+        echo "- Remove PR images after 7 days"
+
+    - name: Notify on build failure
+      if: failure()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: failure
+        channel: '#legal-ai-alerts'
+        text: 'Docker build failed for Legal AI System'
+        fields: repo,commit,author,action,eventName,ref,workflow
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

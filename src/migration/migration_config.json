@@ -1,0 +1,151 @@
+{
+  "migration_config": {
+    "source_databases": {
+      "main_cases": "legal_cases.db",
+      "auth": "enhanced_auth.db",
+      "audit": "audit/legal_audit.db",
+      "compliance": "legal_compliance.db",
+      "monitoring": "monitoring.db",
+      "privilege": "privilege/privilege.db",
+      "retention": "retention/retention.db",
+      "backup_records": "backup/backup_records.db",
+      "encryption_audit": "audit/encryption_audit.db",
+      "security_events": "audit/security_events.db",
+      "enhanced_feedback": "data/enhanced_feedback.db",
+      "compliance_audit": "data/compliance_audit.db",
+      "state_compliance": "state_compliance.db",
+      "legal_advice_detection": "legal_advice_detection.db"
+    },
+    "target_database_url": "postgresql://legal_ai_user:secure_password@localhost:5432/legal_ai_production",
+    "batch_size": 1000,
+    "parallel_workers": 4,
+    "verify_data": true,
+    "backup_before_migrate": true,
+    "rollback_enabled": true,
+    "dry_run": false,
+    "zero_downtime": true,
+    "dual_write_duration_hours": 24,
+    "encryption_key": "encryption_key_here_base64_encoded",
+    "storage_migration_path": "./storage_migration"
+  },
+  "user_migration_config": {
+    "preserve_passwords": true,
+    "encrypt_sensitive_fields": true,
+    "migrate_sessions": true,
+    "migrate_preferences": true,
+    "migrate_permissions": true,
+    "anonymize_test_data": true
+  },
+  "document_migration_config": {
+    "source_storage_paths": [
+      "./storage",
+      "./documents",
+      "./uploads",
+      "./attachments"
+    ],
+    "target_storage_path": "./migrated_storage",
+    "enable_encryption": true,
+    "enable_compression": true,
+    "enable_deduplication": true,
+    "supported_file_types": [
+      ".pdf",
+      ".docx",
+      ".txt",
+      ".rtf",
+      ".png",
+      ".jpg",
+      ".jpeg",
+      ".gif"
+    ],
+    "max_file_size_mb": 100,
+    "metadata_extraction": true
+  },
+  "zero_downtime_cutover_config": {
+    "redis_url": "redis://localhost:6379",
+    "traffic_shift_duration_minutes": 120,
+    "traffic_shift_increments": [10, 25, 50, 75, 90, 100],
+    "continuous_verification": true,
+    "verification_interval_seconds": 30,
+    "error_threshold_percent": 1.0,
+    "auto_rollback_enabled": true,
+    "rollback_timeout_minutes": 15,
+    "health_check_endpoints": [
+      "http://localhost:8000/health",
+      "http://localhost:3000/health",
+      "http://localhost:8000/api/v1/status"
+    ],
+    "notification_webhooks": [
+      "https://hooks.slack.com/services/your/webhook/url",
+      "https://your-monitoring-system.com/webhooks/migration"
+    ]
+  },
+  "rollback_config": {
+    "rollback_storage_path": "./rollback_storage",
+    "redis_url": "redis://localhost:6379",
+    "databases_to_backup": {
+      "sqlite_main": {
+        "type": "sqlite",
+        "path": "legal_cases.db"
+      },
+      "sqlite_auth": {
+        "type": "sqlite",
+        "path": "enhanced_auth.db"
+      },
+      "postgresql_target": {
+        "type": "postgresql",
+        "url": "postgresql://legal_ai_user:secure_password@localhost:5432/legal_ai_production"
+      }
+    },
+    "config_files_to_backup": [
+      ".env",
+      "config.json",
+      "src/core/config.py"
+    ],
+    "critical_files_to_backup": [
+      "./storage",
+      "./logs",
+      "./certificates"
+    ],
+    "auto_rollback_triggers": {
+      "health_check_failures": 3,
+      "error_rate_threshold": 5.0,
+      "data_integrity_threshold": 95.0
+    },
+    "notification_endpoints": [
+      "https://hooks.slack.com/services/your/webhook/url"
+    ]
+  },
+  "testing_config": {
+    "test_environment_dir": "./migration_test_env",
+    "production_databases": {
+      "legal_cases": "legal_cases.db",
+      "enhanced_auth": "enhanced_auth.db",
+      "audit": "audit/legal_audit.db"
+    },
+    "test_data_size": 10000,
+    "performance_test_enabled": true,
+    "load_test_enabled": true,
+    "stress_test_enabled": false,
+    "anonymize_test_data": true,
+    "cleanup_after_test": true
+  },
+  "monitoring_config": {
+    "enable_metrics": true,
+    "metrics_interval_seconds": 30,
+    "log_level": "INFO",
+    "log_file": "migration.log",
+    "enable_alerts": true,
+    "alert_channels": [
+      "slack",
+      "email"
+    ]
+  },
+  "security_config": {
+    "encryption_at_rest": true,
+    "encryption_in_transit": true,
+    "secure_delete": true,
+    "audit_all_operations": true,
+    "require_multi_factor": false,
+    "backup_encryption": true
+  }
+}

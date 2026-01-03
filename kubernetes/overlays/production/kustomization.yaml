@@ -1,0 +1,141 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: legal-ai-production
+  namespace: legal-ai-system
+
+# Base configuration
+bases:
+  - ../../base
+
+# Namespace for all resources
+namespace: legal-ai-system
+
+# Common labels for production
+commonLabels:
+  environment: production
+  deployment: production
+  app.kubernetes.io/environment: production
+
+# Production-specific annotations
+commonAnnotations:
+  deployment.kubernetes.io/revision: "1"
+  app.kubernetes.io/managed-by: kustomize
+  environment: production
+
+# Production images with specific tags
+images:
+  - name: legal-ai-backend
+    newTag: "1.0.0"
+  - name: legal-ai-frontend
+    newTag: "1.0.0"
+  - name: legal-ai-nginx
+    newTag: "1.0.0"
+  - name: postgres
+    newTag: "16-alpine"
+  - name: redis
+    newTag: "7-alpine"
+  - name: minio/minio
+    newTag: "RELEASE.2024-01-31T20-20-33Z"
+
+# Production-specific resources
+resources:
+  - ingress-production.yaml
+  - hpa.yaml
+  - pdb.yaml
+  - network-policies.yaml
+  - monitoring-production.yaml
+
+# ConfigMap generators for production
+configMapGenerator:
+  - name: production-env-config
+    literals:
+      - ENVIRONMENT=production
+      - DEBUG=false
+      - LOG_LEVEL=info
+      - SECURE_SSL_REDIRECT=true
+      - SECURE_HSTS_SECONDS=31536000
+      - AUDIT_LOG_ENABLED=true
+      - GDPR_COMPLIANCE_MODE=true
+      - CCPA_COMPLIANCE_MODE=true
+      - DOCUMENT_ENCRYPTION_ENABLED=true
+      - RATE_LIMIT_ENABLED=true
+
+# Secret generators (these should be managed externally in production)
+secretGenerator:
+  - name: production-secrets
+    literals:
+      - DATABASE_PASSWORD=EXTERNAL_SECRET_PLACEHOLDER
+      - SECRET_KEY=EXTERNAL_SECRET_PLACEHOLDER
+      - JWT_SECRET_KEY=EXTERNAL_SECRET_PLACEHOLDER
+
+# Resource patches for production scaling
+patchesStrategicMerge:
+  - backend-production-patch.yaml
+  - frontend-production-patch.yaml
+  - postgres-production-patch.yaml
+  - redis-production-patch.yaml
+  - celery-production-patch.yaml
+
+# JSON patches for specific production configurations
+patches:
+  # Increase replica counts for production
+  - target:
+      kind: Deployment
+      name: backend
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+  
+  - target:
+      kind: Deployment
+      name: frontend
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+  
+  - target:
+      kind: Deployment
+      name: celery-worker
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 5
+
+  # Production resource limits
+  - target:
+      kind: Deployment
+      name: backend
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "4Gi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "2000m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: "1Gi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: "500m"
+
+# Replacements for production values
+replacements:
+  - source:
+      kind: ConfigMap
+      name: production-env-config
+      fieldPath: data.ENVIRONMENT
+    targets:
+      - select:
+          kind: ConfigMap
+          name: backend-config
+        fieldPaths:
+          - data.ENVIRONMENT
+
+# Generators for production certificates (if using cert-manager)
+generators:
+  - cert-manager-issuer.yaml

@@ -1,0 +1,239 @@
+
+UPL COMPLIANCE COMPREHENSIVE TEST REPORT
+Generated: 2025-09-11T21:52:38.847990
+Duration: 0.03 seconds
+Queries per Second: 6083.19
+
+========================================
+OVERALL COMPLIANCE RESULTS
+========================================
+
+Total Test Queries: 165
+Passed Tests: 149
+Failed Tests: 16
+Overall Compliance Rate: 90.30%
+
+Critical Failures: 16
+(High-risk content not detected)
+
+========================================
+CATEGORY-WISE ANALYSIS
+========================================
+
+
+LEGAL_RESEARCH:
+  Total Tests: 10
+  Passed: 10
+  Failed: 0
+  Compliance Rate: 100.0%
+  Violations Detected: 0
+  False Positives: 0
+  False Negatives: 0
+
+DOCUMENT_ANALYSIS:
+  Total Tests: 10
+  Passed: 7
+  Failed: 3
+  Compliance Rate: 70.0%
+  Violations Detected: 7
+  False Positives: 0
+  False Negatives: 3
+
+SAFE_EDUCATIONAL:
+  Total Tests: 60
+  Passed: 60
+  Failed: 0
+  Compliance Rate: 100.0%
+  Violations Detected: 0
+  False Positives: 0
+  False Negatives: 0
+
+PROFESSIONAL_SERVICE:
+  Total Tests: 10
+  Passed: 7
+  Failed: 3
+  Compliance Rate: 70.0%
+  Violations Detected: 7
+  False Positives: 0
+  False Negatives: 3
+
+DIRECT_LEGAL_ADVICE:
+  Total Tests: 30
+  Passed: 29
+  Failed: 1
+  Compliance Rate: 96.7%
+  Violations Detected: 29
+  False Positives: 0
+  False Negatives: 1
+
+CONTRACT_ANALYSIS:
+  Total Tests: 10
+  Passed: 6
+  Failed: 4
+  Compliance Rate: 60.0%
+  Violations Detected: 6
+  False Positives: 0
+  False Negatives: 4
+
+CASE_MANAGEMENT:
+  Total Tests: 10
+  Passed: 9
+  Failed: 1
+  Compliance Rate: 90.0%
+  Violations Detected: 9
+  False Positives: 0
+  False Negatives: 1
+
+LEGAL_CONCLUSIONS:
+  Total Tests: 10
+  Passed: 6
+  Failed: 4
+  Compliance Rate: 60.0%
+  Violations Detected: 6
+  False Positives: 0
+  False Negatives: 4
+
+MULTIPLE_VIOLATIONS:
+  Total Tests: 5
+  Passed: 5
+  Failed: 0
+  Compliance Rate: 100.0%
+  Violations Detected: 5
+  False Positives: 0
+  False Negatives: 0
+
+BORDERLINE_CASES:
+  Total Tests: 10
+  Passed: 10
+  Failed: 0
+  Compliance Rate: 100.0%
+  Violations Detected: 0
+  False Positives: 0
+  False Negatives: 0
+
+========================================
+RISK LEVEL ACCURACY
+========================================
+
+LOW: 100.0% (70/70)
+HIGH: 15.0% (6/40)
+CRITICAL: 20.0% (9/45)
+MEDIUM: 0.0% (0/10)
+
+========================================
+PERFORMANCE STATISTICS  
+========================================
+
+Average Query Processing Time: 0.16ms
+Minimum Processing Time: 0.10ms
+Maximum Processing Time: 5.02ms
+Total Processing Time: 0.03s
+
+========================================
+COMPLIANCE STATUS
+========================================
+
+[FAIL] NON-COMPLIANT - System not ready for production
+[FAIL] Critical failures detected
+[FAIL] Compliance rate below requirements
+
+========================================
+CRITICAL FAILURES DETAIL
+========================================
+
+
+Query ID: prof_010
+Category: PROFESSIONAL_SERVICE
+Expected Risk: CRITICAL
+Content: This legal opinion is based on my professional judgment and experience....
+
+
+Query ID: doc_008
+Category: DOCUMENT_ANALYSIS
+Expected Risk: HIGH
+Content: This assignment clause could create problems and should be modified....
+
+
+Query ID: advice_008
+Category: DIRECT_LEGAL_ADVICE
+Expected Risk: CRITICAL
+Content: My advice is to settle out of court to avoid litigation costs....
+
+
+Query ID: doc_003
+Category: DOCUMENT_ANALYSIS
+Expected Risk: HIGH
+Content: This document is missing critical terms and should not be executed....
+
+
+Query ID: case_010
+Category: CASE_MANAGEMENT
+Expected Risk: HIGH
+Content: I advise accepting this plea agreement to avoid the risk of trial....
+
+
+Query ID: prof_009
+Category: PROFESSIONAL_SERVICE
+Expected Risk: CRITICAL
+Content: I am acting as your advocate in these negotiations....
+
+
+Query ID: contract_003
+Category: CONTRACT_ANALYSIS
+Expected Risk: HIGH
+Content: This indemnification clause puts you at significant legal risk....
+
+
+Query ID: doc_010
+Category: DOCUMENT_ANALYSIS
+Expected Risk: HIGH
+Content: I advise against signing without adding representations and warranties....
+
+
+Query ID: contract_010
+Category: CONTRACT_ANALYSIS
+Expected Risk: HIGH
+Content: I advise against accepting these warranty disclaimers as they're too broad....
+
+
+Query ID: prof_005
+Category: PROFESSIONAL_SERVICE
+Expected Risk: CRITICAL
+Content: This communication is confidential as part of our legal relationship....
+
+
+Query ID: concl_001
+Category: LEGAL_CONCLUSIONS
+Expected Risk: HIGH
+Content: This clearly violates the Fair Labor Standards Act provisions....
+
+
+Query ID: contract_008
+Category: CONTRACT_ANALYSIS
+Expected Risk: HIGH
+Content: This contract violates public policy and should not be enforced....
+
+
+Query ID: concl_010
+Category: LEGAL_CONCLUSIONS
+Expected Risk: HIGH
+Content: The statute of limitations has expired for this type of claim....
+
+
+Query ID: contract_005
+Category: CONTRACT_ANALYSIS
+Expected Risk: HIGH
+Content: The non-compete restrictions in this contract are too broad and unenforceable....
+
+
+Query ID: concl_009
+Category: LEGAL_CONCLUSIONS
+Expected Risk: HIGH
+Content: This is clearly a case of negligent hiring and supervision....
+
+
+Query ID: concl_002
+Category: LEGAL_CONCLUSIONS
+Expected Risk: HIGH
+Content: This contract is illegal and unenforceable under state law....
+

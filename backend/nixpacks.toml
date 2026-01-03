@@ -1,0 +1,3 @@
+# Railway Nixpacks Configuration for Legal AI Backend
+# Let Nixpacks auto-detect Python and handle pip/venv automatically
+# Start command is defined in railway.json (which takes precedence)

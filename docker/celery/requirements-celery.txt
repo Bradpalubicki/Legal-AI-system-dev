@@ -1,0 +1,59 @@
+# Additional Celery-specific requirements
+# Extends the base requirements.txt with worker-specific packages
+
+# Celery and related
+celery[redis]==5.3.4
+kombu==5.3.4
+billiard==4.2.0
+vine==5.1.0
+
+# Monitoring and management
+flower==2.0.1
+celery-beat==2.2.1
+
+# Task result backends
+redis==5.0.1
+kombu[redis]==5.3.4
+
+# Enhanced task monitoring
+celery-exporter==1.10.0
+
+# Task serialization
+msgpack==1.0.7
+
+# Process management
+supervisor==4.2.5
+
+# Enhanced logging
+structlog==23.2.0
+
+# Performance monitoring
+psutil==5.9.6
+
+# File handling for document processing tasks
+python-magic==0.4.27
+Pillow==11.1.0
+
+# PDF processing for worker tasks
+pypdf>=6.4.0  # Fixed: CVE LZWDecode RAM exhaustion vulnerability
+pdf2image==1.16.3
+pytesseract==0.3.10
+
+# Document format support
+python-docx==1.1.0
+openpyxl==3.1.2
+
+# Email processing
+email-validator==2.1.0
+
+# Progress tracking
+tqdm==4.67.1
+
+# Retry mechanisms
+tenacity==8.2.3
+
+# Rate limiting
+limits==3.6.0
+
+# Task scheduling
+APScheduler==3.10.4

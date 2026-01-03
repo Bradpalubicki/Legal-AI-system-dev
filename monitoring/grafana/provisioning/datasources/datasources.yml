@@ -1,0 +1,385 @@
+# =============================================================================
+# Grafana Data Sources Configuration for Legal AI System
+# =============================================================================
+# Automated provisioning of data sources including Prometheus, Loki,
+# and other monitoring backends for comprehensive observability
+# =============================================================================
+
+apiVersion: 1
+
+deleteDatasources:
+  - name: Prometheus
+    orgId: 1
+  - name: Loki
+    orgId: 1
+
+datasources:
+  # =============================================================================
+  # PROMETHEUS - METRICS DATA SOURCE
+  # =============================================================================
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    orgId: 1
+    url: http://prometheus.legal-ai-system.svc.cluster.local:9090
+    isDefault: true
+    editable: false
+    
+    # HTTP settings
+    timeout: 60
+    httpMethod: POST
+    
+    # Authentication (if required)
+    basicAuth: false
+    basicAuthUser: ''
+    basicAuthPassword: ''
+    withCredentials: false
+    
+    # TLS settings
+    tlsAuth: false
+    tlsAuthWithCACert: false
+    tlsSkipVerify: true
+    
+    jsonData:
+      # Prometheus-specific settings
+      timeInterval: 30s
+      queryTimeout: 60s
+      httpMethod: POST
+      
+      # Custom headers for legal compliance
+      customQueryParameters: 'legal-system=legal-ai&env=production'
+      
+      # Alert manager integration
+      manageAlerts: true
+      alertmanagerUid: alertmanager
+      
+      # Exemplars configuration
+      exemplarTraceIdDestinations:
+        - name: trace_id
+          datasourceUid: jaeger
+          url: 'http://jaeger.legal-ai-system.svc.cluster.local:16686/trace/$${__value.raw}'
+      
+      # Rate limiting
+      incrementalQueryOverlapWindow: '10m'
+      
+    # Health check
+    secureJsonFields: {}
+    version: 1
+    readOnly: false
+
+  # =============================================================================
+  # LOKI - LOGS DATA SOURCE
+  # =============================================================================
+  - name: Loki
+    type: loki
+    access: proxy
+    orgId: 1
+    url: http://loki.legal-ai-system.svc.cluster.local:3100
+    isDefault: false
+    editable: false
+    
+    # HTTP settings
+    timeout: 60
+    
+    jsonData:
+      # Loki-specific settings
+      timeout: 60s
+      maxLines: 1000
+      
+      # Derived fields for linking logs to traces
+      derivedFields:
+        - datasourceUid: jaeger
+          matcherRegex: 'trace_id=([\\w]+)'
+          name: trace_id
+          url: 'http://jaeger.legal-ai-system.svc.cluster.local:16686/trace/$${__value.raw}'
+        
+        # Legal-specific derived fields
+        - datasourceUid: prometheus
+          matcherRegex: 'client_id=([\\w-]+)'
+          name: client_metrics
+          url: '/d/client-overview/client-metrics?var-client_id=$${__value.raw}'
+          
+        - datasourceUid: prometheus
+          matcherRegex: 'case_id=([\\w-]+)'
+          name: case_metrics
+          url: '/d/case-overview/case-metrics?var-case_id=$${__value.raw}'
+    
+    version: 1
+    readOnly: false
+
+  # =============================================================================
+  # JAEGER - DISTRIBUTED TRACING
+  # =============================================================================
+  - name: Jaeger
+    type: jaeger
+    access: proxy
+    orgId: 1
+    url: http://jaeger-query.legal-ai-system.svc.cluster.local:16686
+    isDefault: false
+    editable: false
+    uid: jaeger
+    
+    jsonData:
+      # Tracing-specific settings
+      tracesToLogs:
+        datasourceUid: loki
+        tags:
+          - service
+          - operation
+          - trace_id
+        mappedTags:
+          - key: service_name
+            value: service
+        mapTagNamesEnabled: true
+        filterByTraceID: true
+        filterBySpanID: false
+        lokiSearch: true
+      
+      # Service map settings
+      tracesToMetrics:
+        datasourceUid: prometheus
+        tags:
+          - service
+          - operation
+        queries:
+          - name: 'Request Rate'
+            query: 'rate(traces_spanmetrics_calls_total{service="$service"}[5m])'
+          - name: 'Error Rate'
+            query: 'rate(traces_spanmetrics_calls_total{service="$service",status_code="STATUS_CODE_ERROR"}[5m]) / rate(traces_spanmetrics_calls_total{service="$service"}[5m])'
+          - name: 'Duration P99'
+            query: 'histogram_quantile(0.99, rate(traces_spanmetrics_duration_bucket{service="$service"}[5m]))'
+    
+    version: 1
+    readOnly: false
+
+  # =============================================================================
+  # POSTGRES - DATABASE METRICS
+  # =============================================================================
+  - name: PostgreSQL
+    type: postgres
+    access: proxy
+    orgId: 1
+    url: postgres-exporter.legal-ai-system.svc.cluster.local:5432
+    database: legal_ai_monitoring
+    user: grafana_readonly
+    isDefault: false
+    editable: false
+    
+    secureJsonData:
+      password: '$POSTGRES_GRAFANA_PASSWORD'
+    
+    jsonData:
+      # PostgreSQL-specific settings
+      sslmode: require
+      maxOpenConns: 10
+      maxIdleConns: 10
+      maxIdleConnsAuto: true
+      connMaxLifetime: 14400
+      postgresVersion: 1600
+      timescaledb: false
+    
+    version: 1
+    readOnly: true
+
+  # =============================================================================
+  # REDIS - CACHE METRICS
+  # =============================================================================
+  - name: Redis
+    type: redis-datasource
+    access: proxy
+    orgId: 1
+    url: redis://redis.legal-ai-system.svc.cluster.local:6379
+    isDefault: false
+    editable: false
+    
+    jsonData:
+      # Redis-specific settings
+      client: standalone
+      poolSize: 5
+      timeout: 10
+      pingInterval: 0
+      pipelineWindow: 0
+    
+    secureJsonData:
+      password: '$REDIS_PASSWORD'
+    
+    version: 1
+    readOnly: true
+
+  # =============================================================================
+  # MINIO - OBJECT STORAGE METRICS
+  # =============================================================================
+  - name: MinIO
+    type: prometheus
+    access: proxy
+    orgId: 1
+    url: http://minio.legal-ai-system.svc.cluster.local:9000/minio/v2/metrics/cluster
+    isDefault: false
+    editable: false
+    
+    basicAuth: true
+    basicAuthUser: '$MINIO_METRICS_USER'
+    secureJsonData:
+      basicAuthPassword: '$MINIO_METRICS_PASSWORD'
+    
+    jsonData:
+      timeInterval: 60s
+      queryTimeout: 30s
+      httpMethod: GET
+      customQueryParameters: 'legal-system=legal-ai-storage'
+    
+    version: 1
+    readOnly: true
+
+  # =============================================================================
+  # EXTERNAL API MONITORING
+  # =============================================================================
+  - name: OpenAI_Monitoring
+    type: prometheus
+    access: proxy
+    orgId: 1
+    url: http://openai-exporter.legal-ai-system.svc.cluster.local:8080
+    isDefault: false
+    editable: false
+    
+    jsonData:
+      timeInterval: 300s  # 5 minutes
+      queryTimeout: 30s
+      httpMethod: GET
+      customQueryParameters: 'service=openai&system=legal-ai'
+    
+    version: 1
+    readOnly: true
+
+  - name: Anthropic_Monitoring
+    type: prometheus
+    access: proxy
+    orgId: 1
+    url: http://anthropic-exporter.legal-ai-system.svc.cluster.local:8080
+    isDefault: false
+    editable: false
+    
+    jsonData:
+      timeInterval: 300s  # 5 minutes
+      queryTimeout: 30s
+      httpMethod: GET
+      customQueryParameters: 'service=anthropic&system=legal-ai'
+    
+    version: 1
+    readOnly: true
+
+  # =============================================================================
+  # ALERTMANAGER - ALERT MANAGEMENT
+  # =============================================================================
+  - name: AlertManager
+    type: alertmanager
+    access: proxy
+    orgId: 1
+    url: http://alertmanager.legal-ai-system.svc.cluster.local:9093
+    isDefault: false
+    editable: false
+    uid: alertmanager
+    
+    jsonData:
+      # AlertManager-specific settings
+      implementation: prometheus
+      handleGrafanaManagedAlerts: false
+    
+    version: 1
+    readOnly: false
+
+  # =============================================================================
+  # BLACKBOX EXPORTER - UPTIME MONITORING
+  # =============================================================================
+  - name: Blackbox
+    type: prometheus
+    access: proxy
+    orgId: 1
+    url: http://blackbox-exporter.legal-ai-system.svc.cluster.local:9115
+    isDefault: false
+    editable: false
+    
+    jsonData:
+      timeInterval: 60s
+      queryTimeout: 30s
+      httpMethod: GET
+      customQueryParameters: 'probe=true&system=legal-ai'
+    
+    version: 1
+    readOnly: true
+
+  # =============================================================================
+  # KUBERNETES MONITORING
+  # =============================================================================
+  - name: Kubernetes
+    type: prometheus
+    access: proxy
+    orgId: 1
+    url: http://prometheus.legal-ai-system.svc.cluster.local:9090
+    isDefault: false
+    editable: false
+    
+    jsonData:
+      timeInterval: 30s
+      queryTimeout: 60s
+      httpMethod: POST
+      customQueryParameters: 'cluster=legal-ai-k8s'
+      
+      # Kubernetes-specific exemplar configuration
+      exemplarTraceIdDestinations:
+        - name: trace_id
+          datasourceUid: jaeger
+          url: 'http://jaeger.legal-ai-system.svc.cluster.local:16686/trace/$${__value.raw}'
+    
+    version: 1
+    readOnly: true
+
+  # =============================================================================
+  # LEGAL COMPLIANCE MONITORING
+  # =============================================================================
+  - name: Compliance_Metrics
+    type: prometheus
+    access: proxy
+    orgId: 1
+    url: http://compliance-exporter.legal-ai-system.svc.cluster.local:8080
+    isDefault: false
+    editable: false
+    
+    jsonData:
+      timeInterval: 300s  # 5 minutes
+      queryTimeout: 60s
+      httpMethod: GET
+      customQueryParameters: 'compliance=true&legal-system=legal-ai'
+    
+    version: 1
+    readOnly: true
+
+  # =============================================================================
+  # AUDIT LOG MONITORING
+  # =============================================================================
+  - name: Audit_Logs
+    type: loki
+    access: proxy
+    orgId: 1
+    url: http://loki.legal-ai-system.svc.cluster.local:3100
+    isDefault: false
+    editable: false
+    
+    jsonData:
+      timeout: 60s
+      maxLines: 5000
+      
+      # Audit-specific derived fields
+      derivedFields:
+        - datasourceUid: prometheus
+          matcherRegex: 'user_id=([\\w-]+)'
+          name: user_activity
+          url: '/d/user-audit/user-activity?var-user_id=$${__value.raw}'
+          
+        - datasourceUid: prometheus
+          matcherRegex: 'document_id=([\\w-]+)'
+          name: document_access
+          url: '/d/document-audit/document-access?var-document_id=$${__value.raw}'
+    
+    version: 1
+    readOnly: true

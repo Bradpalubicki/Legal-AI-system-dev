@@ -1,0 +1,472 @@
+"""
+Pytest Configuration and Global Fixtures
+
+This module provides global pytest configuration, fixtures, and utilities
+for testing the Legal AI System.
+"""
+
+import os
+import sys
+import asyncio
+import pytest
+import pytest_asyncio
+from typing import AsyncGenerator, Generator
+from unittest.mock import Mock, patch
+# Optional imports for when dependencies are available
+try:
+    from fastapi.testclient import TestClient
+except ImportError:
+    TestClient = None
+
+try:
+    from sqlalchemy import create_engine, event
+    from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+    from sqlalchemy.orm import sessionmaker
+except ImportError:
+    create_engine = create_async_engine = sessionmaker = AsyncSession = None
+
+try:
+    from redis.asyncio import Redis
+except ImportError:
+    Redis = None
+
+try:
+    from httpx import AsyncClient
+except ImportError:
+    AsyncClient = None
+
+# Add src directories to path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "backend", "app", "src"))
+
+# Optional application imports
+try:
+    from core.app import create_application
+    from core.config import get_settings
+    from core.database import get_database_session, Base
+except ImportError:
+    create_application = get_settings = get_database_session = Base = None
+
+
+# =============================================================================
+# PYTEST CONFIGURATION
+# =============================================================================
+
+def pytest_configure(config):
+    """Configure pytest settings"""
+    config.addinivalue_line(
+        "markers", "unit: marks tests as unit tests (deselect with '-m \"not unit\"')"
+    )
+    config.addinivalue_line(
+        "markers", "integration: marks tests as integration tests"
+    )
+    config.addinivalue_line(
+        "markers", "e2e: marks tests as end-to-end tests"
+    )
+    config.addinivalue_line(
+        "markers", "slow: marks tests as slow running"
+    )
+    config.addinivalue_line(
+        "markers", "external: marks tests that require external services"
+    )
+    config.addinivalue_line(
+        "markers", "ai: marks tests that use AI services"
+    )
+
+
+def pytest_collection_modifyitems(config, items):
+    """Modify test collection to add markers automatically"""
+    for item in items:
+        # Add unit marker to unit tests
+        if "unit" in str(item.fspath):
+            item.add_marker(pytest.mark.unit)
+        # Add integration marker to integration tests
+        elif "integration" in str(item.fspath):
+            item.add_marker(pytest.mark.integration)
+        # Add e2e marker to e2e tests
+        elif "e2e" in str(item.fspath):
+            item.add_marker(pytest.mark.e2e)
+
+
+# =============================================================================
+# ENVIRONMENT SETUP
+# =============================================================================
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_test_environment():
+    """Set up test environment variables"""
+    os.environ.update({
+        "ENVIRONMENT": "testing",
+        "DEBUG": "true",
+        "DATABASE_URL": "sqlite+aiosqlite:///./test_legal_ai.db",
+        "REDIS_URL": "redis://localhost:6379/15",  # Use different DB for tests
+        "JWT_SECRET": "test-jwt-secret-key-for-testing-only",
+        "ENCRYPTION_KEY": "test-encryption-key-32-chars-123",
+        "SENTRY_ENABLED": "false",
+        "LOG_LEVEL": "DEBUG"
+    })
+
+
+# =============================================================================
+# ASYNC UTILITIES
+# =============================================================================
+
+@pytest.fixture(scope="session")
+def event_loop():
+    """Create an event loop for the test session"""
+    loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()
+
+
+# =============================================================================
+# APPLICATION FIXTURES
+# =============================================================================
+
+@pytest.fixture
+def app():
+    """Create FastAPI application for testing"""
+    return create_application()
+
+
+@pytest.fixture
+def client(app):
+    """Create test client for synchronous tests"""
+    return TestClient(app)
+
+
+@pytest_asyncio.fixture
+async def async_client(app) -> AsyncGenerator[AsyncClient, None]:
+    """Create async test client for asynchronous tests"""
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        yield ac
+
+
+# =============================================================================
+# DATABASE FIXTURES
+# =============================================================================
+
+@pytest.fixture(scope="session")
+def test_db_url():
+    """Get test database URL"""
+    return "sqlite+aiosqlite:///./test_legal_ai.db"
+
+
+@pytest_asyncio.fixture
+async def db_engine(test_db_url):
+    """Create test database engine"""
+    engine = create_async_engine(
+        test_db_url,
+        echo=True,
+        future=True,
+        pool_pre_ping=True
+    )
+    
+    # Create all tables
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    
+    yield engine
+    
+    # Clean up
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+    
+    await engine.dispose()
+
+
+@pytest_asyncio.fixture
+async def db_session(db_engine) -> AsyncGenerator[AsyncSession, None]:
+    """Create test database session"""
+    async_session_maker = sessionmaker(
+        db_engine, class_=AsyncSession, expire_on_commit=False
+    )
+    
+    async with async_session_maker() as session:
+        try:
+            yield session
+        finally:
+            await session.close()
+
+
+@pytest.fixture
+def override_db_session(app, db_session):
+    """Override database session dependency"""
+    app.dependency_overrides[get_database_session] = lambda: db_session
+    yield
+    app.dependency_overrides.clear()
+
+
+# =============================================================================
+# REDIS FIXTURES
+# =============================================================================
+
+@pytest_asyncio.fixture
+async def redis_client():
+    """Create Redis client for testing"""
+    redis = Redis.from_url("redis://localhost:6379/15", decode_responses=True)
+    
+    # Clear test database
+    await redis.flushdb()
+    
+    yield redis
+    
+    # Clean up
+    await redis.flushdb()
+    await redis.close()
+
+
+# =============================================================================
+# AUTHENTICATION FIXTURES
+# =============================================================================
+
+@pytest.fixture
+def mock_user():
+    """Create mock user data"""
+    return {
+        "id": "test-user-id",
+        "email": "test@example.com",
+        "username": "testuser",
+        "full_name": "Test User",
+        "is_active": True,
+        "is_superuser": False,
+        "roles": ["user"]
+    }
+
+
+@pytest.fixture
+def auth_headers(mock_user):
+    """Create authentication headers for testing"""
+    # Mock JWT token for testing
+    mock_token = "mock.jwt.token"
+    return {
+        "Authorization": f"Bearer {mock_token}",
+        "Content-Type": "application/json"
+    }
+
+
+@pytest.fixture
+def admin_user():
+    """Create mock admin user data"""
+    return {
+        "id": "admin-user-id",
+        "email": "admin@example.com",
+        "username": "admin",
+        "full_name": "Admin User",
+        "is_active": True,
+        "is_superuser": True,
+        "roles": ["admin", "user"]
+    }
+
+
+@pytest.fixture
+def admin_headers(admin_user):
+    """Create admin authentication headers for testing"""
+    mock_token = "admin.jwt.token"
+    return {
+        "Authorization": f"Bearer {mock_token}",
+        "Content-Type": "application/json"
+    }
+
+
+# =============================================================================
+# MOCK FIXTURES
+# =============================================================================
+
+@pytest.fixture
+def mock_openai_client():
+    """Mock OpenAI client"""
+    with patch("openai.OpenAI") as mock_client:
+        mock_instance = Mock()
+        mock_client.return_value = mock_instance
+        
+        # Mock completion response
+        mock_instance.chat.completions.create.return_value.choices[0].message.content = "Mock AI response"
+        
+        yield mock_instance
+
+
+@pytest.fixture
+def mock_anthropic_client():
+    """Mock Anthropic client"""
+    with patch("anthropic.Anthropic") as mock_client:
+        mock_instance = Mock()
+        mock_client.return_value = mock_instance
+        
+        # Mock completion response
+        mock_instance.messages.create.return_value.content[0].text = "Mock Claude response"
+        
+        yield mock_instance
+
+
+@pytest.fixture
+def mock_pacer_client():
+    """Mock PACER client"""
+    mock_client = Mock()
+    mock_client.search_dockets.return_value = []
+    mock_client.get_document.return_value = {"content": "mock document"}
+    return mock_client
+
+
+@pytest.fixture
+def mock_redis():
+    """Mock Redis client"""
+    mock_redis = Mock()
+    mock_redis.get.return_value = None
+    mock_redis.set.return_value = True
+    mock_redis.delete.return_value = True
+    return mock_redis
+
+
+# =============================================================================
+# DATA FIXTURES
+# =============================================================================
+
+@pytest.fixture
+def sample_pdf_content():
+    """Sample PDF content for testing"""
+    return b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n2 0 obj\n<<\n/Type /Pages\n/Count 1\n/Kids [3 0 R]\n>>\nendobj\n3 0 obj\n<<\n/Type /Page\n/Parent 2 0 R\n/MediaBox [0 0 612 792]\n>>\nendobj\nxref\n0 4\n0000000000 65535 f \n0000000015 00000 n \n0000000074 00000 n \n0000000120 00000 n \ntrailer\n<<\n/Size 4\n/Root 1 0 R\n>>\nstartxref\n178\n%%EOF"
+
+
+@pytest.fixture
+def sample_legal_document():
+    """Sample legal document data"""
+    return {
+        "title": "Sample Contract",
+        "content": "This is a sample legal document for testing purposes.",
+        "document_type": "contract",
+        "client_id": "test-client-id",
+        "created_by": "test-user-id",
+        "metadata": {
+            "pages": 1,
+            "word_count": 10,
+            "language": "en"
+        }
+    }
+
+
+@pytest.fixture
+def sample_case_data():
+    """Sample case data"""
+    return {
+        "case_number": "2023-CV-001",
+        "title": "Sample Case v. Test Defendant",
+        "court": "Test District Court",
+        "client_id": "test-client-id",
+        "status": "active",
+        "metadata": {
+            "jurisdiction": "federal",
+            "practice_area": "civil"
+        }
+    }
+
+
+@pytest.fixture
+def sample_docket_entry():
+    """Sample docket entry data"""
+    return {
+        "entry_number": 1,
+        "date_filed": "2023-01-01",
+        "description": "Initial Complaint",
+        "document_link": "http://example.com/doc/1",
+        "case_id": "test-case-id"
+    }
+
+
+# =============================================================================
+# FILE FIXTURES
+# =============================================================================
+
+@pytest.fixture
+def temp_file_path(tmp_path):
+    """Create temporary file path"""
+    return tmp_path / "test_file.txt"
+
+
+@pytest.fixture
+def temp_pdf_file(tmp_path, sample_pdf_content):
+    """Create temporary PDF file"""
+    pdf_path = tmp_path / "test_document.pdf"
+    pdf_path.write_bytes(sample_pdf_content)
+    return pdf_path
+
+
+# =============================================================================
+# UTILITY FIXTURES
+# =============================================================================
+
+@pytest.fixture
+def mock_celery_task():
+    """Mock Celery task"""
+    with patch("celery.Celery.send_task") as mock_task:
+        mock_task.return_value.id = "mock-task-id"
+        yield mock_task
+
+
+@pytest.fixture
+def mock_email_sender():
+    """Mock email sender"""
+    with patch("src.shared.utils.email.send_email") as mock_send:
+        mock_send.return_value = True
+        yield mock_send
+
+
+@pytest.fixture
+def capture_logs(caplog):
+    """Capture logs for testing"""
+    import logging
+    caplog.set_level(logging.DEBUG)
+    yield caplog
+
+
+# =============================================================================
+# CLEANUP FIXTURES
+# =============================================================================
+
+@pytest.fixture(autouse=True)
+def cleanup_test_files():
+    """Clean up test files after each test"""
+    yield
+    
+    # Clean up any test files that might have been created
+    test_files = [
+        "./test_legal_ai.db",
+        "./test_legal_ai.db-shm",
+        "./test_legal_ai.db-wal"
+    ]
+    
+    for file_path in test_files:
+        if os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+            except OSError:
+                pass  # File might be locked, ignore
+
+
+# =============================================================================
+# PERFORMANCE FIXTURES
+# =============================================================================
+
+@pytest.fixture
+def performance_tracker():
+    """Track test performance"""
+    import time
+    
+    class PerformanceTracker:
+        def __init__(self):
+            self.start_time = None
+            self.end_time = None
+        
+        def start(self):
+            self.start_time = time.time()
+        
+        def stop(self):
+            self.end_time = time.time()
+        
+        @property
+        def duration(self):
+            if self.start_time and self.end_time:
+                return self.end_time - self.start_time
+            return None
+    
+    return PerformanceTracker()
