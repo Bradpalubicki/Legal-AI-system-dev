@@ -18,6 +18,7 @@ from ..api.deps.feature_gates import require_feature
 from ..core.feature_access import Feature
 from ..models.user import User
 from ..models.case_notification_history import CaseNotification
+from ..utils.document_naming import generate_pacer_filename, generate_display_name
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
@@ -718,6 +719,12 @@ class DownloadRecapToAppRequest(BaseModel):
     """Request model for downloading FREE RECAP documents to app storage"""
     document_id: int = Field(..., description="RECAP document ID from CourtListener")
     filename: Optional[str] = Field(None, description="Custom filename (optional)")
+    # Additional metadata for PACER-standard naming
+    case_number: Optional[str] = Field(None, description="Case number for filename")
+    document_number: Optional[int] = Field(None, description="Document entry number")
+    description: Optional[str] = Field(None, description="Document description")
+    filing_date: Optional[str] = Field(None, description="Filing date")
+    court: Optional[str] = Field(None, description="Court code")
 
 
 @router.post("/download-recap-to-app")
@@ -747,21 +754,50 @@ async def download_recap_to_app(
     # Endpoint for direct document download to app storage
     try:
         import os
-        import uuid
 
         logger.info(f"[DOWNLOAD-RECAP] Received request: document_id={request.document_id}, filename={request.filename}")
 
-        # Generate save path in RECAP documents folder
-        filename = request.filename or f"recap_doc_{request.document_id}_{uuid.uuid4().hex[:8]}.pdf"
+        # Generate PACER-standard filename if metadata is provided
+        if request.filename:
+            # Use custom filename if provided
+            filename = request.filename
+        elif request.case_number or request.document_number or request.description:
+            # Generate PACER-standard filename using metadata
+            filename = generate_pacer_filename(
+                case_number=request.case_number,
+                document_number=request.document_number,
+                description=request.description,
+                filing_date=request.filing_date,
+                court=request.court,
+                document_id=request.document_id
+            )
+            logger.info(f"[DOWNLOAD-RECAP] Generated PACER-standard filename: {filename}")
+        else:
+            # Fallback to basic naming with document_id
+            filename = generate_pacer_filename(document_id=request.document_id)
+
+        # Generate display name for UI
+        display_name = generate_display_name(
+            case_number=request.case_number,
+            document_number=request.document_number,
+            description=request.description,
+            court=request.court
+        )
+
         save_dir = os.path.join(os.getcwd(), "storage", "recap_documents")
         save_path = os.path.join(save_dir, filename)
 
-        logger.info(f"Download-to-app request for RECAP document {request.document_id}")
+        logger.info(f"Download-to-app request for RECAP document {request.document_id} -> {filename}")
 
         result = await service.download_recap_to_storage(
             document_id=request.document_id,
             save_path=save_path
         )
+
+        # Add standardized naming info to result
+        if result.get("success"):
+            result["standardized_filename"] = filename
+            result["display_name"] = display_name
 
         return result
 

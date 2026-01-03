@@ -1011,8 +1011,9 @@ export default function PACERPage() {
   };
 
   // Download document directly to app storage
-  const handleDownloadToApp = async (doc: any) => {
-    console.log('[DEBUG] handleDownloadToApp called with doc:', doc);
+  // caseInfo parameter provides case-level context for PACER-standard naming
+  const handleDownloadToApp = async (doc: any, caseInfo?: any) => {
+    console.log('[DEBUG] handleDownloadToApp called with doc:', doc, 'caseInfo:', caseInfo);
     console.log('[DEBUG] doc.id:', doc.id, 'type:', typeof doc.id);
 
     if (!doc.id && doc.id !== 0) {
@@ -1043,11 +1044,18 @@ export default function PACERPage() {
       setDownloadingDocs(prev => new Set(prev).add(documentId));
       setError(null);
 
+      // Build request with PACER-standard naming metadata
       const requestBody = {
         document_id: documentId,
-        filename: `${doc.short_description || 'document'}_${documentId}.pdf`
+        // Document-level metadata
+        document_number: doc.entry_number || doc.document_number || undefined,
+        description: doc.short_description || doc.description || undefined,
+        filing_date: doc.entry_date_filed || undefined,
+        // Case-level metadata (from caseInfo if provided)
+        case_number: caseInfo?.docketNumber || caseInfo?.caseNumber || caseInfo?.docket_number || undefined,
+        court: caseInfo?.court_id || caseInfo?.court || undefined
       };
-      console.log('[DEBUG] Request body:', requestBody);
+      console.log('[DEBUG] Request body with PACER metadata:', requestBody);
 
       const response = await fetch(`${API_CONFIG.BASE_URL}/api/v1/courtlistener/download-recap-to-app`, {
         method: 'POST',
@@ -2382,7 +2390,7 @@ export default function PACERPage() {
                                                 // Not yet downloaded - show download button
                                                 <Button
                                                   size="sm"
-                                                  onClick={() => handleDownloadToApp(doc)}
+                                                  onClick={() => handleDownloadToApp(doc, result)}
                                                   disabled={downloadingDocs.has(doc.id)}
                                                   className="bg-green-600 hover:bg-green-700 text-white"
                                                 >
@@ -2717,7 +2725,7 @@ export default function PACERPage() {
                           <div className="flex items-center gap-3 mb-2 flex-wrap">
                             <FileText className="h-5 w-5 text-green-600 flex-shrink-0" />
                             <h3 className="font-semibold text-gray-900">
-                              {doc.original_doc?.short_description || doc.original_doc?.description || 'Court Document'}
+                              {doc.display_name || doc.original_doc?.short_description || doc.original_doc?.description || 'Court Document'}
                             </h3>
                             <Badge className="bg-green-500 text-white">Downloaded</Badge>
                             {isDocumentAnalyzed(doc.document_id) ? (
