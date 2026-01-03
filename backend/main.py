@@ -483,6 +483,14 @@ from app.api.client_management_endpoints import router as client_management_rout
 app.include_router(client_management_router)
 print("SUCCESS: Client management endpoints loaded")
 
+# Attorney Management - Attorney profiles, meetings, communications
+try:
+    from app.api.attorney_endpoints import router as attorney_router
+    app.include_router(attorney_router)
+    print("SUCCESS: Attorney management endpoints loaded")
+except ImportError as e:
+    print(f"INFO: Attorney endpoints not available: {e}")
+
 # Compliance & Audit - GDPR/CCPA compliance, audit logging (Week 4)
 try:
     from app.api.compliance_endpoints import router as compliance_router

@@ -27,6 +27,15 @@ from .billing import (
 # Case access models for User relationship
 from .case_access import CaseAccess, CaseAccessPurchase
 
+# Attorney management models
+from .attorney_management import (
+    Attorney,
+    AttorneyCaseAssignment,
+    AttorneyMeeting,
+    AttorneyCommunication,
+    MeetingPrepTemplate
+)
+
 __all__ = [
     # Learning system (must be first due to relationships)
     'AIFeedback',
@@ -52,4 +61,10 @@ __all__ = [
     # Case access
     'CaseAccess',
     'CaseAccessPurchase',
+    # Attorney management
+    'Attorney',
+    'AttorneyCaseAssignment',
+    'AttorneyMeeting',
+    'AttorneyCommunication',
+    'MeetingPrepTemplate',
 ]
