@@ -194,7 +194,7 @@ async def test_basic_anthropic():
         
         # Simple test request
         response = await client.messages.create(
-            model="claude-3-haiku-20240307",  # Cheaper model for testing
+            model="claude-haiku-4-5",  # Cheaper model for testing
             max_tokens=20,
             messages=[
                 {"role": "user", "content": "Say 'Anthropic test successful' in exactly those words."}

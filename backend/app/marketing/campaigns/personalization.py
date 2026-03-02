@@ -173,7 +173,7 @@ Return valid JSON only, no other text."""
                 client = anthropic.AsyncAnthropic(api_key=self.anthropic_key)
 
                 response = await client.messages.create(
-                    model="claude-3-5-haiku-20241022",  # Use faster model for personalization
+                    model="claude-haiku-4-5",  # Use faster model for personalization
                     max_tokens=2000,
                     messages=[
                         {"role": "user", "content": prompt}
@@ -243,7 +243,7 @@ Return ONLY the summary text, no other formatting."""
 
                 client = anthropic.AsyncAnthropic(api_key=self.anthropic_key)
                 response = await client.messages.create(
-                    model="claude-3-5-haiku-20241022",
+                    model="claude-haiku-4-5",
                     max_tokens=200,
                     messages=[{"role": "user", "content": prompt}]
                 )
@@ -313,7 +313,7 @@ Return valid JSON only."""
 
                 client = anthropic.AsyncAnthropic(api_key=self.anthropic_key)
                 response = await client.messages.create(
-                    model="claude-3-5-haiku-20241022",
+                    model="claude-haiku-4-5",
                     max_tokens=200,
                     messages=[{"role": "user", "content": prompt}]
                 )

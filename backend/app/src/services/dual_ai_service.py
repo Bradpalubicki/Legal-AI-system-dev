@@ -46,7 +46,7 @@ def optimize_prompt_for_speed(query: str) -> str:
 def select_model_by_length(document_length: int) -> str:
     """Select appropriate model based on document length for optimal quality"""
     if document_length < 1000:  # Small documents - use Haiku for speed
-        return 'claude-3-5-haiku-20241022'
+        return 'claude-haiku-4-5'
     elif document_length < 5000:  # Medium documents - use Sonnet 4.5 for quality
         return 'claude-sonnet-4-5-20250929'
     else:  # Large documents - use Sonnet 4.5 for comprehensive analysis
@@ -760,7 +760,7 @@ ACCURACY IS PARAMOUNT: Double-check all numbers, dates, and names. If you're unc
 
             # Select model based on document size for optimal quality
             if text_length < 10000:
-                model = "claude-3-5-haiku-20241022"  # Fast model for small docs
+                model = "claude-haiku-4-5"  # Fast model for small docs
                 max_tokens = 4000
                 logger.info("Using Haiku (fast) for small document")
             elif text_length < 30000:

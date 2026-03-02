@@ -9,7 +9,7 @@ AI_PROMPTS = {
     "default": {
         "system": "Answer in max 3 sentences. No metaphors. Be direct.",
         "template": lambda query: f"Question: {query}\nAnswer:",
-        "model": "claude-3-5-haiku-20241022",
+        "model": "claude-haiku-4-5",
         "max_tokens": 500,
         "temperature": 0
     },
@@ -18,7 +18,7 @@ AI_PROMPTS = {
     "qa": {
         "system": "Legal answer in 2 sentences max. Simple words only.",
         "template": lambda query: f"Legal question: {query}\nDirect answer:",
-        "model": "claude-3-5-haiku-20241022",
+        "model": "claude-haiku-4-5",
         "max_tokens": 200,
         "temperature": 0
     },
@@ -27,7 +27,7 @@ AI_PROMPTS = {
     "document_analysis": {
         "system": "Summarize in 3 bullet points only.",
         "template": lambda doc: f"Document: {doc[:1000]}\nKey points:",
-        "model": "claude-3-5-haiku-20241022",
+        "model": "claude-haiku-4-5",
         "max_tokens": 300,
         "temperature": 0
     },
@@ -36,7 +36,7 @@ AI_PROMPTS = {
     "defense_builder": {
         "system": "List 3 defense options with requirements.",
         "template": lambda case: f"Case: {case}\nDefenses:",
-        "model": "claude-3-5-haiku-20241022",
+        "model": "claude-haiku-4-5",
         "max_tokens": 400,
         "temperature": 0
     },
@@ -45,7 +45,7 @@ AI_PROMPTS = {
     "strategic": {
         "system": "Generate 3 specific questions only.",
         "template": lambda context: f"Context: {context}\nQuestions:",
-        "model": "claude-3-5-haiku-20241022",
+        "model": "claude-haiku-4-5",
         "max_tokens": 200,
         "temperature": 0
     }

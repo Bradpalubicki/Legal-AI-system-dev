@@ -454,7 +454,7 @@ async def get_services_status():
                 client = anthropic.Anthropic(api_key=anthropic_key, timeout=5.0)
                 # A simple API call to test connectivity
                 response = client.messages.create(
-                    model="claude-3-haiku-20240307",
+                    model="claude-haiku-4-5",
                     max_tokens=5,
                     messages=[{"role": "user", "content": "Hi"}]
                 )

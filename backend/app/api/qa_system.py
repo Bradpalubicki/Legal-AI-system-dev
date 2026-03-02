@@ -1654,7 +1654,7 @@ Return ONLY a JSON array of 5 question strings, no other text:
 
         # Call Claude for contextual questions
         response = claude_client.messages.create(
-            model='claude-3-5-haiku-20241022',
+            model='claude-haiku-4-5',
             max_tokens=300,
             temperature=0.7,
             messages=[{
@@ -2376,7 +2376,7 @@ async def _generate_defense_strategy(case_type: str, collected_info: Dict[str, s
 3."""
 
         response = claude_client.messages.create(
-            model='claude-3-5-haiku-20241022',  # HAIKU for speed
+            model='claude-haiku-4-5',  # HAIKU for speed
             max_tokens=150,  # Reduced from 400
             temperature=0,
             stop_sequences=['However,', 'Additionally,', 'Consult'],
@@ -2462,7 +2462,7 @@ async def _call_claude_haiku_direct(question: str) -> str:
             user_query=question,
             context=None,
             max_tokens=1500,  # Increased from 100 to prevent mid-sentence cutoffs
-            model='claude-3-5-haiku-20241022'
+            model='claude-haiku-4-5'
         )
 
         return answer or "Contact an attorney. Time limits may apply."
